@@ -15,7 +15,7 @@ from nonebot_plugin_datastore import create_session
 
 from .model import MessageRecord
 from .message import serialize_message
-from .condig import Config
+from .config import Config
 from .record import get_message_records
 
 export.get_message_records = get_message_records
