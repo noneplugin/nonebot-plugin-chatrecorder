@@ -1,7 +1,6 @@
 import time
 from typing import Any, Dict, Optional
 
-import nonebot
 from nonebot import get_driver
 from nonebot.plugin import export
 from nonebot.typing import T_CalledAPIHook
@@ -12,8 +11,9 @@ from nonebot.adapters.onebot.v11 import (
     MessageEvent,
     GroupMessageEvent,
 )
+from nonebot_plugin_datastore import create_session
 
-from .model import MessageRecord, session
+from .model import MessageRecord
 from .message import serialize_message
 from .condig import Config
 from .record import get_message_records
@@ -34,8 +34,10 @@ async def record_recv_msg(event: MessageEvent):
         user_id=str(event.user_id),
         group_id=str(event.group_id) if isinstance(event, GroupMessageEvent) else "",
     )
-    session.add(record)
-    await session.commit()
+
+    async with create_session() as session:
+        session.add(record)
+        await session.commit()
 
 
 async def record_send_msg(
@@ -64,13 +66,12 @@ async def record_send_msg(
         user_id=str(bot.self_id),
         group_id=str(data.get("group_id", "")),
     )
-    session.add(record)
-    await session.commit()
+
+    async with create_session() as session:
+        session.add(record)
+        await session.commit()
 
 
 plugin_config = Config.parse_obj(get_driver().config.dict())
 if plugin_config.chatrecorder_record_send_msg:
     Bot.on_called_api(record_send_msg)
-
-
-nonebot.get_driver().on_shutdown(lambda _: session.close())

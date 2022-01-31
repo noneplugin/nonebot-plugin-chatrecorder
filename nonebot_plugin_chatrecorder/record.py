@@ -1,9 +1,10 @@
-from sqlmodel import select
+from sqlmodel import select, or_
 from typing import Iterable, List, Optional, Literal
 
 from nonebot.adapters.onebot.v11 import Message
+from nonebot_plugin_datastore import create_session
 
-from .model import MessageRecord, session
+from .model import MessageRecord
 from .message import deserialize_message
 
 
@@ -38,13 +39,21 @@ async def get_message_records(
 
     whereclause = []
     if user_ids:
-        whereclause.append(MessageRecord.user_id in set(user_ids))
+        whereclause.append(
+            or_(*[MessageRecord.user_id == user_id for user_id in user_ids])
+        )
     if group_ids:
-        whereclause.append(MessageRecord.group_id in set(group_ids))
+        whereclause.append(
+            or_(*[MessageRecord.group_id == group_id for group_id in group_ids])
+        )
     if exclude_user_ids:
-        whereclause.append(MessageRecord.user_id not in set(exclude_user_ids))
+        whereclause.append(
+            or_(*[MessageRecord.user_id != user_id for user_id in exclude_user_ids])
+        )
     if exclude_group_ids:
-        whereclause.append(MessageRecord.group_id not in set(exclude_group_ids))
+        whereclause.append(
+            or_(*[MessageRecord.group_id != group_id for group_id in exclude_group_ids])
+        )
     if message_type:
         whereclause.append(MessageRecord.detail_type == message_type)
     if time_start:
@@ -52,6 +61,8 @@ async def get_message_records(
     if time_stop:
         whereclause.append(MessageRecord.time <= time_stop)
 
-    statement = select(MessageRecord).where(whereclause)
-    records: List[MessageRecord] = (await session.exec(statement)).all()
+    statement = select(MessageRecord).where(*whereclause)
+    async with create_session() as session:
+        records: List[MessageRecord] = (await session.exec(statement)).all()
+
     return [deserialize_message(record.message) for record in records]
