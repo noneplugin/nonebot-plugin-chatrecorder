@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
@@ -14,8 +14,6 @@ class MessageRecord(SQLModel, table=True):
     type: str
     detail_type: str
     message_id: str
-    message: List[Dict[str, Any]]
-    alt_message: Optional[str] = ""
-    self_id: str
+    message: str
     user_id: str
     group_id: Optional[str] = ""
