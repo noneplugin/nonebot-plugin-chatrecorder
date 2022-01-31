@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 import nonebot
+from nonebot import get_driver
 from nonebot.typing import T_CalledAPIHook
 from nonebot.message import event_postprocessor
 from nonebot.adapters.onebot.v11 import (
@@ -15,13 +16,14 @@ from nonebot_plugin_datastore import create_session
 
 from .model import MessageRecord
 from .message import serialize_message
+from .condig import Config
 
 
 session: AsyncSession = create_session()
 
 
 @event_postprocessor
-async def _(event: MessageEvent):
+async def record_recv_msg(event: MessageEvent):
 
     record = MessageRecord(
         platform="qq",
@@ -37,8 +39,7 @@ async def _(event: MessageEvent):
     await session.commit()
 
 
-@Bot.on_called_api
-async def _(
+async def record_send_msg(
     bot: Bot,
     e: Exception,
     api: str,
@@ -66,6 +67,11 @@ async def _(
     )
     session.add(record)
     await session.commit()
+
+
+plugin_config = Config.parse_obj(get_driver().config.dict())
+if plugin_config.chatrecorder_record_send_msg:
+    Bot.on_called_api(record_send_msg)
 
 
 nonebot.get_driver().on_shutdown(lambda _: session.close())
