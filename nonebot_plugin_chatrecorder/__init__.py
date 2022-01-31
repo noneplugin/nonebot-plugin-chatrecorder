@@ -1,9 +1,9 @@
 import time
 from typing import Any, Dict, Optional
-from sqlmodel.ext.asyncio.session import AsyncSession
 
 import nonebot
 from nonebot import get_driver
+from nonebot.plugin import export
 from nonebot.typing import T_CalledAPIHook
 from nonebot.message import event_postprocessor
 from nonebot.adapters.onebot.v11 import (
@@ -12,14 +12,13 @@ from nonebot.adapters.onebot.v11 import (
     MessageEvent,
     GroupMessageEvent,
 )
-from nonebot_plugin_datastore import create_session
 
-from .model import MessageRecord
+from .model import MessageRecord, session
 from .message import serialize_message
 from .condig import Config
+from .record import get_message_records
 
-
-session: AsyncSession = create_session()
+export.get_message_records = get_message_records
 
 
 @event_postprocessor

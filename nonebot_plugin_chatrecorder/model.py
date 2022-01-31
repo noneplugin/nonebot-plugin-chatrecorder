@@ -1,5 +1,10 @@
 from typing import Optional
 from sqlmodel import Field, SQLModel
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from nonebot_plugin_datastore import create_session
+
+session: AsyncSession = create_session()
 
 
 class MessageRecord(SQLModel, table=True):
