@@ -47,13 +47,11 @@ async def get_message_records(
             or_(*[MessageRecord.group_id == group_id for group_id in group_ids])
         )
     if exclude_user_ids:
-        whereclause.append(
-            or_(*[MessageRecord.user_id != user_id for user_id in exclude_user_ids])
-        )
+        for user_id in exclude_user_ids:
+            whereclause.append(MessageRecord.user_id != user_id)
     if exclude_group_ids:
-        whereclause.append(
-            or_(*[MessageRecord.group_id != group_id for group_id in exclude_group_ids])
-        )
+        for group_id in exclude_group_ids:
+            whereclause.append(MessageRecord.group_id != group_id)
     if message_type:
         whereclause.append(MessageRecord.detail_type == message_type)
     if time_start:
