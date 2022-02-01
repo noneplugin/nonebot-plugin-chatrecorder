@@ -42,7 +42,7 @@ chatrecorder_record_send_msg=true
 示例：
 
 ```python
-import time
+from datetime import datetime, timedelta
 from nonebot_plugin_chatrecorder import get_message_records
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 
@@ -52,7 +52,7 @@ def handle(event: GroupMessageEvent):
     msgs = await get_message_records(
         user_ids=['12345', '54321'],
         group_ids=[event.group_id],
-        time_start=int(time.time()) - 60 * 60 * 24,
+        time_start=datetime.utcnow() - timedelta(days=1),
     )
 ```
 

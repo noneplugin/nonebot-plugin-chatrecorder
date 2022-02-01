@@ -57,7 +57,7 @@ async def record_send_msg(
     message = Message(data["message"])
     record = MessageRecord(
         platform="qq",
-        time=datetime.now(),
+        time=datetime.utcnow(),
         type="message",
         detail_type="group"
         if api == "send_group_msg"
