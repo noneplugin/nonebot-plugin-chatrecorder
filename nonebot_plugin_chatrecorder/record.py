@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlmodel import select, or_
-from typing import Iterable, List, Optional, Literal, Union, overload
+from typing_extensions import Literal
+from typing import Iterable, List, Optional, Union, overload
 
 from nonebot.adapters.onebot.v11 import Message
 from nonebot_plugin_datastore import create_session
