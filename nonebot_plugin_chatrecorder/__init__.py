@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from nonebot import get_driver
@@ -31,6 +31,7 @@ async def record_recv_msg(event: MessageEvent):
         detail_type="group" if isinstance(event, GroupMessageEvent) else "private",
         message_id=str(event.message_id),
         message=serialize_message(event.message),
+        alt_message=event.message.extract_plain_text(),
         user_id=str(event.user_id),
         group_id=str(event.group_id) if isinstance(event, GroupMessageEvent) else "",
     )
@@ -53,16 +54,18 @@ async def record_send_msg(
     if api not in ["send_msg", "send_private_msg", "send_group_msg"]:
         return
 
+    message = Message(data["message"])
     record = MessageRecord(
         platform="qq",
-        time=int(time.time()),
+        time=datetime.now(),
         type="message",
         detail_type="group"
         if api == "send_group_msg"
         or (api == "send_msg" and data["message_type"] == "group")
         else "private",
         message_id=str(result["message_id"]),
-        message=serialize_message(Message(data["message"])),
+        message=serialize_message(message),
+        alt_message=message.extract_plain_text(),
         user_id=str(bot.self_id),
         group_id=str(data.get("group_id", "")),
     )

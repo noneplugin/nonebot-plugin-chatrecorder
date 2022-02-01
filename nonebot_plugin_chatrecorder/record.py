@@ -1,5 +1,5 @@
 from sqlmodel import select, or_
-from typing import Iterable, List, Optional, Literal
+from typing import Iterable, List, Optional, Literal, Union
 
 from nonebot.adapters.onebot.v11 import Message
 from nonebot_plugin_datastore import create_session
@@ -16,7 +16,8 @@ async def get_message_records(
     message_type: Optional[Literal['private', 'group']] = None,
     time_start: Optional[int] = None,
     time_stop: Optional[int] = None,
-) -> List[Message]:
+    plain_text: bool = False,
+) -> Union[List[str], List[Message]]:
     """
     :说明:
 
@@ -31,6 +32,7 @@ async def get_message_records(
       * ``message_type: Optional[Literal['private', 'group']]``: 消息类型，可选值：'private' 和 'group'，为空表示所有类型
       * ``time_start: Optional[int]``: 起始时间，类型为时间戳，单位为秒，为空表示不限制起始时间
       * ``time_stop: Optional[int]``: 结束时间，类型为时间戳，单位为秒，为空表示不限制结束时间
+      * ``plain_text: bool = False``: 为真则返回字符串数组，否则返回 Message 数组
 
     :返回值:
 
@@ -63,4 +65,7 @@ async def get_message_records(
     async with create_session() as session:
         records: List[MessageRecord] = (await session.exec(statement)).all()
 
-    return [deserialize_message(record.message) for record in records]
+    if plain_text:
+        return [record.alt_message for record in records]
+    else:
+        return [deserialize_message(record.message) for record in records]
