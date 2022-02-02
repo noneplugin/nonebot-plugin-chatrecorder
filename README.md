@@ -20,19 +20,14 @@ pip install nonebot_plugin_chatrecorder
 
 ### 配置
 
-插件依赖 [nonebot-plugin-datastore](https://github.com/he0119/nonebot-plugin-datastore) 插件
-
-需要在配置文件中添加：
-
-```
-datastore_enable_database=true
-```
-
 插件会记录机器人收到的消息，可以添加以下配置选择是否记录机器人发出的消息（默认为 `true`）；如果协议端开启了自身消息上报则需设置为 `false` 以避免重复
 
 ```
 chatrecorder_record_send_msg=true
 ```
+
+
+插件依赖 [nonebot-plugin-datastore](https://github.com/he0119/nonebot-plugin-datastore) 插件
 
 消息记录文件存放在 nonebot-plugin-datastore 插件设置的数据目录；同时插件会将消息中 base64 形式的图片、语音等存成文件，放置在 nonebot-plugin-datastore 插件设置的缓存目录，避免消息记录文件体积过大
 
