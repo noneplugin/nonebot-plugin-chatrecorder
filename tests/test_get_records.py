@@ -1,4 +1,5 @@
 import pytest
+from nonebug.app import App
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -7,7 +8,7 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.asyncio
-async def test_get_message_records():
+async def test_get_message_records(app: App):
     """测试获取消息记录"""
 
     from typing import List
@@ -15,6 +16,9 @@ async def test_get_message_records():
 
     from nonebot_plugin_chatrecorder import get_message_records
     from nonebot.adapters.onebot.v11 import Message
+
+    async with app.test_api() as ctx:
+        bot = ctx.create_bot()
 
     records = [
         make_record(
@@ -51,12 +55,12 @@ async def test_get_message_records():
         await add_record(record)
 
     msgs = await get_message_records(user_ids=["222222"])
-    assert isinstance(msgs, List[Message])
     assert len(msgs) == 3
+    assert isinstance(msgs[0], Message)
     msgs = await get_message_records(user_ids=["222222"], plain_text=False)
-    assert isinstance(msgs, List[Message])
+    assert isinstance(msgs[0], Message)
     msgs = await get_message_records(user_ids=["222222"], plain_text=True)
-    assert isinstance(msgs, List[str])
+    assert isinstance(msgs[0], str)
     msgs = await get_message_records(group_ids=["999999"])
     assert len(msgs) == 2
     msgs = await get_message_records(user_ids=["222222"], group_ids=["999999"])
@@ -68,9 +72,6 @@ async def test_get_message_records():
         time_stop=datetime(2000, 1, 1, 3, 0, 0),
     )
     assert len(msgs) == 4
-
-    for record in records:
-        await del_record(record.message_id)
 
 
 def make_record(
@@ -104,18 +105,3 @@ async def add_record(record: "MessageRecord"):
     async with create_session() as session:
         session.add(record)
         await session.commit()
-
-
-async def del_record(message_id: str):
-    from typing import List
-    from sqlmodel import select
-
-    from nonebot_plugin_chatrecorder.model import MessageRecord
-    from nonebot_plugin_datastore import create_session
-
-    statement = select(MessageRecord).where(MessageRecord.message_id == message_id)
-    async with create_session() as session:
-        records: List[MessageRecord] = (await session.exec(statement)).all()
-        if records:
-            for record in records:
-                session.delete(record)
