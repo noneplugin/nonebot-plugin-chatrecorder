@@ -3,7 +3,7 @@ name: Code Coverage
 on:
   push:
     branches:
-      - "master"
+      - "main"
       - "dev"
   pull_request:
 
