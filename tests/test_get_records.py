@@ -1,9 +1,9 @@
 import pytest
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from nonebot_plugin_chatrecorder.model import MessageRecord
-    from datetime import datetime
 
 
 @pytest.mark.asyncio
@@ -78,7 +78,7 @@ def make_record(
     message: str,
     user_id: str,
     group_id: str,
-    time: "datetime",
+    time: datetime,
     message_type: str = "group",
 ):
     from nonebot_plugin_chatrecorder import serialize_message

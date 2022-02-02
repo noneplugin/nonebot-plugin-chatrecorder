@@ -6,7 +6,7 @@ from .utils import fake_group_message_event, fake_private_message_event
 
 USER_ID = 123456
 GROUP_ID = 654321
-TIME = 111111
+TIME = 1000000000
 
 
 @pytest.mark.asyncio
@@ -104,7 +104,6 @@ async def check_record(
 ):
     from typing import List
     from sqlmodel import select
-    from datetime import datetime
 
     from nonebot_plugin_chatrecorder.model import MessageRecord
     from nonebot_plugin_datastore import create_session
@@ -120,7 +119,7 @@ async def check_record(
     assert len(records) == 1
     record = records[0]
     assert record.platform == "qq"
-    assert record.time == datetime(second=TIME)
+    assert int(record.time.timestamp()) == TIME
     assert record.type == "message"
     assert record.detail_type == message_type
     assert str(record.message) == str(Message(message))
