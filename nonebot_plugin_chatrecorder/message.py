@@ -2,6 +2,7 @@ import json
 import base64
 import hashlib
 from pathlib import Path
+from pydantic import parse_obj_as
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebot_plugin_datastore import PluginData
 
@@ -19,7 +20,7 @@ def serialize_message(msg: Message) -> str:
 
 
 def deserialize_message(msg: str) -> Message:
-    return Message(json.loads(msg))
+    return parse_obj_as(Message, json.loads(msg))
 
 
 def cache_file(msg: Message):
