@@ -18,10 +18,10 @@ async def app(
     config.datastore_data_dir = tmp_path / "data"
     config.chatrecorder_record_send_msg = True
 
-    from nonebot_plugin_datastore.db import init_db
-
     # 加载插件
     nonebot.load_plugin("nonebot_plugin_chatrecorder")
+
+    from nonebot_plugin_datastore.db import init_db
 
     await init_db()
 
