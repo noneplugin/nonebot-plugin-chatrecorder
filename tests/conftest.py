@@ -21,7 +21,6 @@ async def app(
     from nonebot_plugin_datastore.db import init_db
 
     # 加载插件
-    nonebot.load_plugin("nonebot_plugin_datastore")
     nonebot.load_plugin("nonebot_plugin_chatrecorder")
 
     await init_db()
