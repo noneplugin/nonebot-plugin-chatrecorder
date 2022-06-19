@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from nonebot import get_driver
-from nonebot.plugin import export
-from nonebot.typing import T_CalledAPIHook
+from nonebot import get_driver, require
+from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot.adapters.onebot.v11 import (
     Bot,
@@ -11,6 +10,8 @@ from nonebot.adapters.onebot.v11 import (
     MessageEvent,
     GroupMessageEvent,
 )
+
+require("nonebot_plugin_datastore")
 from nonebot_plugin_datastore import create_session
 
 from .model import MessageRecord
@@ -18,15 +19,13 @@ from .message import serialize_message
 from .config import Config
 from .record import get_message_records
 
-export.get_message_records = get_message_records
-
 
 @event_postprocessor
 async def record_recv_msg(event: MessageEvent):
 
     record = MessageRecord(
         platform="qq",
-        time=event.time,
+        time=datetime.fromtimestamp(event.time),
         type="message",
         detail_type="group" if isinstance(event, GroupMessageEvent) else "private",
         message_id=str(event.message_id),
@@ -42,12 +41,12 @@ async def record_recv_msg(event: MessageEvent):
 
 
 async def record_send_msg(
-    bot: Bot,
-    e: Exception,
+    bot: BaseBot,
+    e: Optional[Exception],
     api: str,
     data: Dict[str, Any],
     result: Optional[Dict[str, Any]],
-) -> T_CalledAPIHook:
+):
 
     if e or not result:
         return

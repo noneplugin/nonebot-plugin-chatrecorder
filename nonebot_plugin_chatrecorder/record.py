@@ -72,11 +72,11 @@ async def get_message_records(
     whereclause = []
     if user_ids:
         whereclause.append(
-            or_(*[MessageRecord.user_id == user_id for user_id in user_ids])
+            or_(*[MessageRecord.user_id == user_id for user_id in user_ids]) # type: ignore
         )
     if group_ids:
         whereclause.append(
-            or_(*[MessageRecord.group_id == group_id for group_id in group_ids])
+            or_(*[MessageRecord.group_id == group_id for group_id in group_ids]) # type: ignore
         )
     if exclude_user_ids:
         for user_id in exclude_user_ids:
@@ -93,7 +93,7 @@ async def get_message_records(
 
     statement = select(MessageRecord).where(*whereclause)
     async with create_session() as session:
-        records: List[MessageRecord] = (await session.exec(statement)).all()
+        records: List[MessageRecord] = (await session.exec(statement)).all() # type: ignore
 
     if plain_text:
         return [record.alt_message for record in records]

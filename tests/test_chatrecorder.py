@@ -112,7 +112,7 @@ async def check_record(
 
     statement = select(MessageRecord).where(MessageRecord.message_id == message_id)
     async with create_session() as session:
-        records: List[MessageRecord] = (await session.exec(statement)).all()
+        records: List[MessageRecord] = (await session.exec(statement)).all() # type: ignore
 
     assert len(records) == 1
     record = records[0]
