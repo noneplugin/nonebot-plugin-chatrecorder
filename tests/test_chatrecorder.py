@@ -1,3 +1,4 @@
+from datetime import datetime
 import pytest
 from nonebug import App
 
@@ -27,7 +28,7 @@ async def test_record_recv_msg(app: App):
         message=Message(message),
     )
     await record_recv_msg(event)
-    await check_record(str(message_id), "group", message)
+    await check_record(str(message_id), "group", message, time=datetime(1970, 1, 12, 13, 46, 40))
 
     message_id = 11451422222
     message = "test private message"
@@ -37,7 +38,7 @@ async def test_record_recv_msg(app: App):
         message=Message(message),
     )
     await record_recv_msg(event)
-    await check_record(str(message_id), "private", message, group_id="")
+    await check_record(str(message_id), "private", message, group_id="", time=datetime(1970, 1, 12, 13, 46, 40))
 
 
 @pytest.mark.asyncio
@@ -101,6 +102,7 @@ async def check_record(
     message: str,
     user_id=str(USER_ID),
     group_id=str(GROUP_ID),
+    time=None,
 ):
     from typing import List
     from sqlmodel import select
@@ -123,3 +125,5 @@ async def check_record(
     assert record.alt_message == message
     assert record.user_id == user_id
     assert record.group_id == group_id
+    if time:
+        assert record.time == time

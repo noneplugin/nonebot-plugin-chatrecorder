@@ -25,7 +25,7 @@ async def record_recv_msg(event: MessageEvent):
 
     record = MessageRecord(
         platform="qq",
-        time=datetime.fromtimestamp(event.time),
+        time=datetime.utcfromtimestamp(event.time),
         type="message",
         detail_type="group" if isinstance(event, GroupMessageEvent) else "private",
         message_id=str(event.message_id),
