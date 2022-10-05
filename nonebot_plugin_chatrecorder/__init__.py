@@ -3,21 +3,16 @@ from typing import Any, Dict, Optional
 
 from nonebot import get_driver, require
 from nonebot.adapters import Bot as BaseBot
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, MessageEvent
 from nonebot.message import event_postprocessor
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    Message,
-    MessageEvent,
-    GroupMessageEvent,
-)
 
 require("nonebot_plugin_datastore")
 from nonebot_plugin_datastore import create_session
 
-from .model import MessageRecord
-from .message import serialize_message
 from .config import Config
-from .record import get_message_records
+from .message import serialize_message
+from .model import MessageRecord
+from .record import get_message_records as get_message_records
 
 
 @event_postprocessor
