@@ -16,9 +16,9 @@ nonebot-plugin-datastore = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
 nb-cli = "^0.6.0"
-black = {version = "^21.12b0", allow-prereleases = true}
+black = "^22.8.0"
 nonebug = "^0.2.1"
-pytest-cov = "^3.0.0"
+pytest-cov = "^4.0.0"
 pytest-xdist = "^2.5.0"
 
 [build-system]
