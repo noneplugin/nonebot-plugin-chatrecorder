@@ -1,13 +1,12 @@
 from datetime import datetime
-from sqlmodel import select, or_
-from typing_extensions import Literal
-from typing import Iterable, List, Optional, Union, overload
+from typing import Iterable, List, Literal, Optional, Union, overload
 
 from nonebot.adapters.onebot.v11 import Message
 from nonebot_plugin_datastore import create_session
+from sqlmodel import or_, select
 
-from .model import MessageRecord
 from .message import deserialize_message
+from .model import MessageRecord
 
 
 @overload
@@ -17,7 +16,7 @@ async def get_message_records(
     group_ids: Optional[Iterable[str]] = None,
     exclude_user_ids: Optional[Iterable[str]] = None,
     exclude_group_ids: Optional[Iterable[str]] = None,
-    message_type: Optional[Literal['private', 'group']] = None,
+    message_type: Optional[Literal["private", "group"]] = None,
     time_start: Optional[datetime] = None,
     time_stop: Optional[datetime] = None,
 ) -> List[str]:
@@ -31,7 +30,7 @@ async def get_message_records(
     group_ids: Optional[Iterable[str]] = None,
     exclude_user_ids: Optional[Iterable[str]] = None,
     exclude_group_ids: Optional[Iterable[str]] = None,
-    message_type: Optional[Literal['private', 'group']] = None,
+    message_type: Optional[Literal["private", "group"]] = None,
     time_start: Optional[datetime] = None,
     time_stop: Optional[datetime] = None,
 ) -> List[Message]:
@@ -44,7 +43,7 @@ async def get_message_records(
     group_ids: Optional[Iterable[str]] = None,
     exclude_user_ids: Optional[Iterable[str]] = None,
     exclude_group_ids: Optional[Iterable[str]] = None,
-    message_type: Optional[Literal['private', 'group']] = None,
+    message_type: Optional[Literal["private", "group"]] = None,
     time_start: Optional[datetime] = None,
     time_stop: Optional[datetime] = None,
 ) -> Union[List[str], List[Message]]:
@@ -72,11 +71,11 @@ async def get_message_records(
     whereclause = []
     if user_ids:
         whereclause.append(
-            or_(*[MessageRecord.user_id == user_id for user_id in user_ids]) # type: ignore
+            or_(*[MessageRecord.user_id == user_id for user_id in user_ids])  # type: ignore
         )
     if group_ids:
         whereclause.append(
-            or_(*[MessageRecord.group_id == group_id for group_id in group_ids]) # type: ignore
+            or_(*[MessageRecord.group_id == group_id for group_id in group_ids])  # type: ignore
         )
     if exclude_user_ids:
         for user_id in exclude_user_ids:
@@ -93,7 +92,7 @@ async def get_message_records(
 
     statement = select(MessageRecord).where(*whereclause)
     async with create_session() as session:
-        records: List[MessageRecord] = (await session.exec(statement)).all() # type: ignore
+        records: List[MessageRecord] = (await session.exec(statement)).all()  # type: ignore
 
     if plain_text:
         return [record.alt_message for record in records]

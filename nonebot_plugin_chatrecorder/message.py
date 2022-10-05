@@ -1,10 +1,11 @@
-import json
 import base64
 import hashlib
+import json
 from pathlib import Path
-from pydantic import parse_obj_as
+
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebot_plugin_datastore import PluginData
+from pydantic import parse_obj_as
 
 cache_dir = PluginData("chatrecorder").cache_dir
 for dir_name in ("images", "records", "videos"):
@@ -50,6 +51,6 @@ def cache_b64_file(seg: MessageSegment, dir_name: str):
     if filename in cache_files:
         replace_seg_file(cache_file_path)
     else:
-        with cache_file_path.open('wb') as f:
+        with cache_file_path.open("wb") as f:
             f.write(data)
         replace_seg_file(cache_file_path)
