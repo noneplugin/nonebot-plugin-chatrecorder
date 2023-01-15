@@ -4,10 +4,10 @@ import json
 from pathlib import Path
 
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
-from nonebot_plugin_datastore import PluginData
+from nonebot_plugin_datastore import get_plugin_data
 from pydantic import parse_obj_as
 
-cache_dir = PluginData("chatrecorder").cache_dir
+cache_dir = get_plugin_data().cache_dir
 for dir_name in ("images", "records", "videos"):
     (cache_dir / dir_name).mkdir(exist_ok=True)
 
