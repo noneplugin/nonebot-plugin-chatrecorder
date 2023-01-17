@@ -22,13 +22,13 @@ from nonebot_plugin_datastore import create_session
 from .config import Config
 from .model import MessageRecord
 from .message import serialize_message
-from .record import get_message_records, get_messages
+from .record import get_message_records, get_messages, get_messages_plain_text
 
 plugin_config = Config.parse_obj(get_driver().config.dict())
 
 
 @event_postprocessor
-async def _(bot: V11Bot, event: V11MEvent):
+async def record_recv_msg_v11(bot: V11Bot, event: V11MEvent):
     record = MessageRecord(
         bot_type=bot.type,
         bot_id=bot.self_id,
@@ -49,11 +49,11 @@ async def _(bot: V11Bot, event: V11MEvent):
 
 
 @event_postprocessor
-async def _(bot: V12Bot, event: V12MEvent):
+async def record_recv_msg_v12(bot: V12Bot, event: V12MEvent):
     record = MessageRecord(
         bot_type=bot.type,
         bot_id=bot.self_id,
-        platform=event.self.platform,
+        platform=bot.platform,
         time=event.time,
         type=event.type,
         detail_type=event.detail_type,
@@ -74,7 +74,7 @@ async def _(bot: V12Bot, event: V12MEvent):
 if plugin_config.chatrecorder_record_send_msg:
 
     @V11Bot.on_called_api
-    async def _(
+    async def record_send_msg_v11(
         bot: BaseBot,
         e: Optional[Exception],
         api: str,
@@ -109,7 +109,7 @@ if plugin_config.chatrecorder_record_send_msg:
             await session.commit()
 
     @V12Bot.on_called_api
-    async def _(
+    async def record_send_msg_v12(
         bot: BaseBot,
         e: Optional[Exception],
         api: str,
