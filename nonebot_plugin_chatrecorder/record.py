@@ -58,24 +58,29 @@ async def get_message_records(
     whereclause = []
 
     if bot_types:
-        for bot_type in bot_types:
-            whereclause.append(MessageRecord.bot_type == bot_type)
+        whereclause.append(
+            or_(*[MessageRecord.bot_type == bot_type for bot_type in bot_types])  # type: ignore
+        )
     if bot_ids:
-        for bot_id in bot_ids:
-            whereclause.append(MessageRecord.bot_id == bot_id)
+        whereclause.append(
+            or_(*[MessageRecord.bot_id == bot_id for bot_id in bot_ids])  # type: ignore
+        )
     if platforms:
-        for platform in platforms:
-            whereclause.append(MessageRecord.platform == platform)
+        whereclause.append(
+            or_(*[MessageRecord.platform == platform for platform in platforms])  # type: ignore
+        )
     if time_start:
         whereclause.append(MessageRecord.time >= time_start)
     if time_stop:
         whereclause.append(MessageRecord.time <= time_stop)
     if types:
-        for type in types:
-            whereclause.append(MessageRecord.type == type)
+        whereclause.append(
+            or_(*[MessageRecord.type == type for type in types])  # type: ignore
+        )
     if detail_types:
-        for detail_type in detail_types:
-            whereclause.append(MessageRecord.detail_type == detail_type)
+        whereclause.append(
+            or_(*[MessageRecord.detail_type == detail_type for detail_type in detail_types])  # type: ignore
+        )
     if user_ids:
         whereclause.append(
             or_(*[MessageRecord.user_id == user_id for user_id in user_ids])  # type: ignore

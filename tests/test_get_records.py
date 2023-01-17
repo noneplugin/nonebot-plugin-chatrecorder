@@ -7,11 +7,15 @@ from datetime import datetime
 async def test_get_message_records(app: App):
     """测试获取消息记录"""
 
+    from nonebot import get_driver
+
     from nonebot.adapters.onebot.v11 import Bot as V11Bot
     from nonebot.adapters.onebot.v11 import Message as V11Msg
+    from nonebot.adapters.onebot.v11 import Adapter as V11Adapter
 
     from nonebot.adapters.onebot.v12 import Bot as V12Bot
     from nonebot.adapters.onebot.v12 import Message as V12Msg
+    from nonebot.adapters.onebot.v12 import Adapter as V12Adapter
 
     from nonebot_plugin_chatrecorder.model import MessageRecord
     from nonebot_plugin_chatrecorder.message import serialize_message
@@ -24,14 +28,16 @@ async def test_get_message_records(app: App):
     from nonebot_plugin_datastore import create_session
 
     async with app.test_api() as ctx:
-        v11_bot = ctx.create_bot(base=V11Bot)
-        v12_bot = ctx.create_bot(base=V12Bot)
+        v11_adapter = V11Adapter(get_driver())
+        v11_bot = ctx.create_bot(base=V11Bot, adapter=v11_adapter)
+        v12_adapter = V12Adapter(get_driver())
+        v12_bot = ctx.create_bot(base=V12Bot, adapter=v12_adapter, platform="qq")
     assert isinstance(v11_bot, V11Bot)
     assert isinstance(v12_bot, V12Bot)
 
     records = [
         MessageRecord(
-            bot_type="Onebot V11",
+            bot_type="OneBot V11",
             bot_id="100",
             platform="qq",
             time=datetime.utcfromtimestamp(1000000),
@@ -43,7 +49,7 @@ async def test_get_message_records(app: App):
             user_id="1000",
         ),
         MessageRecord(
-            bot_type="Onebot V11",
+            bot_type="OneBot V11",
             bot_id="101",
             platform="qq",
             time=datetime.utcfromtimestamp(1000001),
@@ -56,7 +62,7 @@ async def test_get_message_records(app: App):
             group_id="10000",
         ),
         MessageRecord(
-            bot_type="Onebot V12",
+            bot_type="OneBot V12",
             bot_id="100",
             platform="qq",
             time=datetime.utcfromtimestamp(1000002),
@@ -68,7 +74,7 @@ async def test_get_message_records(app: App):
             user_id="1001",
         ),
         MessageRecord(
-            bot_type="Onebot V12",
+            bot_type="OneBot V12",
             bot_id="102",
             platform="telegram",
             time=datetime.utcfromtimestamp(1000003),
@@ -81,7 +87,7 @@ async def test_get_message_records(app: App):
             group_id="10001",
         ),
         MessageRecord(
-            bot_type="Onebot V12",
+            bot_type="OneBot V12",
             bot_id="103",
             platform="kook",
             time=datetime.utcfromtimestamp(1000004),
@@ -121,9 +127,9 @@ async def test_get_message_records(app: App):
     for msg in msgs:
         assert isinstance(msg, str)
 
-    msgs = await get_message_records(bot_types=["Onebot V11"])
+    msgs = await get_message_records(bot_types=["OneBot V11"])
     assert len(msgs) == 2
-    msgs = await get_message_records(bot_types=["Onebot V12"])
+    msgs = await get_message_records(bot_types=["OneBot V12"])
     assert len(msgs) == 3
 
     msgs = await get_message_records(bot_ids=["100"])
@@ -133,7 +139,7 @@ async def test_get_message_records(app: App):
 
     msgs = await get_message_records(platforms=["qq"])
     assert len(msgs) == 3
-    msgs = await get_message_records(bot_types=["telegram", "kook"])
+    msgs = await get_message_records(platforms=["telegram", "kook"])
     assert len(msgs) == 2
 
     msgs = await get_message_records(
@@ -144,7 +150,7 @@ async def test_get_message_records(app: App):
     msgs = await get_message_records(time_start=datetime.utcfromtimestamp(1000002))
     assert len(msgs) == 3
     msgs = await get_message_records(time_stop=datetime.utcfromtimestamp(1000002))
-    assert len(msgs) == 2
+    assert len(msgs) == 3
 
     msgs = await get_message_records(types=["message"])
     assert len(msgs) == 4

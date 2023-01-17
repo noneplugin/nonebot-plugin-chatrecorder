@@ -35,7 +35,7 @@ async def test_record_recv_msg(app: App):
         message=message,
     )
     await record_recv_msg_v11(bot, event)
-    await check_record(str(message_id), "group", message, time=time)
+    await check_record(str(message_id), "message", "group", message, time=time)
 
     message_id = 11451422222
     message = Message("test private message")
@@ -43,7 +43,9 @@ async def test_record_recv_msg(app: App):
         time=time, user_id=USER_ID, message_id=message_id, message=message
     )
     await record_recv_msg_v11(bot, event)
-    await check_record(str(message_id), "private", message, group_id="", time=time)
+    await check_record(
+        str(message_id), "message", "private", message, group_id="", time=time
+    )
 
 
 @pytest.mark.asyncio
@@ -69,7 +71,9 @@ async def test_record_send_msg(app: App):
         },
         {"message_id": message_id},
     )
-    await check_record(str(message_id), "group", message, user_id=bot.self_id)
+    await check_record(
+        str(message_id), "message_sent", "group", message, user_id=bot.self_id
+    )
 
     message_id = 11451444444
     message = Message("test call_api send_group_msg")
@@ -83,7 +87,9 @@ async def test_record_send_msg(app: App):
         },
         {"message_id": message_id},
     )
-    await check_record(str(message_id), "group", message, user_id=bot.self_id)
+    await check_record(
+        str(message_id), "message_sent", "group", message, user_id=bot.self_id
+    )
 
     message_id = 11451455555
     message = Message("test call_api send_private_msg")
@@ -98,13 +104,19 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
-        str(message_id), "private", message, user_id=bot.self_id, group_id=""
+        str(message_id),
+        "message_sent",
+        "private",
+        message,
+        user_id=bot.self_id,
+        group_id="",
     )
 
 
 async def check_record(
     message_id: str,
-    message_type: str,
+    type: str,
+    detail_type: str,
     message: "Message",
     user_id: str = str(USER_ID),
     group_id: str = str(GROUP_ID),
@@ -124,11 +136,11 @@ async def check_record(
     assert len(records) == 1
     record = records[0]
     assert record.platform == "qq"
-    assert record.type == "message"
-    assert record.detail_type == message_type
+    assert record.type == type
+    assert record.detail_type == detail_type
     assert record.message == serialize_message(message)
     assert record.alt_message == message.extract_plain_text()
     assert record.user_id == user_id
     assert record.group_id == group_id
     if time:
-        assert record.time == datetime.fromtimestamp(time)
+        assert record.time == datetime.utcfromtimestamp(time)

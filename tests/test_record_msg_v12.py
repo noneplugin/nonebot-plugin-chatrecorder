@@ -27,10 +27,10 @@ async def test_record_recv_msg(app: App):
     from nonebot.adapters.onebot.v12 import Bot, Message
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot)
+        bot = ctx.create_bot(base=Bot, platform="qq")
     assert isinstance(bot, Bot)
 
-    time = datetime.fromtimestamp(1000000)
+    time = datetime.utcfromtimestamp(1000000)
 
     message_id = "11451411111"
     message = "test group message"
@@ -107,7 +107,7 @@ async def test_record_send_msg(app: App):
     from nonebot.adapters.onebot.v12 import Bot, Message
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot)
+        bot = ctx.create_bot(base=Bot, platform="qq")
     assert isinstance(bot, Bot)
 
     time = 1000000
@@ -123,10 +123,10 @@ async def test_record_send_msg(app: App):
             "group_id": GROUP_ID,
             "message": Message(message),
         },
-        {"message_id": message_id, time: time},
+        {"message_id": message_id, "time": time},
     )
     await check_record(
-        datetime.fromtimestamp(time),
+        datetime.utcfromtimestamp(time),
         message_id,
         "group",
         Message(message),
@@ -137,7 +137,7 @@ async def test_record_send_msg(app: App):
         group_id=GROUP_ID,
     )
 
-    message_id = "11451444444"
+    message_id = "11451455555"
     message = "test call_api send_message private message"
     await record_send_msg_v12(
         bot,
@@ -147,10 +147,10 @@ async def test_record_send_msg(app: App):
             "detail_type": "private",
             "message": Message(message),
         },
-        {"message_id": message_id, time: time},
+        {"message_id": message_id, "time": time},
     )
     await check_record(
-        datetime.fromtimestamp(time),
+        datetime.utcfromtimestamp(time),
         message_id,
         "private",
         Message(message),
@@ -160,7 +160,7 @@ async def test_record_send_msg(app: App):
         user_id=bot.self_id,
     )
 
-    message_id = "11451455555"
+    message_id = "11451466666"
     message = "test call_api send_message channel message"
     await record_send_msg_v12(
         bot,
@@ -172,10 +172,10 @@ async def test_record_send_msg(app: App):
             "channel_id": CHANNEL_ID,
             "message": Message(message),
         },
-        {"message_id": message_id, time: time},
+        {"message_id": message_id, "time": time},
     )
     await check_record(
-        datetime.fromtimestamp(time),
+        datetime.utcfromtimestamp(time),
         message_id,
         "channel",
         Message(message),
