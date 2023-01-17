@@ -1,107 +1,179 @@
 import pytest
 from nonebug.app import App
 from datetime import datetime
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from nonebot_plugin_chatrecorder.model import MessageRecord
 
 
 @pytest.mark.asyncio
 async def test_get_message_records(app: App):
     """测试获取消息记录"""
 
-    from typing import List
-    from datetime import datetime
+    from nonebot.adapters.onebot.v11 import Bot as V11Bot
+    from nonebot.adapters.onebot.v11 import Message as V11Msg
 
-    from nonebot_plugin_chatrecorder import get_message_records
-    from nonebot.adapters.onebot.v11 import Message
+    from nonebot.adapters.onebot.v12 import Bot as V12Bot
+    from nonebot.adapters.onebot.v12 import Message as V12Msg
 
-    async with app.test_api() as ctx:
-        bot = ctx.create_bot()
-
-    records = [
-        make_record(
-            "11451466666",
-            "test message 1",
-            "111111",
-            "999999",
-            datetime(2000, 1, 1, 0, 0, 0),
-        ),
-        make_record(
-            "11451477777",
-            "test message 2",
-            "222222",
-            "999999",
-            datetime(2000, 1, 1, 1, 0, 0),
-        ),
-        make_record(
-            "11451488888",
-            "test message 3",
-            "222222",
-            "888888",
-            datetime(2000, 1, 1, 2, 0, 0),
-        ),
-        make_record(
-            "11451499999",
-            "test message 4",
-            "222222",
-            "",
-            datetime(2000, 1, 1, 3, 0, 0),
-            message_type="private",
-        ),
-    ]
-    for record in records:
-        await add_record(record)
-
-    msgs = await get_message_records(user_ids=["222222"])
-    assert len(msgs) == 3
-    assert isinstance(msgs[0], Message)
-    msgs = await get_message_records(user_ids=["222222"], plain_text=False)
-    assert isinstance(msgs[0], Message)
-    msgs = await get_message_records(user_ids=["222222"], plain_text=True)
-    assert isinstance(msgs[0], str)
-    msgs = await get_message_records(group_ids=["999999"])
-    assert len(msgs) == 2
-    msgs = await get_message_records(user_ids=["222222"], group_ids=["999999"])
-    assert len(msgs) == 1
-    msgs = await get_message_records(user_ids=["222222"], message_type="group")
-    assert len(msgs) == 2
-    msgs = await get_message_records(
-        time_start=datetime(2000, 1, 1, 0, 0, 0),
-        time_stop=datetime(2000, 1, 1, 3, 0, 0),
-    )
-    assert len(msgs) == 4
-
-
-def make_record(
-    message_id: str,
-    message: str,
-    user_id: str,
-    group_id: str,
-    time: datetime,
-    message_type: str = "group",
-):
-    from nonebot_plugin_chatrecorder import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
-    from nonebot.adapters.onebot.v11 import Message
-
-    return MessageRecord(
-        platform="qq",
-        time=time,
-        type="message",
-        detail_type=message_type,
-        message_id=str(message_id),
-        message=serialize_message(Message(message)),
-        alt_message=message,
-        user_id=user_id,
-        group_id=group_id,
+    from nonebot_plugin_chatrecorder.message import serialize_message
+    from nonebot_plugin_chatrecorder.record import (
+        get_message_records,
+        get_messages,
+        get_messages_plain_text,
     )
 
-
-async def add_record(record: "MessageRecord"):
     from nonebot_plugin_datastore import create_session
 
+    async with app.test_api() as ctx:
+        v11_bot = ctx.create_bot(base=V11Bot)
+        v12_bot = ctx.create_bot(base=V12Bot)
+    assert isinstance(v11_bot, V11Bot)
+    assert isinstance(v12_bot, V12Bot)
+
+    records = [
+        MessageRecord(
+            bot_type="Onebot V11",
+            bot_id="100",
+            platform="qq",
+            time=datetime.utcfromtimestamp(1000000),
+            type="message",
+            detail_type="private",
+            message_id="1",
+            message=serialize_message(V11Msg("test message 1")),
+            alt_message="test message 1",
+            user_id="1000",
+        ),
+        MessageRecord(
+            bot_type="Onebot V11",
+            bot_id="101",
+            platform="qq",
+            time=datetime.utcfromtimestamp(1000001),
+            type="message_sent",
+            detail_type="group",
+            message_id="2",
+            message=serialize_message(V11Msg("test message 2")),
+            alt_message="test message 2",
+            user_id="101",
+            group_id="10000",
+        ),
+        MessageRecord(
+            bot_type="Onebot V12",
+            bot_id="100",
+            platform="qq",
+            time=datetime.utcfromtimestamp(1000002),
+            type="message",
+            detail_type="private",
+            message_id="3",
+            message=serialize_message(V12Msg("test message 3")),
+            alt_message="test message 3",
+            user_id="1001",
+        ),
+        MessageRecord(
+            bot_type="Onebot V12",
+            bot_id="102",
+            platform="telegram",
+            time=datetime.utcfromtimestamp(1000003),
+            type="message",
+            detail_type="group",
+            message_id="3",
+            message=serialize_message(V12Msg("test message 4")),
+            alt_message="test message 4",
+            user_id="1002",
+            group_id="10001",
+        ),
+        MessageRecord(
+            bot_type="Onebot V12",
+            bot_id="103",
+            platform="kook",
+            time=datetime.utcfromtimestamp(1000004),
+            type="message",
+            detail_type="channel",
+            message_id="3",
+            message=serialize_message(V12Msg("test message 5")),
+            alt_message="test message 5",
+            user_id="1003",
+            guild_id="10000",
+            channel_id="100000",
+        ),
+    ]
+
     async with create_session() as session:
-        session.add(record)
+        for record in records:
+            session.add(record)
         await session.commit()
+
+    msgs = await get_message_records()
+    assert len(msgs) == 5
+    for msg in msgs:
+        assert isinstance(msg, MessageRecord)
+
+    msgs = await get_messages(v11_bot)
+    assert len(msgs) == 2
+    for msg in msgs:
+        assert isinstance(msg, V11Msg)
+
+    msgs = await get_messages(v12_bot)
+    assert len(msgs) == 3
+    for msg in msgs:
+        assert isinstance(msg, V12Msg)
+
+    msgs = await get_messages_plain_text()
+    assert len(msgs) == 5
+    for msg in msgs:
+        assert isinstance(msg, str)
+
+    msgs = await get_message_records(bot_types=["Onebot V11"])
+    assert len(msgs) == 2
+    msgs = await get_message_records(bot_types=["Onebot V12"])
+    assert len(msgs) == 3
+
+    msgs = await get_message_records(bot_ids=["100"])
+    assert len(msgs) == 2
+    msgs = await get_message_records(bot_ids=["101", "102", "103"])
+    assert len(msgs) == 3
+
+    msgs = await get_message_records(platforms=["qq"])
+    assert len(msgs) == 3
+    msgs = await get_message_records(bot_types=["telegram", "kook"])
+    assert len(msgs) == 2
+
+    msgs = await get_message_records(
+        time_start=datetime.utcfromtimestamp(1000000),
+        time_stop=datetime.utcfromtimestamp(1000004),
+    )
+    assert len(msgs) == 5
+    msgs = await get_message_records(time_start=datetime.utcfromtimestamp(1000002))
+    assert len(msgs) == 3
+    msgs = await get_message_records(time_stop=datetime.utcfromtimestamp(1000002))
+    assert len(msgs) == 2
+
+    msgs = await get_message_records(types=["message"])
+    assert len(msgs) == 4
+    msgs = await get_message_records(types=["message_sent"])
+    assert len(msgs) == 1
+
+    msgs = await get_message_records(detail_types=["private"])
+    assert len(msgs) == 2
+    msgs = await get_message_records(detail_types=["group"])
+    assert len(msgs) == 2
+    msgs = await get_message_records(detail_types=["channel"])
+    assert len(msgs) == 1
+
+    msgs = await get_message_records(user_ids=["1000"])
+    assert len(msgs) == 1
+    msgs = await get_message_records(exclude_user_ids=["1000"])
+    assert len(msgs) == 4
+
+    msgs = await get_message_records(group_ids=["10000"])
+    assert len(msgs) == 1
+    msgs = await get_message_records(exclude_group_ids=["10000"])
+    assert len(msgs) == 4
+
+    msgs = await get_message_records(guild_ids=["10000"])
+    assert len(msgs) == 1
+    msgs = await get_message_records(exclude_group_ids=["10000"])
+    assert len(msgs) == 4
+
+    msgs = await get_message_records(channel_ids=["100000"])
+    assert len(msgs) == 1
+    msgs = await get_message_records(exclude_channel_ids=["100000"])
+    assert len(msgs) == 4

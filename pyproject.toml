@@ -20,6 +20,7 @@ black = "^22.8.0"
 nonebug = "^0.2.1"
 pytest-cov = "^4.0.0"
 pytest-xdist = "^2.5.0"
+pytest-asyncio = "^0.20.0"
 
 [tool.nonebot]
 plugins = ["nonebot_plugin_chatrecorder"]
