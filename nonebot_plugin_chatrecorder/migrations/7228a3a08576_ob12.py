@@ -40,6 +40,8 @@ def set_default_value():
             record.bot_id = bot_id
             if record.user_id == bot_id:
                 record.type = "message_sent"
+            if record.detail_type == "private":
+                record.group_id = None
             session.add(record)
         session.commit()
 

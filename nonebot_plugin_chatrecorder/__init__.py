@@ -40,7 +40,7 @@ async def record_recv_msg_v11(bot: V11Bot, event: V11MEvent):
         message=serialize_message(event.message),
         alt_message=event.message.extract_plain_text(),
         user_id=str(event.user_id),
-        group_id=str(event.group_id) if isinstance(event, V11GMEvent) else "",
+        group_id=str(event.group_id) if isinstance(event, V11GMEvent) else None,
     )
 
     async with create_session() as session:
@@ -61,9 +61,9 @@ async def record_recv_msg_v12(bot: V12Bot, event: V12MEvent):
         message=serialize_message(event.message),
         alt_message=event.alt_message,
         user_id=event.user_id,
-        group_id=event.group_id if isinstance(event, V12GMEvent) else "",
-        guild_id=event.guild_id if isinstance(event, V12CMEvent) else "",
-        channel_id=event.channel_id if isinstance(event, V12CMEvent) else "",
+        group_id=event.group_id if isinstance(event, V12GMEvent) else None,
+        guild_id=event.guild_id if isinstance(event, V12CMEvent) else None,
+        channel_id=event.channel_id if isinstance(event, V12CMEvent) else None,
     )
 
     async with create_session() as session:
@@ -101,7 +101,7 @@ if plugin_config.chatrecorder_record_send_msg:
             message=serialize_message(message),
             alt_message=message.extract_plain_text(),
             user_id=str(bot.self_id),
-            group_id=str(data.get("group_id", "")),
+            group_id=str(data.get("group_id")),
         )
 
         async with create_session() as session:
@@ -134,9 +134,9 @@ if plugin_config.chatrecorder_record_send_msg:
             message=serialize_message(message),
             alt_message=message.extract_plain_text(),
             user_id=str(bot.self_id),
-            group_id=data.get("group_id", ""),
-            guild_id=data.get("guild_id", ""),
-            channel_id=data.get("channel_id", ""),
+            group_id=data.get("group_id"),
+            guild_id=data.get("guild_id"),
+            channel_id=data.get("channel_id"),
         )
 
         async with create_session() as session:

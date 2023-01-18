@@ -37,9 +37,9 @@ class MessageRecord(Model, table=True):
     """
     user_id: str
     """ 用户id """
-    group_id: Optional[str] = ""
+    group_id: Optional[str] = None
     """ 群组id """
-    guild_id: Optional[str] = ""
+    guild_id: Optional[str] = None
     """ 两级群组消息中的 群组id """
-    channel_id: Optional[str] = ""
+    channel_id: Optional[str] = None
     """ 两级群组消息中的 频道id """
