@@ -40,7 +40,6 @@ async def test_record_recv_msg(app: App):
         group_id=GROUP_ID,
         message_id=message_id,
         message=message,
-        alt_message=message.extract_plain_text(),
     )
     await record_recv_msg_v12(bot, event)
     await check_record(
@@ -56,11 +55,7 @@ async def test_record_recv_msg(app: App):
     message_id = "11451422222"
     message = Message("test private message")
     event = fake_private_message_event_v12(
-        time=time,
-        user_id=USER_ID,
-        message_id=message_id,
-        message=message,
-        alt_message=message.extract_plain_text(),
+        time=time, user_id=USER_ID, message_id=message_id, message=message
     )
     await record_recv_msg_v12(bot, event)
     await check_record(
@@ -81,7 +76,6 @@ async def test_record_recv_msg(app: App):
         channel_id=CHANNEL_ID,
         message_id=message_id,
         message=message,
-        alt_message=message.extract_plain_text(),
     )
     await record_recv_msg_v12(bot, event)
     await check_record(
@@ -215,7 +209,7 @@ async def check_record(
     assert record.time == time
     assert record.platform == platform
     assert record.message == serialize_message(message)
-    assert record.alt_message == message.extract_plain_text()
+    assert record.plain_text == message.extract_plain_text()
     assert record.user_id == user_id
     assert record.group_id == group_id
     assert record.guild_id == guild_id

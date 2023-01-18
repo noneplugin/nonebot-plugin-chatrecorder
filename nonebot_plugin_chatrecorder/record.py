@@ -156,4 +156,4 @@ async def get_messages_plain_text(**kwargs) -> List[str]:
       * ``List[str]``: 纯文本消息列表
     """
     records: List[MessageRecord] = await get_message_records(**kwargs)
-    return [record.alt_message for record in records]
+    return [record.plain_text for record in records]

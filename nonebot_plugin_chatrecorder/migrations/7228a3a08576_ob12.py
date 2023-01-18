@@ -72,6 +72,7 @@ def upgrade() -> None:
         batch_op.alter_column(
             "id", existing_type=sa.INTEGER(), nullable=False, autoincrement=True
         )
+        batch_op.alter_column("alt_message", new_column_name="plain_text")
         batch_op.alter_column(
             "bot_type",
             existing_type=sa.VARCHAR(),
@@ -94,6 +95,7 @@ def downgrade() -> None:
         batch_op.alter_column(
             "id", existing_type=sa.INTEGER(), nullable=True, autoincrement=True
         )
+        batch_op.alter_column("plain_text", new_column_name="alt_message")
         batch_op.drop_column("channel_id")
         batch_op.drop_column("guild_id")
         batch_op.drop_column("bot_id")

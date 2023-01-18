@@ -31,9 +31,9 @@ class MessageRecord(Model, table=True):
     """ 消息内容
     存放 onebot 消息段的字符串
     """
-    alt_message: str
-    """ 消息内容的替代表示
-    存放纯文本消息
+    plain_text: str
+    """ 消息内容的纯文本形式
+    存放纯文本消息（忽略非纯文本消息段）
     """
     user_id: str
     """ 用户id """

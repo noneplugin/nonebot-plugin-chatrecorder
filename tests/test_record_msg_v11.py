@@ -139,7 +139,7 @@ async def check_record(
     assert record.type == type
     assert record.detail_type == detail_type
     assert record.message == serialize_message(message)
-    assert record.alt_message == message.extract_plain_text()
+    assert record.plain_text == message.extract_plain_text()
     assert record.user_id == user_id
     assert record.group_id == group_id
     if time:
