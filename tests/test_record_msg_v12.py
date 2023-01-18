@@ -33,21 +33,20 @@ async def test_record_recv_msg(app: App):
     time = datetime.utcfromtimestamp(1000000)
 
     message_id = "11451411111"
-    message = "test group message"
+    message = Message("test group message")
     event = fake_group_message_event_v12(
         time=time,
         user_id=USER_ID,
         group_id=GROUP_ID,
         message_id=message_id,
-        message=Message(message),
-        alt_message=message,
+        message=message,
+        alt_message=message.extract_plain_text(),
     )
     await record_recv_msg_v12(bot, event)
     await check_record(
         time,
         message_id,
         "group",
-        Message(message),
         message,
         bot.platform,
         user_id=USER_ID,
@@ -55,42 +54,40 @@ async def test_record_recv_msg(app: App):
     )
 
     message_id = "11451422222"
-    message = "test private message"
+    message = Message("test private message")
     event = fake_private_message_event_v12(
         time=time,
         user_id=USER_ID,
         message_id=message_id,
-        message=Message(message),
-        alt_message=message,
+        message=message,
+        alt_message=message.extract_plain_text(),
     )
     await record_recv_msg_v12(bot, event)
     await check_record(
         time,
         message_id,
         "private",
-        Message(message),
         message,
         bot.platform,
         user_id=USER_ID,
     )
 
     message_id = "11451433333"
-    message = "test channel message"
+    message = Message("test channel message")
     event = fake_channel_message_event_v12(
         time=time,
         user_id=USER_ID,
         guild_id=GUILD_ID,
         channel_id=CHANNEL_ID,
         message_id=message_id,
-        message=Message(message),
-        alt_message=message,
+        message=message,
+        alt_message=message.extract_plain_text(),
     )
     await record_recv_msg_v12(bot, event)
     await check_record(
         time,
         message_id,
         "channel",
-        Message(message),
         message,
         bot.platform,
         user_id=USER_ID,
@@ -113,7 +110,7 @@ async def test_record_send_msg(app: App):
     time = 1000000
 
     message_id = "11451444444"
-    message = "test call_api send_message group message"
+    message = Message("test call_api send_message group message")
     await record_send_msg_v12(
         bot,
         None,
@@ -121,7 +118,7 @@ async def test_record_send_msg(app: App):
         {
             "detail_type": "group",
             "group_id": GROUP_ID,
-            "message": Message(message),
+            "message": message,
         },
         {"message_id": message_id, "time": time},
     )
@@ -129,7 +126,6 @@ async def test_record_send_msg(app: App):
         datetime.utcfromtimestamp(time),
         message_id,
         "group",
-        Message(message),
         message,
         bot.platform,
         send_msg=True,
@@ -138,14 +134,14 @@ async def test_record_send_msg(app: App):
     )
 
     message_id = "11451455555"
-    message = "test call_api send_message private message"
+    message = Message("test call_api send_message private message")
     await record_send_msg_v12(
         bot,
         None,
         "send_message",
         {
             "detail_type": "private",
-            "message": Message(message),
+            "message": message,
         },
         {"message_id": message_id, "time": time},
     )
@@ -153,7 +149,6 @@ async def test_record_send_msg(app: App):
         datetime.utcfromtimestamp(time),
         message_id,
         "private",
-        Message(message),
         message,
         bot.platform,
         send_msg=True,
@@ -161,7 +156,7 @@ async def test_record_send_msg(app: App):
     )
 
     message_id = "11451466666"
-    message = "test call_api send_message channel message"
+    message = Message("test call_api send_message channel message")
     await record_send_msg_v12(
         bot,
         None,
@@ -170,7 +165,7 @@ async def test_record_send_msg(app: App):
             "detail_type": "channel",
             "guild_id": GUILD_ID,
             "channel_id": CHANNEL_ID,
-            "message": Message(message),
+            "message": message,
         },
         {"message_id": message_id, "time": time},
     )
@@ -178,7 +173,6 @@ async def test_record_send_msg(app: App):
         datetime.utcfromtimestamp(time),
         message_id,
         "channel",
-        Message(message),
         message,
         bot.platform,
         send_msg=True,
@@ -193,7 +187,6 @@ async def check_record(
     message_id: str,
     detail_type: str,
     message: "Message",
-    alt_message: str,
     platform: str,
     send_msg: bool = False,
     user_id: str = "",
@@ -222,7 +215,7 @@ async def check_record(
     assert record.time == time
     assert record.platform == platform
     assert record.message == serialize_message(message)
-    assert record.alt_message == alt_message
+    assert record.alt_message == message.extract_plain_text()
     assert record.user_id == user_id
     assert record.group_id == group_id
     assert record.guild_id == guild_id

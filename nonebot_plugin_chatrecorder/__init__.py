@@ -59,7 +59,7 @@ async def record_recv_msg_v12(bot: V12Bot, event: V12MEvent):
         detail_type=event.detail_type,
         message_id=event.message_id,
         message=serialize_message(event.message),
-        alt_message=event.alt_message,
+        alt_message=event.message.extract_plain_text(),
         user_id=event.user_id,
         group_id=event.group_id if isinstance(event, V12GMEvent) else None,
         guild_id=event.guild_id if isinstance(event, V12CMEvent) else None,
