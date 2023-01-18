@@ -172,14 +172,14 @@ async def test_get_message_records(app: App):
     msgs = await get_message_records(group_ids=["10000"])
     assert len(msgs) == 1
     msgs = await get_message_records(exclude_group_ids=["10000"])
-    assert len(msgs) == 4
+    assert len(msgs) == 1
 
     msgs = await get_message_records(guild_ids=["10000"])
     assert len(msgs) == 1
-    msgs = await get_message_records(exclude_group_ids=["10000"])
-    assert len(msgs) == 4
+    msgs = await get_message_records(exclude_guild_ids=["10000"])
+    assert len(msgs) == 0
 
     msgs = await get_message_records(channel_ids=["100000"])
     assert len(msgs) == 1
     msgs = await get_message_records(exclude_channel_ids=["100000"])
-    assert len(msgs) == 4
+    assert len(msgs) == 0

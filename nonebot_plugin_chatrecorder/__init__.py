@@ -101,7 +101,7 @@ if plugin_config.chatrecorder_record_send_msg:
             message=serialize_message(message),
             alt_message=message.extract_plain_text(),
             user_id=str(bot.self_id),
-            group_id=str(data.get("group_id")),
+            group_id=str(data.get("group_id", "")) or None,
         )
 
         async with create_session() as session:

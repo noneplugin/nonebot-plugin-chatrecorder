@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from nonebot.adapters.onebot.v12 import Message
@@ -197,9 +197,9 @@ async def check_record(
     platform: str,
     send_msg: bool = False,
     user_id: str = "",
-    group_id: str = "",
-    guild_id: str = "",
-    channel_id: str = "",
+    group_id: Optional[str] = None,
+    guild_id: Optional[str] = None,
+    channel_id: Optional[str] = None,
 ):
     from typing import List
     from sqlmodel import select

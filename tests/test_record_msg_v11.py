@@ -44,7 +44,7 @@ async def test_record_recv_msg(app: App):
     )
     await record_recv_msg_v11(bot, event)
     await check_record(
-        str(message_id), "message", "private", message, group_id="", time=time
+        str(message_id), "message", "private", message, group_id=None, time=time
     )
 
 
@@ -109,7 +109,7 @@ async def test_record_send_msg(app: App):
         "private",
         message,
         user_id=bot.self_id,
-        group_id="",
+        group_id=None,
     )
 
 
@@ -119,7 +119,7 @@ async def check_record(
     detail_type: str,
     message: "Message",
     user_id: str = str(USER_ID),
-    group_id: str = str(GROUP_ID),
+    group_id: Optional[str] = str(GROUP_ID),
     time: Optional[int] = None,
 ):
     from typing import List
