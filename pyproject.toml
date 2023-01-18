@@ -22,7 +22,7 @@ black = "^22.8.0"
 pytest-cov = "^4.0.0"
 pytest-xdist = "^3.0.2"
 pytest-asyncio = "^0.20.0"
-nonebug = { git = "https://github.com/nonebot/nonebug.git" }
+nonebug = "^0.2.3"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
