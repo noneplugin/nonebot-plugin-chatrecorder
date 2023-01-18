@@ -1,30 +1,48 @@
+import json
 import base64
 import hashlib
-import json
 from pathlib import Path
-
-from nonebot.adapters.onebot.v11 import Message, MessageSegment
-from nonebot_plugin_datastore import get_plugin_data
 from pydantic import parse_obj_as
+from typing import Union, Type, overload
+
+from nonebot.utils import DataclassEncoder
+
+from nonebot.adapters.onebot.v11 import Message as V11Msg
+from nonebot.adapters.onebot.v11 import MessageSegment as V11MsgSeg
+
+from nonebot.adapters.onebot.v12 import Message as V12Msg
+
+from nonebot_plugin_datastore import get_plugin_data
+
 
 cache_dir = get_plugin_data().cache_dir
 for dir_name in ("images", "records", "videos"):
     (cache_dir / dir_name).mkdir(exist_ok=True)
 
 
-def serialize_message(msg: Message) -> str:
-    cache_file(msg)
-    return json.dumps(
-        [{"type": seg.type, "data": seg.data} for seg in msg],
-        ensure_ascii=False,
-    )
+def serialize_message(msg: Union[V11Msg, V12Msg]) -> str:
+    if isinstance(msg, V11Msg):
+        cache_file(msg)
+    return DataclassEncoder(ensure_ascii=False).encode(msg)
 
 
-def deserialize_message(msg: str) -> Message:
-    return parse_obj_as(Message, json.loads(msg))
+@overload
+def deserialize_message(msg: str, msg_class: Type[V11Msg]) -> V11Msg:
+    ...
 
 
-def cache_file(msg: Message):
+@overload
+def deserialize_message(msg: str, msg_class: Type[V12Msg]) -> V12Msg:
+    ...
+
+
+def deserialize_message(
+    msg: str, msg_class: Union[Type[V11Msg], Type[V12Msg]]
+) -> Union[V11Msg, V12Msg]:
+    return parse_obj_as(msg_class, json.loads(msg))
+
+
+def cache_file(msg: V11Msg):
     for seg in msg:
         if seg.type == "image":
             cache_b64_file(seg, "images")
@@ -34,7 +52,7 @@ def cache_file(msg: Message):
             cache_b64_file(seg, "videos")
 
 
-def cache_b64_file(seg: MessageSegment, dir_name: str):
+def cache_b64_file(seg: V11MsgSeg, dir_name: str):
     def replace_seg_file(path: Path):
         seg.data["file"] = f"file:///{path.resolve()}"
 

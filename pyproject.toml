@@ -1,25 +1,32 @@
 [tool.poetry]
 name = "nonebot_plugin_chatrecorder"
-version = "0.1.9"
+version = "0.2.0"
 description = "适用于 Nonebot2 的聊天记录插件"
 authors = ["meetwq <meetwq@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/MeetWq/nonebot-plugin-chatrecorder"
-repository = "https://github.com/MeetWq/nonebot-plugin-chatrecorder"
+homepage = "https://github.com/noneplugin/nonebot-plugin-chatrecorder"
+repository = "https://github.com/noneplugin/nonebot-plugin-chatrecorder"
 
 [tool.poetry.dependencies]
 python = "^3.8"
 nonebot2 = "^2.0.0-rc.1"
-nonebot-adapter-onebot = "^2.0.0-beta.1"
+nonebot-adapter-onebot = "^2.2.0"
 nonebot-plugin-datastore = "^0.5.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 nb-cli = "^1.0.0"
 black = "^22.8.0"
-nonebug = "^0.2.1"
+
+[tool.poetry.group.test.dependencies]
 pytest-cov = "^4.0.0"
-pytest-xdist = "^2.5.0"
+pytest-xdist = "^3.0.2"
+pytest-asyncio = "^0.20.0"
+nonebug = { git = "https://github.com/nonebot/nonebug.git" }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = "--cov=nonebot_plugin_chatrecorder --cov-report=term-missing"
 
 [tool.nonebot]
 plugins = ["nonebot_plugin_chatrecorder"]
