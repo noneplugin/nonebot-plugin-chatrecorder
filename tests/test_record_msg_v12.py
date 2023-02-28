@@ -1,6 +1,7 @@
-import pytest
 from datetime import datetime
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+
+import pytest
 
 if TYPE_CHECKING:
     from nonebot.adapters.onebot.v12 import Message
@@ -8,9 +9,9 @@ if TYPE_CHECKING:
 from nonebug.app import App
 
 from .utils import (
+    fake_channel_message_event_v12,
     fake_group_message_event_v12,
     fake_private_message_event_v12,
-    fake_channel_message_event_v12,
 )
 
 USER_ID = "111111"
@@ -23,8 +24,9 @@ CHANNEL_ID = "444444"
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
 
-    from nonebot_plugin_chatrecorder import record_recv_msg_v12
     from nonebot.adapters.onebot.v12 import Bot, Message
+
+    from nonebot_plugin_chatrecorder import record_recv_msg_v12
 
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot, platform="qq")
@@ -94,8 +96,9 @@ async def test_record_recv_msg(app: App):
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
 
-    from nonebot_plugin_chatrecorder import record_send_msg_v12
     from nonebot.adapters.onebot.v12 import Bot, Message
+
+    from nonebot_plugin_chatrecorder import record_send_msg_v12
 
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot, platform="qq")
@@ -189,15 +192,16 @@ async def check_record(
     channel_id: Optional[str] = None,
 ):
     from typing import List
-    from sqlmodel import select
+
+    from nonebot_plugin_datastore import create_session
+    from sqlalchemy import select
 
     from nonebot_plugin_chatrecorder import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
-    from nonebot_plugin_datastore import create_session
 
     statement = select(MessageRecord).where(MessageRecord.message_id == message_id)
     async with create_session() as session:
-        records: List[MessageRecord] = (await session.exec(statement)).all()  # type: ignore
+        records = (await session.scalars(statement)).all()
 
     assert len(records) == 1
     record = records[0]

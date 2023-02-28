@@ -5,11 +5,11 @@ Revises: 2cad88d938f1
 Create Date: 2023-01-16 17:15:05.640599
 
 """
-import sqlmodel
-from alembic import op
 import sqlalchemy as sa
-from sqlmodel import Session, select
+from alembic import op
+from sqlalchemy import select
 from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
 
 from nonebot_plugin_chatrecorder import plugin_config
 
@@ -26,8 +26,8 @@ def check_config():
     Base.prepare(autoload_with=op.get_bind())
     MessageRecord = Base.classes.nonebot_plugin_chatrecorder_messagerecord
     with Session(op.get_bind()) as session:
-        select_statement = select(MessageRecord.id)  # type: ignore
-        result = session.exec(select_statement)
+        select_statement = select(MessageRecord.id)
+        result = session.scalars(select_statement)
         messages = result.all()
         if messages and plugin_config.chatrecorder_record_migration_bot_id is None:
             raise ValueError("你需要设置 chatrecorder_record_migration_bot_id 以完成迁移")
@@ -40,7 +40,7 @@ def set_default_value():
     MessageRecord = Base.classes.nonebot_plugin_chatrecorder_messagerecord
     with Session(op.get_bind()) as session:
         select_statement = select(MessageRecord)
-        result = session.exec(select_statement)
+        result = session.scalars(select_statement)
         for record in result:
             record.bot_type = "OneBot V11"
             record.bot_id = bot_id
@@ -57,19 +57,19 @@ def upgrade() -> None:
     check_config()
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
-        sa.Column("bot_type", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("bot_type", sa.String(), nullable=True),
     )
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
-        sa.Column("bot_id", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("bot_id", sa.String(), nullable=True),
     )
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
-        sa.Column("guild_id", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("guild_id", sa.String(), nullable=True),
     )
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
-        sa.Column("channel_id", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("channel_id", sa.String(), nullable=True),
     )
     set_default_value()
     with op.batch_alter_table(

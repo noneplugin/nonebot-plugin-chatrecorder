@@ -1,17 +1,15 @@
 from datetime import datetime
-from sqlmodel import or_, select
-from typing import Iterable, List, Literal, Optional, Union, overload
+from typing import Iterable, List, Literal, Optional, Sequence, Union, overload
 
 from nonebot.adapters.onebot.v11 import Bot as V11Bot
 from nonebot.adapters.onebot.v11 import Message as V11Msg
-
 from nonebot.adapters.onebot.v12 import Bot as V12Bot
 from nonebot.adapters.onebot.v12 import Message as V12Msg
-
 from nonebot_plugin_datastore import create_session
+from sqlalchemy import or_, select
 
-from .model import MessageRecord
 from .message import deserialize_message
+from .model import MessageRecord
 
 
 async def get_message_records(
@@ -31,7 +29,7 @@ async def get_message_records(
     exclude_group_ids: Optional[Iterable[str]] = None,
     exclude_guild_ids: Optional[Iterable[str]] = None,
     exclude_channel_ids: Optional[Iterable[str]] = None,
-) -> List[MessageRecord]:
+) -> Sequence[MessageRecord]:
     """获取消息记录
 
     参数:
@@ -59,43 +57,44 @@ async def get_message_records(
 
     if bot_types:
         whereclause.append(
-            or_(*[MessageRecord.bot_type == bot_type for bot_type in bot_types])  # type: ignore
+            or_(*[MessageRecord.bot_type == bot_type for bot_type in bot_types])
         )
     if bot_ids:
-        whereclause.append(
-            or_(*[MessageRecord.bot_id == bot_id for bot_id in bot_ids])  # type: ignore
-        )
+        whereclause.append(or_(*[MessageRecord.bot_id == bot_id for bot_id in bot_ids]))
     if platforms:
         whereclause.append(
-            or_(*[MessageRecord.platform == platform for platform in platforms])  # type: ignore
+            or_(*[MessageRecord.platform == platform for platform in platforms])
         )
     if time_start:
         whereclause.append(MessageRecord.time >= time_start)
     if time_stop:
         whereclause.append(MessageRecord.time <= time_stop)
     if types:
-        whereclause.append(
-            or_(*[MessageRecord.type == type for type in types])  # type: ignore
-        )
+        whereclause.append(or_(*[MessageRecord.type == type for type in types]))
     if detail_types:
         whereclause.append(
-            or_(*[MessageRecord.detail_type == detail_type for detail_type in detail_types])  # type: ignore
+            or_(
+                *[
+                    MessageRecord.detail_type == detail_type
+                    for detail_type in detail_types
+                ]
+            )
         )
     if user_ids:
         whereclause.append(
-            or_(*[MessageRecord.user_id == user_id for user_id in user_ids])  # type: ignore
+            or_(*[MessageRecord.user_id == user_id for user_id in user_ids])
         )
     if group_ids:
         whereclause.append(
-            or_(*[MessageRecord.group_id == group_id for group_id in group_ids])  # type: ignore
+            or_(*[MessageRecord.group_id == group_id for group_id in group_ids])
         )
     if guild_ids:
         whereclause.append(
-            or_(*[MessageRecord.guild_id == guild_id for guild_id in guild_ids])  # type: ignore
+            or_(*[MessageRecord.guild_id == guild_id for guild_id in guild_ids])
         )
     if channel_ids:
         whereclause.append(
-            or_(*[MessageRecord.channel_id == channel_id for channel_id in channel_ids])  # type: ignore
+            or_(*[MessageRecord.channel_id == channel_id for channel_id in channel_ids])
         )
     if exclude_user_ids:
         for user_id in exclude_user_ids:
@@ -112,7 +111,7 @@ async def get_message_records(
 
     statement = select(MessageRecord).where(*whereclause)
     async with create_session() as session:
-        records: List[MessageRecord] = (await session.exec(statement)).all()  # type: ignore
+        records = (await session.scalars(statement)).all()
     return records
 
 
@@ -139,7 +138,7 @@ async def get_messages(
       * ``Union[List[V11Msg], List[V12Msg]]``: 消息列表
     """
     kwargs.update({"bot_types": [bot.adapter.get_name()]})
-    records: List[MessageRecord] = await get_message_records(**kwargs)
+    records = await get_message_records(**kwargs)
     if isinstance(bot, V11Bot):
         return [deserialize_message(record.message, V11Msg) for record in records]
     else:
@@ -155,5 +154,5 @@ async def get_messages_plain_text(**kwargs) -> List[str]:
     返回值:
       * ``List[str]``: 纯文本消息列表
     """
-    records: List[MessageRecord] = await get_message_records(**kwargs)
+    records = await get_message_records(**kwargs)
     return [record.plain_text for record in records]

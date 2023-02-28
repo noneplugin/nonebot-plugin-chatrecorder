@@ -12,7 +12,7 @@ repository = "https://github.com/noneplugin/nonebot-plugin-chatrecorder"
 python = "^3.8"
 nonebot2 = { version = "^2.0.0-rc.1", extras = ["fastapi"] }
 nonebot-adapter-onebot = "^2.2.0"
-nonebot-plugin-datastore = "^0.5.1"
+nonebot-plugin-datastore = "^0.6.0a0"
 
 [tool.poetry.group.dev.dependencies]
 nb-cli = "^1.0.0"
@@ -23,6 +23,7 @@ pytest-cov = "^4.0.0"
 pytest-xdist = "^3.0.2"
 pytest-asyncio = "^0.20.0"
 nonebug = "^0.2.3"
+nonebot2 = { version = "^2.0.0-rc.1", extras = ["fastapi"] }
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
