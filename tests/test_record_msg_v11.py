@@ -1,6 +1,7 @@
-import pytest
 from datetime import datetime
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+
+import pytest
 
 if TYPE_CHECKING:
     from nonebot.adapters.onebot.v11 import Message
@@ -18,6 +19,7 @@ async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
 
     from nonebot.adapters.onebot.v11 import Bot, Message
+
     from nonebot_plugin_chatrecorder import record_recv_msg_v11
 
     async with app.test_api() as ctx:
@@ -51,8 +53,8 @@ async def test_record_recv_msg(app: App):
 @pytest.mark.asyncio
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
-
     from nonebot.adapters.onebot.v11 import Bot, Message
+
     from nonebot_plugin_chatrecorder import record_send_msg_v11
 
     async with app.test_api() as ctx:
@@ -122,16 +124,15 @@ async def check_record(
     group_id: Optional[str] = str(GROUP_ID),
     time: Optional[int] = None,
 ):
-    from typing import List
-    from sqlmodel import select
+    from nonebot_plugin_datastore import create_session
+    from sqlalchemy import select
 
     from nonebot_plugin_chatrecorder import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
-    from nonebot_plugin_datastore import create_session
 
     statement = select(MessageRecord).where(MessageRecord.message_id == message_id)
     async with create_session() as session:
-        records: List[MessageRecord] = (await session.exec(statement)).all()  # type: ignore
+        records = (await session.scalars(statement)).all()
 
     assert len(records) == 1
     record = records[0]

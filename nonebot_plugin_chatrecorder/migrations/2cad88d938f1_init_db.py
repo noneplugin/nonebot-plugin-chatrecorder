@@ -6,7 +6,6 @@ Create Date: 2023-01-15 14:56:29.929937
 
 """
 import sqlalchemy as sa
-import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -33,19 +32,15 @@ def upgrade() -> None:
         op.create_table(
             "nonebot_plugin_chatrecorder_messagerecord",
             sa.Column("id", sa.Integer(), nullable=False),
-            sa.Column("platform", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+            sa.Column("platform", sa.String(), nullable=False),
             sa.Column("time", sa.DateTime(), nullable=False),
-            sa.Column("type", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-            sa.Column(
-                "detail_type", sqlmodel.sql.sqltypes.AutoString(), nullable=False
-            ),
-            sa.Column("message_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-            sa.Column("message", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-            sa.Column(
-                "alt_message", sqlmodel.sql.sqltypes.AutoString(), nullable=False
-            ),
-            sa.Column("user_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-            sa.Column("group_id", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+            sa.Column("type", sa.String(), nullable=False),
+            sa.Column("detail_type", sa.String(), nullable=False),
+            sa.Column("message_id", sa.String(), nullable=False),
+            sa.Column("message", sa.String(), nullable=False),
+            sa.Column("alt_message", sa.String(), nullable=False),
+            sa.Column("user_id", sa.String(), nullable=False),
+            sa.Column("group_id", sa.String(), nullable=True),
             sa.PrimaryKeyConstraint("id"),
         )
     # ### end Alembic commands ###
