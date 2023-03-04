@@ -1,6 +1,7 @@
+from datetime import datetime
+
 import pytest
 from nonebug.app import App
-from datetime import datetime
 
 
 @pytest.mark.asyncio
@@ -8,30 +9,29 @@ async def test_get_message_records(app: App):
     """测试获取消息记录"""
 
     from nonebot import get_driver
-
+    from nonebot.adapters.onebot.v11 import Adapter as V11Adapter
     from nonebot.adapters.onebot.v11 import Bot as V11Bot
     from nonebot.adapters.onebot.v11 import Message as V11Msg
-    from nonebot.adapters.onebot.v11 import Adapter as V11Adapter
-
+    from nonebot.adapters.onebot.v12 import Adapter as V12Adapter
     from nonebot.adapters.onebot.v12 import Bot as V12Bot
     from nonebot.adapters.onebot.v12 import Message as V12Msg
-    from nonebot.adapters.onebot.v12 import Adapter as V12Adapter
+    from nonebot_plugin_datastore import create_session
 
-    from nonebot_plugin_chatrecorder.model import MessageRecord
     from nonebot_plugin_chatrecorder.message import serialize_message
+    from nonebot_plugin_chatrecorder.model import MessageRecord
     from nonebot_plugin_chatrecorder.record import (
         get_message_records,
         get_messages,
         get_messages_plain_text,
     )
 
-    from nonebot_plugin_datastore import create_session
-
     async with app.test_api() as ctx:
         v11_adapter = V11Adapter(get_driver())
-        v11_bot = ctx.create_bot(base=V11Bot, adapter=v11_adapter)
+        v11_bot = ctx.create_bot(base=V11Bot, adapter=v11_adapter, self_id="11")
         v12_adapter = V12Adapter(get_driver())
-        v12_bot = ctx.create_bot(base=V12Bot, adapter=v12_adapter, platform="qq")
+        v12_bot = ctx.create_bot(
+            base=V12Bot, adapter=v12_adapter, self_id="12", platform="qq"
+        )
     assert isinstance(v11_bot, V11Bot)
     assert isinstance(v12_bot, V12Bot)
 

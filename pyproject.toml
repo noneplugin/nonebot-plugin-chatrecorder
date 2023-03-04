@@ -22,7 +22,7 @@ black = "^22.8.0"
 pytest-cov = "^4.0.0"
 pytest-xdist = "^3.0.2"
 pytest-asyncio = "^0.20.0"
-nonebug = "^0.2.3"
+nonebug = "^0.3.0"
 nonebot2 = { version = "^2.0.0-rc.1", extras = ["fastapi"] }
 
 [tool.pytest.ini_options]

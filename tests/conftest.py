@@ -1,14 +1,13 @@
-import pytest
 from pathlib import Path
+
+import pytest
 from nonebug.app import App
+
+from .utils import clear_plugins
 
 
 @pytest.fixture
-async def app(
-    nonebug_init: None,
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> App:
+async def app(nonebug_init: None, tmp_path: Path, request):
     import nonebot
 
     config = nonebot.get_driver().config
@@ -16,7 +15,12 @@ async def app(
     config.datastore_cache_dir = tmp_path / "cache"
     config.datastore_config_dir = tmp_path / "config"
     config.datastore_data_dir = tmp_path / "data"
-    config.chatrecorder_record_send_msg = True
+    # 设置配置
+    if param := getattr(request, "param", {}):
+        for k, v in param.items():
+            setattr(config, k, v)
+
+    clear_plugins()
 
     # 加载插件
     nonebot.load_plugin("nonebot_plugin_chatrecorder")
@@ -25,4 +29,12 @@ async def app(
 
     await init_db()
 
-    return App(monkeypatch)
+    yield App()
+
+    # 清除之前设置的配置
+    delattr(config, "datastore_cache_dir")
+    delattr(config, "datastore_config_dir")
+    delattr(config, "datastore_data_dir")
+    if param := getattr(request, "param", {}):
+        for k in param.keys():
+            delattr(config, k)
