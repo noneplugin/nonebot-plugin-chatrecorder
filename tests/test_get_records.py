@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from nonebug.app import App
@@ -183,3 +183,11 @@ async def test_get_message_records(app: App):
     assert len(msgs) == 1
     msgs = await get_message_records(exclude_channel_ids=["100000"])
     assert len(msgs) == 0
+
+    # 测试 datetime with timezone
+    # postgresql 下如果用含有时区信息的 datetime 作为查询条件，会报错
+    # https://github.com/he0119/nonebot-plugin-wordcloud/issues/120
+    msgs = await get_message_records(
+        time_stop=datetime.utcfromtimestamp(1000002).replace(tzinfo=timezone.utc)
+    )
+    assert len(msgs) == 3

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Iterable, List, Literal, Optional, Sequence, Union, overload
 
 from nonebot.adapters.onebot.v11 import Bot as V11Bot
@@ -10,6 +10,15 @@ from sqlalchemy import or_, select
 
 from .message import deserialize_message
 from .model import MessageRecord
+
+
+def remove_timezone(dt: datetime) -> datetime:
+    """移除时区"""
+    if dt.tzinfo is None:
+        return dt
+    # 先转至 UTC 时间，再移除时区
+    dt = dt.astimezone(timezone.utc)
+    return dt.replace(tzinfo=None)
 
 
 async def get_message_records(
@@ -66,9 +75,9 @@ async def get_message_records(
             or_(*[MessageRecord.platform == platform for platform in platforms])
         )
     if time_start:
-        whereclause.append(MessageRecord.time >= time_start)
+        whereclause.append(MessageRecord.time >= remove_timezone(time_start))
     if time_stop:
-        whereclause.append(MessageRecord.time <= time_stop)
+        whereclause.append(MessageRecord.time <= remove_timezone(time_stop))
     if types:
         whereclause.append(or_(*[MessageRecord.type == type for type in types]))
     if detail_types:
