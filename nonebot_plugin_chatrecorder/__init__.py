@@ -3,25 +3,23 @@ from typing import Any, Dict, Optional
 
 from nonebot import get_driver, require
 from nonebot.adapters import Bot as BaseBot
-from nonebot.message import event_postprocessor
-
 from nonebot.adapters.onebot.v11 import Bot as V11Bot
+from nonebot.adapters.onebot.v11 import GroupMessageEvent as V11GMEvent
 from nonebot.adapters.onebot.v11 import Message as V11Msg
 from nonebot.adapters.onebot.v11 import MessageEvent as V11MEvent
-from nonebot.adapters.onebot.v11 import GroupMessageEvent as V11GMEvent
-
 from nonebot.adapters.onebot.v12 import Bot as V12Bot
+from nonebot.adapters.onebot.v12 import ChannelMessageEvent as V12CMEvent
+from nonebot.adapters.onebot.v12 import GroupMessageEvent as V12GMEvent
 from nonebot.adapters.onebot.v12 import Message as V12Msg
 from nonebot.adapters.onebot.v12 import MessageEvent as V12MEvent
-from nonebot.adapters.onebot.v12 import GroupMessageEvent as V12GMEvent
-from nonebot.adapters.onebot.v12 import ChannelMessageEvent as V12CMEvent
+from nonebot.message import event_postprocessor
 
 require("nonebot_plugin_datastore")
 from nonebot_plugin_datastore import create_session
 
 from .config import Config
-from .model import MessageRecord
 from .message import serialize_message
+from .model import MessageRecord
 from .record import get_message_records, get_messages, get_messages_plain_text
 
 plugin_config = Config.parse_obj(get_driver().config.dict())

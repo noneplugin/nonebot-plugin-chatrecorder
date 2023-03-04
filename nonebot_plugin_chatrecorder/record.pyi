@@ -3,7 +3,6 @@ from typing import Iterable, List, Literal, Optional, Union
 
 from nonebot.adapters.onebot.v11 import Bot as V11Bot
 from nonebot.adapters.onebot.v11 import Message as V11Msg
-
 from nonebot.adapters.onebot.v12 import Bot as V12Bot
 from nonebot.adapters.onebot.v12 import Message as V12Msg
 
