@@ -1,0 +1,6 @@
+name: Setup PostgreSQL
+description: Setup PostgreSQL
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
