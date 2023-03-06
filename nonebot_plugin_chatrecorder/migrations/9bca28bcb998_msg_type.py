@@ -25,6 +25,7 @@ def upgrade() -> None:
             existing_type=sa.VARCHAR(),
             type_=sa.JSON(),
             existing_nullable=False,
+            postgresql_using="message::json",
         )
         batch_op.alter_column(
             "plain_text",
