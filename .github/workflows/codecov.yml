@@ -28,12 +28,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Setup PostgreSQL
-        uses: ./.github/actions/setup-postgres
-
-      - name: Setup MySQL
-        uses: ./.github/actions/setup-mysql
-
       - name: Run tests
         run: poetry run pytest -n auto --cov-report xml
 
