@@ -24,6 +24,8 @@ pytest-xdist = "^3.0.2"
 pytest-asyncio = "^0.20.0"
 nonebug = "^0.3.0"
 nonebot2 = { version = "^2.0.0-rc.1", extras = ["fastapi"] }
+asyncpg = "^0.27.0"
+aiomysql = "^0.1.0"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

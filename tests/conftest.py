@@ -1,40 +1,43 @@
 from pathlib import Path
 
+import nonebot
 import pytest
 from nonebug.app import App
+from sqlalchemy import delete
 
-from .utils import clear_plugins
 
+@pytest.fixture(
+    params=[
+        {
+            "datastore_database_url": "sqlite+aiosqlite:///:memory:",
+        },
+        {
+            "datastore_database_url": "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres",
+        },
+        {
+            "datastore_database_url": "mysql+aiomysql:://mysql:mysql@localhost:3306/mysql",
+        },
+    ]
+)
+async def app(tmp_path: Path, request):
 
-@pytest.fixture
-async def app(nonebug_init: None, tmp_path: Path, request):
-    import nonebot
+    nonebot.require("nonebot_plugin_chatrecorder")
+    from nonebot_plugin_datastore.config import plugin_config
+    from nonebot_plugin_datastore.db import create_session, init_db
 
-    config = nonebot.get_driver().config
-    # 插件数据目录
-    config.datastore_cache_dir = tmp_path / "cache"
-    config.datastore_config_dir = tmp_path / "config"
-    config.datastore_data_dir = tmp_path / "data"
-    # 设置配置
+    from nonebot_plugin_chatrecorder.model import MessageRecord
+
+    plugin_config.datastore_cache_dir = tmp_path / "cache"
+    plugin_config.datastore_config_dir = tmp_path / "config"
+    plugin_config.datastore_data_dir = tmp_path / "data"
+
     if param := getattr(request, "param", {}):
-        for k, v in param.items():
-            setattr(config, k, v)
-
-    clear_plugins()
-
-    # 加载插件
-    nonebot.load_plugin("nonebot_plugin_chatrecorder")
-
-    from nonebot_plugin_datastore.db import init_db
+        if database_url := param.get("datastore_database_url", ""):
+            plugin_config.datastore_database_url = database_url
 
     await init_db()
 
     yield App()
 
-    # 清除之前设置的配置
-    delattr(config, "datastore_cache_dir")
-    delattr(config, "datastore_config_dir")
-    delattr(config, "datastore_data_dir")
-    if param := getattr(request, "param", {}):
-        for k in param.keys():
-            delattr(config, k)
+    async with create_session() as session, session.begin():
+        await session.execute(delete(MessageRecord))

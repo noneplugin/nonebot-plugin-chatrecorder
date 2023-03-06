@@ -158,14 +158,3 @@ def fake_channel_message_event_v12(**field) -> "V12CMEvent":
             extra = "forbid"
 
     return FakeEvent(**field)
-
-
-def clear_plugins() -> None:
-    from nonebot.plugin import _managers, _plugins
-
-    for plugin in _plugins.values():
-        keys = [key for key in sys.modules if key.startswith(plugin.module_name)]
-        for key in keys:
-            del sys.modules[key]
-    _plugins.clear()
-    _managers.clear()
