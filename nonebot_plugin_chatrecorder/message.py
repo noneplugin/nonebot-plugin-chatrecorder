@@ -1,13 +1,11 @@
 import base64
 import hashlib
-import json
 from pathlib import Path
-from typing import Type, Union, overload
+from typing import Any, Dict, List, Type, Union, overload
 
 from nonebot.adapters.onebot.v11 import Message as V11Msg
 from nonebot.adapters.onebot.v11 import MessageSegment as V11MsgSeg
 from nonebot.adapters.onebot.v12 import Message as V12Msg
-from nonebot.utils import DataclassEncoder
 from nonebot_plugin_datastore import get_plugin_data
 from pydantic import parse_obj_as
 
@@ -16,26 +14,29 @@ for dir_name in ("images", "records", "videos"):
     (cache_dir / dir_name).mkdir(exist_ok=True)
 
 
-def serialize_message(msg: Union[V11Msg, V12Msg]) -> str:
+JsonMsg = List[Dict[str, Any]]
+
+
+def serialize_message(msg: Union[V11Msg, V12Msg]) -> JsonMsg:
     if isinstance(msg, V11Msg):
         cache_file(msg)
-    return DataclassEncoder(ensure_ascii=False).encode(msg)
+    return [seg.__dict__ for seg in msg]
 
 
 @overload
-def deserialize_message(msg: str, msg_class: Type[V11Msg]) -> V11Msg:
+def deserialize_message(msg: JsonMsg, msg_class: Type[V11Msg]) -> V11Msg:
     ...
 
 
 @overload
-def deserialize_message(msg: str, msg_class: Type[V12Msg]) -> V12Msg:
+def deserialize_message(msg: JsonMsg, msg_class: Type[V12Msg]) -> V12Msg:
     ...
 
 
 def deserialize_message(
-    msg: str, msg_class: Union[Type[V11Msg], Type[V12Msg]]
+    msg: JsonMsg, msg_class: Union[Type[V11Msg], Type[V12Msg]]
 ) -> Union[V11Msg, V12Msg]:
-    return parse_obj_as(msg_class, json.loads(msg))
+    return parse_obj_as(msg_class, msg)
 
 
 def cache_file(msg: V11Msg):
