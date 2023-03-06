@@ -15,7 +15,7 @@ from sqlalchemy import delete
             "datastore_database_url": "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres",
         },
         {
-            "datastore_database_url": "mysql+aiomysql:://mysql:mysql@localhost:3306/mysql",
+            "datastore_database_url": "mysql+aiomysql://mysql:mysql@localhost:3306/mysql",
         },
     ]
 )
