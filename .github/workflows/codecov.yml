@@ -91,7 +91,7 @@ jobs:
 
       - name: Run tests
         run: |
-          sed -ie "s#sqlite+aiosqlite:///:memory:#postgresql+asyncpg://mysql+aiomysql:://mysql:mysql@localhost:3306/mysql#g" tests/conftest.py
+          sed -ie "s#sqlite+aiosqlite:///:memory:#mysql+aiomysql://mysql:mysql@localhost:3306/mysql#g" tests/conftest.py
           poetry run pytest -n auto --cov-report xml
 
       - name: Upload coverage to Codecov
