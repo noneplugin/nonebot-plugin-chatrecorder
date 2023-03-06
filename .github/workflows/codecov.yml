@@ -74,6 +74,7 @@ jobs:
       mysql:
         image: mysql
         env:
+          MYSQL_ROOT_PASSWORD: mysql
           MYSQL_USER: mysql
           MYSQL_PASSWORD: mysql
           MYSQL_DATABASE: mysql
