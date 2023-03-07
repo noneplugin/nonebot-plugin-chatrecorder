@@ -57,7 +57,7 @@ def upgrade() -> None:
     check_config()
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
-        sa.Column("bot_type", sa.String(32), nullable=True),
+        sa.Column("bot_type", sa.String(64), nullable=True),
     )
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
@@ -76,7 +76,7 @@ def upgrade() -> None:
         "nonebot_plugin_chatrecorder_messagerecord", schema=None
     ) as batch_op:
         batch_op.alter_column(
-            "id", existing_type=sa.INTEGER(), nullable=False, autoincrement=True
+            "id", existing_type=sa.Integer(), nullable=False, autoincrement=True
         )
         batch_op.alter_column(
             "alt_message", existing_type=sa.String(255), new_column_name="plain_text"
@@ -101,7 +101,7 @@ def downgrade() -> None:
         "nonebot_plugin_chatrecorder_messagerecord", schema=None
     ) as batch_op:
         batch_op.alter_column(
-            "id", existing_type=sa.INTEGER(), nullable=True, autoincrement=True
+            "id", existing_type=sa.Integer(), nullable=True, autoincrement=True
         )
         batch_op.alter_column(
             "plain_text", existing_type=sa.String(255), new_column_name="alt_message"
