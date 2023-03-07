@@ -65,6 +65,7 @@ jobs:
       - name: Run tests
         run: |
           sed -ie "s#sqlite+aiosqlite://#postgresql+asyncpg://postgres:postgres@localhost:5432/postgres#g" tests/conftest.py
+          sed -ie "s#StaticPool#NullPool#g" tests/conftest.py
           poetry run pytest --cov-report xml
 
       - name: Upload coverage to Codecov
@@ -101,6 +102,7 @@ jobs:
       - name: Run tests
         run: |
           sed -ie "s#sqlite+aiosqlite://#mysql+aiomysql://mysql:mysql@localhost:3306/mysql#g" tests/conftest.py
+          sed -ie "s#StaticPool#NullPool#g" tests/conftest.py
           poetry run pytest --cov-report xml
 
       - name: Upload coverage to Codecov
