@@ -57,19 +57,19 @@ def upgrade() -> None:
     check_config()
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
-        sa.Column("bot_type", sa.String(), nullable=True),
+        sa.Column("bot_type", sa.String(32), nullable=True),
     )
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
-        sa.Column("bot_id", sa.String(), nullable=True),
+        sa.Column("bot_id", sa.String(64), nullable=True),
     )
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
-        sa.Column("guild_id", sa.String(), nullable=True),
+        sa.Column("guild_id", sa.String(64), nullable=True),
     )
     op.add_column(
         "nonebot_plugin_chatrecorder_messagerecord",
-        sa.Column("channel_id", sa.String(), nullable=True),
+        sa.Column("channel_id", sa.String(64), nullable=True),
     )
     set_default_value()
     with op.batch_alter_table(
@@ -78,15 +78,17 @@ def upgrade() -> None:
         batch_op.alter_column(
             "id", existing_type=sa.INTEGER(), nullable=False, autoincrement=True
         )
-        batch_op.alter_column("alt_message", new_column_name="plain_text")
+        batch_op.alter_column(
+            "alt_message", existing_type=sa.String(255), new_column_name="plain_text"
+        )
         batch_op.alter_column(
             "bot_type",
-            existing_type=sa.VARCHAR(),
+            existing_type=sa.String(64),
             nullable=False,
         )
         batch_op.alter_column(
             "bot_id",
-            existing_type=sa.VARCHAR(),
+            existing_type=sa.String(64),
             nullable=False,
         )
 
@@ -101,7 +103,9 @@ def downgrade() -> None:
         batch_op.alter_column(
             "id", existing_type=sa.INTEGER(), nullable=True, autoincrement=True
         )
-        batch_op.alter_column("plain_text", new_column_name="alt_message")
+        batch_op.alter_column(
+            "plain_text", existing_type=sa.String(255), new_column_name="alt_message"
+        )
         batch_op.drop_column("channel_id")
         batch_op.drop_column("guild_id")
         batch_op.drop_column("bot_id")

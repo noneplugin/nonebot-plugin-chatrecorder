@@ -22,14 +22,14 @@ def upgrade() -> None:
     ) as batch_op:
         batch_op.alter_column(
             "message",
-            existing_type=sa.VARCHAR(),
+            existing_type=sa.String(255),
             type_=sa.JSON(),
             existing_nullable=False,
             postgresql_using="message::json",
         )
         batch_op.alter_column(
             "plain_text",
-            existing_type=sa.VARCHAR(),
+            existing_type=sa.String(255),
             type_=sa.TEXT(),
             existing_nullable=False,
         )
@@ -45,13 +45,13 @@ def downgrade() -> None:
         batch_op.alter_column(
             "plain_text",
             existing_type=sa.TEXT(),
-            type_=sa.VARCHAR(),
+            type_=sa.String(255),
             existing_nullable=False,
         )
         batch_op.alter_column(
             "message",
             existing_type=sa.JSON(),
-            type_=sa.VARCHAR(),
+            type_=sa.String(255),
             existing_nullable=False,
         )
 
