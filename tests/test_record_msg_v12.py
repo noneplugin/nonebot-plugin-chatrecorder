@@ -1,11 +1,8 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
-import pytest
 
-if TYPE_CHECKING:
-    from nonebot.adapters.onebot.v12 import Message
-
+from nonebot.adapters.onebot.v12 import Bot, Message
 from nonebug.app import App
 
 from .utils import (
@@ -20,12 +17,8 @@ GUILD_ID = "333333"
 CHANNEL_ID = "444444"
 
 
-@pytest.mark.asyncio
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-
-    from nonebot.adapters.onebot.v12 import Bot, Message
-
     from nonebot_plugin_chatrecorder import record_recv_msg_v12
 
     async with app.test_api() as ctx:
@@ -92,12 +85,8 @@ async def test_record_recv_msg(app: App):
     )
 
 
-@pytest.mark.asyncio
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
-
-    from nonebot.adapters.onebot.v12 import Bot, Message
-
     from nonebot_plugin_chatrecorder import record_send_msg_v12
 
     async with app.test_api() as ctx:

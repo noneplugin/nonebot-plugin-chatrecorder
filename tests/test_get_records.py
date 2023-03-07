@@ -2,19 +2,17 @@ from datetime import datetime, timezone
 
 import pytest
 from nonebug.app import App
+from nonebot import get_driver
+from nonebot.adapters.onebot.v11 import Adapter as V11Adapter
+from nonebot.adapters.onebot.v11 import Bot as V11Bot
+from nonebot.adapters.onebot.v11 import Message as V11Msg
+from nonebot.adapters.onebot.v12 import Adapter as V12Adapter
+from nonebot.adapters.onebot.v12 import Bot as V12Bot
+from nonebot.adapters.onebot.v12 import Message as V12Msg
 
 
-@pytest.mark.asyncio
 async def test_get_message_records(app: App):
     """测试获取消息记录"""
-
-    from nonebot import get_driver
-    from nonebot.adapters.onebot.v11 import Adapter as V11Adapter
-    from nonebot.adapters.onebot.v11 import Bot as V11Bot
-    from nonebot.adapters.onebot.v11 import Message as V11Msg
-    from nonebot.adapters.onebot.v12 import Adapter as V12Adapter
-    from nonebot.adapters.onebot.v12 import Bot as V12Bot
-    from nonebot.adapters.onebot.v12 import Message as V12Msg
     from nonebot_plugin_datastore import create_session
 
     from nonebot_plugin_chatrecorder.message import serialize_message

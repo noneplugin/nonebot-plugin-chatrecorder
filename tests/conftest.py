@@ -2,40 +2,33 @@ from pathlib import Path
 
 import nonebot
 import pytest
-from nonebug.app import App
+from nonebug import NONEBOT_INIT_KWARGS, App
 from sqlalchemy import delete
+from sqlalchemy.pool import StaticPool
 
 
-@pytest.fixture(
-    params=[
-        {
-            "datastore_database_url": "sqlite+aiosqlite:///:memory:",
+def pytest_configure(config: pytest.Config) -> None:
+    config.stash[NONEBOT_INIT_KWARGS] = {
+        "datastore_database_url": "sqlite+aiosqlite://",
+        "datastore_engine_options": {
+            # https://github.com/miguelgrinberg/Flask-Migrate/issues/153#issuecomment-354711968
+            # 必须保持连接，不然连接关闭后，内存中的数据库会被删除
+            "poolclass": StaticPool,
         },
-        {
-            "datastore_database_url": "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres",
-        },
-        {
-            "datastore_database_url": "mysql+aiomysql://mysql:mysql@localhost:3306/mysql",
-        },
-    ]
-)
-async def app(tmp_path: Path, request):
+    }
 
-    config = nonebot.get_driver().config
 
-    config.datastore_cache_dir = tmp_path / "cache"
-    config.datastore_config_dir = tmp_path / "config"
-    config.datastore_data_dir = tmp_path / "data"
-
-    if param := getattr(request, "param", {}):
-        if database_url := param.get("datastore_database_url", ""):
-            config.datastore_database_url = database_url
-
+@pytest.fixture
+async def app(tmp_path: Path):
     nonebot.require("nonebot_plugin_chatrecorder")
-
+    from nonebot_plugin_datastore.config import plugin_config
     from nonebot_plugin_datastore.db import create_session, init_db
 
     from nonebot_plugin_chatrecorder.model import MessageRecord
+
+    plugin_config.datastore_cache_dir = tmp_path / "cache"
+    plugin_config.datastore_config_dir = tmp_path / "config"
+    plugin_config.datastore_data_dir = tmp_path / "data"
 
     await init_db()
 

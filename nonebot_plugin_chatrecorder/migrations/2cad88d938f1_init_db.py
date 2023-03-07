@@ -32,15 +32,15 @@ def upgrade() -> None:
         op.create_table(
             "nonebot_plugin_chatrecorder_messagerecord",
             sa.Column("id", sa.Integer(), nullable=False),
-            sa.Column("platform", sa.String(), nullable=False),
+            sa.Column("platform", sa.String(32), nullable=False),
             sa.Column("time", sa.DateTime(), nullable=False),
-            sa.Column("type", sa.String(), nullable=False),
-            sa.Column("detail_type", sa.String(), nullable=False),
-            sa.Column("message_id", sa.String(), nullable=False),
-            sa.Column("message", sa.String(), nullable=False),
-            sa.Column("alt_message", sa.String(), nullable=False),
-            sa.Column("user_id", sa.String(), nullable=False),
-            sa.Column("group_id", sa.String(), nullable=True),
+            sa.Column("type", sa.String(32), nullable=False),
+            sa.Column("detail_type", sa.String(32), nullable=False),
+            sa.Column("message_id", sa.String(64), nullable=False),
+            sa.Column("message", sa.String(255), nullable=False),
+            sa.Column("alt_message", sa.String(255), nullable=False),
+            sa.Column("user_id", sa.String(64), nullable=False),
+            sa.Column("group_id", sa.String(64), nullable=True),
             sa.PrimaryKeyConstraint("id"),
         )
     # ### end Alembic commands ###
