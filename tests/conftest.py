@@ -4,14 +4,16 @@ import nonebot
 import pytest
 from nonebug import NONEBOT_INIT_KWARGS, App
 from sqlalchemy import delete
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import StaticPool
 
 
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
-        "datastore_database_url": "sqlite+aiosqlite:///data/data.db",
+        "datastore_database_url": "sqlite+aiosqlite://",
         "datastore_engine_options": {
-            "poolclass": NullPool,
+            # https://github.com/miguelgrinberg/Flask-Migrate/issues/153#issuecomment-354711968
+            # 必须保持连接，不然连接关闭后，内存中的数据库会被删除
+            "poolclass": StaticPool,
         },
     }
 

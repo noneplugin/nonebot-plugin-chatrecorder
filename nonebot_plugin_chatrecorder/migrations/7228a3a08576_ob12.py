@@ -81,16 +81,8 @@ def upgrade() -> None:
         batch_op.alter_column(
             "alt_message", existing_type=sa.String(255), new_column_name="plain_text"
         )
-        batch_op.alter_column(
-            "bot_type",
-            existing_type=sa.String(64),
-            nullable=False,
-        )
-        batch_op.alter_column(
-            "bot_id",
-            existing_type=sa.String(64),
-            nullable=False,
-        )
+        batch_op.alter_column("bot_type", existing_type=sa.String(64), nullable=False)
+        batch_op.alter_column("bot_id", existing_type=sa.String(64), nullable=False)
 
     # ### end Alembic commands ###
 
