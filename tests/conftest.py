@@ -9,7 +9,7 @@ from sqlalchemy.pool import NullPool
 
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
-        "datastore_database_url": "sqlite+aiosqlite:///:memory:",
+        "datastore_database_url": "sqlite+aiosqlite:///data/data.db",
         "datastore_engine_options": {
             "poolclass": NullPool,
         },
