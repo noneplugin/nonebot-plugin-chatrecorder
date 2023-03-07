@@ -1,6 +1,0 @@
-name: Setup MySQL
-description: Setup MySQL
-
-runs:
-  using: "docker"
-  image: "Dockerfile"

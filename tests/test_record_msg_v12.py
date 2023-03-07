@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Optional
 
-
 from nonebot.adapters.onebot.v12 import Bot, Message
 from nonebug.app import App
 

@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Optional
 
 from nonebot.adapters.onebot.v11 import Bot, Message
-
 from nonebug.app import App
 
 from .utils import fake_group_message_event_v11, fake_private_message_event_v11
