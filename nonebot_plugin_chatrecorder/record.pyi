@@ -1,10 +1,7 @@
 from datetime import datetime
 from typing import Iterable, List, Literal, Optional, Union
 
-from nonebot.adapters.onebot.v11 import Bot as V11Bot
-from nonebot.adapters.onebot.v11 import Message as V11Msg
-from nonebot.adapters.onebot.v12 import Bot as V12Bot
-from nonebot.adapters.onebot.v12 import Message as V12Msg
+from nonebot.adapters import Bot, Message
 
 from .model import MessageRecord
 
@@ -27,7 +24,7 @@ async def get_message_records(
     exclude_channel_ids: Optional[Iterable[str]] = None,
 ) -> List[MessageRecord]: ...
 async def get_messages(
-    bot: Union[V11Bot, V12Bot],
+    bot: Bot,
     *,
     bot_ids: Optional[Iterable[str]] = None,
     platforms: Optional[Iterable[str]] = None,
@@ -43,7 +40,7 @@ async def get_messages(
     exclude_group_ids: Optional[Iterable[str]] = None,
     exclude_guild_ids: Optional[Iterable[str]] = None,
     exclude_channel_ids: Optional[Iterable[str]] = None,
-) -> Union[List[V11Msg], List[V12Msg]]: ...
+) -> List[Message]: ...
 async def get_messages_plain_text(
     *,
     bot_types: Optional[Iterable[str]] = None,

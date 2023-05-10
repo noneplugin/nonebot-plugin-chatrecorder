@@ -1,13 +1,11 @@
 from datetime import datetime, timezone
-from typing import Iterable, List, Literal, Optional, Sequence, Union, overload
+from typing import Iterable, List, Literal, Optional, Sequence
 
-from nonebot.adapters.onebot.v11 import Bot as V11Bot
-from nonebot.adapters.onebot.v11 import Message as V11Msg
-from nonebot.adapters.onebot.v12 import Bot as V12Bot
-from nonebot.adapters.onebot.v12 import Message as V12Msg
+from nonebot.adapters import Bot, Message
 from nonebot_plugin_datastore import create_session
 from sqlalchemy import or_, select
 
+from .adapters import get_message_class_by_adapter_name
 from .message import deserialize_message
 from .model import MessageRecord
 
@@ -124,34 +122,21 @@ async def get_message_records(
     return records
 
 
-@overload
-async def get_messages(bot: V11Bot, **kwargs) -> List[V11Msg]:
-    ...
-
-
-@overload
-async def get_messages(bot: V12Bot, **kwargs) -> List[V12Msg]:
-    ...
-
-
-async def get_messages(
-    bot: Union[V11Bot, V12Bot], **kwargs
-) -> Union[List[V11Msg], List[V12Msg]]:
+async def get_messages(bot: Bot, **kwargs) -> List[Message]:
     """获取消息记录的消息列表
 
     参数:
-      * ``bot: Union[V11Bot, V12Bot]``: Nonebot `Bot` 对象，用于判断消息类型
+      * ``bot: Bot``: Nonebot `Bot` 对象，用于判断消息类型
       * ``**kwargs``: 筛选参数，具体查看 `get_message_records` 中的定义
 
     返回值:
-      * ``Union[List[V11Msg], List[V12Msg]]``: 消息列表
+      * ``List[Message]``: 消息列表
     """
-    kwargs.update({"bot_types": [bot.adapter.get_name()]})
+    adapter_name = bot.adapter.get_name()
+    msg_class = get_message_class_by_adapter_name(adapter_name)
+    kwargs.update({"bot_types": [adapter_name]})
     records = await get_message_records(**kwargs)
-    if isinstance(bot, V11Bot):
-        return [deserialize_message(record.message, V11Msg) for record in records]
-    else:
-        return [deserialize_message(record.message, V12Msg) for record in records]
+    return [deserialize_message(record.message, msg_class) for record in records]
 
 
 async def get_messages_plain_text(**kwargs) -> List[str]:
