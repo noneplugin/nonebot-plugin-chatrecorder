@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Iterable, List, Literal, Optional, Union
+from typing import Iterable, List, Literal, Optional
 
 from nonebot.adapters import Bot, Message
 

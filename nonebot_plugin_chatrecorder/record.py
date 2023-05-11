@@ -5,8 +5,7 @@ from nonebot.adapters import Bot, Message
 from nonebot_plugin_datastore import create_session
 from sqlalchemy import or_, select
 
-from .adapters import get_message_class_by_adapter_name
-from .message import deserialize_message
+from .adapters import deserialize_message
 from .model import MessageRecord
 
 
@@ -133,10 +132,9 @@ async def get_messages(bot: Bot, **kwargs) -> List[Message]:
       * ``List[Message]``: 消息列表
     """
     adapter_name = bot.adapter.get_name()
-    msg_class = get_message_class_by_adapter_name(adapter_name)
     kwargs.update({"bot_types": [adapter_name]})
     records = await get_message_records(**kwargs)
-    return [deserialize_message(record.message, msg_class) for record in records]
+    return [deserialize_message(bot, record.message) for record in records]
 
 
 async def get_messages_plain_text(**kwargs) -> List[str]:

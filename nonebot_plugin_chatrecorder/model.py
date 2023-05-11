@@ -5,7 +5,7 @@ from nonebot_plugin_datastore import get_plugin_data
 from sqlalchemy import JSON, TEXT, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .message import JsonMsg
+from .adapters.message import JsonMsg
 
 Model = get_plugin_data().Model
 

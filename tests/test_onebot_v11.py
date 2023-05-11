@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Literal, Optional
 
+from nonebot import get_driver
 from nonebot.adapters.onebot.v11 import (
+    Adapter,
     Bot,
     GroupMessageEvent,
     Message,
@@ -70,7 +72,8 @@ async def test_record_recv_msg(app: App):
     from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_recv_msg
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot)
+        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()))
+    assert isinstance(bot, Bot)
 
     time = 1000000
     user_id = 123456
@@ -86,7 +89,14 @@ async def test_record_recv_msg(app: App):
     )
     await record_recv_msg(bot, event)
     await check_record(
-        str(message_id), "message", "group", message, str(user_id), str(group_id), time
+        bot,
+        str(message_id),
+        "message",
+        "group",
+        message,
+        str(user_id),
+        str(group_id),
+        time,
     )
 
     message_id = 11451422222
@@ -96,7 +106,7 @@ async def test_record_recv_msg(app: App):
     )
     await record_recv_msg(bot, event)
     await check_record(
-        str(message_id), "message", "private", message, str(user_id), None, time
+        bot, str(message_id), "message", "private", message, str(user_id), None, time
     )
 
 
@@ -105,7 +115,8 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_send_msg
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot)
+        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()))
+    assert isinstance(bot, Bot)
 
     user_id = 123456
     group_id = 654321
@@ -120,7 +131,7 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
-        str(message_id), "message_sent", "group", message, user_id=bot.self_id
+        bot, str(message_id), "message_sent", "group", message, user_id=bot.self_id
     )
 
     message_id = 11451444444
@@ -133,7 +144,7 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
-        str(message_id), "message_sent", "group", message, user_id=bot.self_id
+        bot, str(message_id), "message_sent", "group", message, user_id=bot.self_id
     )
 
     message_id = 11451455555
@@ -146,6 +157,7 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
+        bot,
         str(message_id),
         "message_sent",
         "private",
@@ -156,6 +168,7 @@ async def test_record_send_msg(app: App):
 
 
 async def check_record(
+    bot: Bot,
     message_id: str,
     type: str,
     detail_type: str,
@@ -167,7 +180,7 @@ async def check_record(
     from nonebot_plugin_datastore import create_session
     from sqlalchemy import select
 
-    from nonebot_plugin_chatrecorder.message import serialize_message
+    from nonebot_plugin_chatrecorder.adapters import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
 
     statement = select(MessageRecord).where(MessageRecord.message_id == message_id)
@@ -179,7 +192,7 @@ async def check_record(
     assert record.platform == "qq"
     assert record.type == type
     assert record.detail_type == detail_type
-    assert record.message == serialize_message(message)
+    assert record.message == serialize_message(bot, message)
     assert record.plain_text == message.extract_plain_text()
     assert record.user_id == user_id
     if group_id:

@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Literal, Optional
 
+from nonebot import get_driver
 from nonebot.adapters.onebot.v12 import (
+    Adapter,
     Bot,
     ChannelMessageEvent,
     GroupMessageEvent,
@@ -90,7 +92,7 @@ async def test_record_recv_msg(app: App):
     from nonebot_plugin_chatrecorder.adapters.onebot_v12 import record_recv_msg
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, platform="qq")
+        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), platform="qq")
     assert isinstance(bot, Bot)
 
     time = datetime.utcfromtimestamp(1000000)
@@ -110,6 +112,7 @@ async def test_record_recv_msg(app: App):
     )
     await record_recv_msg(bot, event)
     await check_record(
+        bot,
         time,
         message_id,
         "group",
@@ -126,6 +129,7 @@ async def test_record_recv_msg(app: App):
     )
     await record_recv_msg(bot, event)
     await check_record(
+        bot,
         time,
         message_id,
         "private",
@@ -146,6 +150,7 @@ async def test_record_recv_msg(app: App):
     )
     await record_recv_msg(bot, event)
     await check_record(
+        bot,
         time,
         message_id,
         "channel",
@@ -162,7 +167,7 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.adapters.onebot_v12 import record_send_msg
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, platform="qq")
+        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), platform="qq")
     assert isinstance(bot, Bot)
 
     time = 1000000
@@ -185,6 +190,7 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id, "time": time},
     )
     await check_record(
+        bot,
         datetime.utcfromtimestamp(time),
         message_id,
         "group",
@@ -208,6 +214,7 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id, "time": time},
     )
     await check_record(
+        bot,
         datetime.utcfromtimestamp(time),
         message_id,
         "private",
@@ -232,6 +239,7 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id, "time": time},
     )
     await check_record(
+        bot,
         datetime.utcfromtimestamp(time),
         message_id,
         "channel",
@@ -245,6 +253,7 @@ async def test_record_send_msg(app: App):
 
 
 async def check_record(
+    bot: Bot,
     time: datetime,
     message_id: str,
     detail_type: str,
@@ -275,7 +284,7 @@ async def check_record(
     assert record.detail_type == detail_type
     assert record.time == time
     assert record.platform == platform
-    assert record.message == serialize_message(message)
+    assert record.message == serialize_message(bot, message)
     assert record.plain_text == message.extract_plain_text()
     assert record.user_id == user_id
     assert record.group_id == group_id
