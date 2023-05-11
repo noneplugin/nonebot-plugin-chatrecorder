@@ -5,7 +5,7 @@ from nonebot.adapters import Bot, Message
 from nonebot_plugin_datastore import create_session
 from sqlalchemy import or_, select
 
-from .adapters import deserialize_message
+from .message import deserialize_message
 from .model import MessageRecord
 
 

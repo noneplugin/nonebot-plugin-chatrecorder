@@ -7,15 +7,15 @@ from nonebot.typing import overrides
 from nonebot_plugin_datastore import create_session
 
 from ..config import plugin_config
-from ..model import MessageRecord
-from .consts import SupportedAdapter
-from .message import (
+from ..consts import SupportedAdapter
+from ..message import (
     MessageDeserializer,
     MessageSerializer,
     register_deserializer,
     register_serializer,
     serialize_message,
 )
+from ..model import MessageRecord
 
 try:
     from nonebot.adapters.onebot.v12 import (

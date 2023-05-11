@@ -5,6 +5,7 @@ from nonebot.adapters import Bot, Message
 from pydantic import parse_obj_as
 
 from .consts import SupportedAdapter
+from .exception import AdapterNotInstalled
 from .utils import extract_adapter_type
 
 JsonMsg = List[Dict[str, Any]]
@@ -28,32 +29,32 @@ class MessageDeserializer(abc.ABC, Generic[TM]):
         return parse_obj_as(cls.get_message_class(), msg)
 
 
-_custom_serializers: Dict[SupportedAdapter, Type[MessageSerializer]] = {}
-_custom_deserializers: Dict[SupportedAdapter, Type[MessageDeserializer]] = {}
+_serializers: Dict[SupportedAdapter, Type[MessageSerializer]] = {}
+_deserializers: Dict[SupportedAdapter, Type[MessageDeserializer]] = {}
 
 
 def get_serializer(bot: Bot) -> Type[MessageSerializer]:
     adapter = extract_adapter_type(bot)
-    if adapter not in _custom_serializers:
-        return MessageSerializer
-    return _custom_serializers[adapter]
+    if adapter not in _serializers:
+        raise AdapterNotInstalled(adapter.value)
+    return _serializers[adapter]
 
 
 def get_deserializer(bot: Bot) -> Type[MessageDeserializer]:
     adapter = extract_adapter_type(bot)
-    if adapter not in _custom_deserializers:
-        return MessageDeserializer
-    return _custom_deserializers[adapter]
+    if adapter not in _deserializers:
+        raise AdapterNotInstalled(adapter.value)
+    return _deserializers[adapter]
 
 
 def register_serializer(adapter: SupportedAdapter, serializer: Type[MessageSerializer]):
-    _custom_serializers[adapter] = serializer
+    _serializers[adapter] = serializer
 
 
 def register_deserializer(
     adapter: SupportedAdapter, deserializer: Type[MessageDeserializer]
 ):
-    _custom_deserializers[adapter] = deserializer
+    _deserializers[adapter] = deserializer
 
 
 def serialize_message(bot: Bot, msg: Message) -> JsonMsg:

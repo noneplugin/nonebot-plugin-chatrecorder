@@ -10,10 +10,13 @@ from nonebot.typing import overrides
 from nonebot_plugin_datastore import create_session
 
 from ..config import plugin_config
-from ..dirs import IMAGE_CACHE_DIR, RECORD_CACHE_DIR, VIDEO_CACHE_DIR
-from ..model import MessageRecord
-from .consts import SupportedAdapter
-from .message import (
+from ..consts import (
+    IMAGE_CACHE_DIR,
+    RECORD_CACHE_DIR,
+    VIDEO_CACHE_DIR,
+    SupportedAdapter,
+)
+from ..message import (
     JsonMsg,
     MessageDeserializer,
     MessageSerializer,
@@ -21,6 +24,7 @@ from .message import (
     register_serializer,
     serialize_message,
 )
+from ..model import MessageRecord
 
 try:
     from nonebot.adapters.onebot.v11 import (

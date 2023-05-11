@@ -180,7 +180,7 @@ async def check_record(
     from nonebot_plugin_datastore import create_session
     from sqlalchemy import select
 
-    from nonebot_plugin_chatrecorder.adapters import serialize_message
+    from nonebot_plugin_chatrecorder.message import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
 
     statement = select(MessageRecord).where(MessageRecord.message_id == message_id)

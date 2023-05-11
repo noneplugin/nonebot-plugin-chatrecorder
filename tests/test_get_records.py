@@ -14,7 +14,7 @@ async def test_get_message_records(app: App):
     """测试获取消息记录"""
     from nonebot_plugin_datastore import create_session
 
-    from nonebot_plugin_chatrecorder.adapters import serialize_message
+    from nonebot_plugin_chatrecorder.message import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
     from nonebot_plugin_chatrecorder.record import (
         get_message_records,
