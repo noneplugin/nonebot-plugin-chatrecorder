@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 
-from nonebot_plugin_chatrecorder import plugin_config
+from nonebot_plugin_chatrecorder.config import plugin_config
 
 # revision identifiers, used by Alembic.
 revision = "7228a3a08576"

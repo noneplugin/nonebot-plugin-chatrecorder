@@ -1,71 +1,65 @@
-import base64
-import hashlib
-from pathlib import Path
-from typing import Any, Dict, List, Type, Union, overload
+import abc
+from typing import Any, Dict, Generic, List, Type, TypeVar
 
-from nonebot.adapters.onebot.v11 import Message as V11Msg
-from nonebot.adapters.onebot.v11 import MessageSegment as V11MsgSeg
-from nonebot.adapters.onebot.v12 import Message as V12Msg
-from nonebot_plugin_datastore import get_plugin_data
+from nonebot.adapters import Bot, Message
 from pydantic import parse_obj_as
 
-cache_dir = get_plugin_data().cache_dir
-for dir_name in ("images", "records", "videos"):
-    (cache_dir / dir_name).mkdir(exist_ok=True)
-
+from .consts import SupportedAdapter
+from .exception import AdapterNotInstalled
+from .utils import extract_adapter_type
 
 JsonMsg = List[Dict[str, Any]]
+TM = TypeVar("TM", bound="Message")
 
 
-def serialize_message(msg: Union[V11Msg, V12Msg]) -> JsonMsg:
-    if isinstance(msg, V11Msg):
-        cache_file(msg)
-    return [seg.__dict__ for seg in msg]
+class MessageSerializer(abc.ABC, Generic[TM]):
+    @classmethod
+    def serialize(cls, msg: TM) -> JsonMsg:
+        return [seg.__dict__ for seg in msg]
 
 
-@overload
-def deserialize_message(msg: JsonMsg, msg_class: Type[V11Msg]) -> V11Msg:
-    ...
+class MessageDeserializer(abc.ABC, Generic[TM]):
+    @classmethod
+    @abc.abstractmethod
+    def get_message_class(cls) -> Type[TM]:
+        raise NotImplementedError
+
+    @classmethod
+    def deserialize(cls, msg: JsonMsg) -> TM:
+        return parse_obj_as(cls.get_message_class(), msg)
 
 
-@overload
-def deserialize_message(msg: JsonMsg, msg_class: Type[V12Msg]) -> V12Msg:
-    ...
+_serializers: Dict[SupportedAdapter, Type[MessageSerializer]] = {}
+_deserializers: Dict[SupportedAdapter, Type[MessageDeserializer]] = {}
 
 
-def deserialize_message(
-    msg: JsonMsg, msg_class: Union[Type[V11Msg], Type[V12Msg]]
-) -> Union[V11Msg, V12Msg]:
-    return parse_obj_as(msg_class, msg)
+def get_serializer(bot: Bot) -> Type[MessageSerializer]:
+    adapter = extract_adapter_type(bot)
+    if adapter not in _serializers:
+        raise AdapterNotInstalled(adapter.value)
+    return _serializers[adapter]
 
 
-def cache_file(msg: V11Msg):
-    for seg in msg:
-        if seg.type == "image":
-            cache_b64_file(seg, "images")
-        elif seg.type == "record":
-            cache_b64_file(seg, "records")
-        elif seg.type == "video":
-            cache_b64_file(seg, "videos")
+def get_deserializer(bot: Bot) -> Type[MessageDeserializer]:
+    adapter = extract_adapter_type(bot)
+    if adapter not in _deserializers:
+        raise AdapterNotInstalled(adapter.value)
+    return _deserializers[adapter]
 
 
-def cache_b64_file(seg: V11MsgSeg, dir_name: str):
-    def replace_seg_file(path: Path):
-        seg.data["file"] = f"file:///{path.resolve()}"
+def register_serializer(adapter: SupportedAdapter, serializer: Type[MessageSerializer]):
+    _serializers[adapter] = serializer
 
-    file = seg.data.get("file", "")
-    if not file or not file.startswith("base64://"):
-        return
 
-    cache_file_dir = cache_dir / dir_name
-    data = base64.b64decode(file.replace("base64://", ""))
-    hash = hashlib.md5(data).hexdigest()
-    filename = f"{hash}.cache"
-    cache_file_path = cache_file_dir / filename
-    cache_files = [f.name for f in cache_file_dir.iterdir() if f.is_file()]
-    if filename in cache_files:
-        replace_seg_file(cache_file_path)
-    else:
-        with cache_file_path.open("wb") as f:
-            f.write(data)
-        replace_seg_file(cache_file_path)
+def register_deserializer(
+    adapter: SupportedAdapter, deserializer: Type[MessageDeserializer]
+):
+    _deserializers[adapter] = deserializer
+
+
+def serialize_message(bot: Bot, msg: Message) -> JsonMsg:
+    return get_serializer(bot).serialize(msg)
+
+
+def deserialize_message(bot: Bot, msg: JsonMsg) -> Message:
+    return get_deserializer(bot).deserialize(msg)

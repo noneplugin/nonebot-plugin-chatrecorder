@@ -11,7 +11,6 @@ repository = "https://github.com/noneplugin/nonebot-plugin-chatrecorder"
 [tool.poetry.dependencies]
 python = "^3.8"
 nonebot2 = { version = "^2.0.0-rc.1", extras = ["fastapi"] }
-nonebot-adapter-onebot = "^2.2.0"
 nonebot-plugin-datastore = "^0.6.0a0"
 
 [tool.poetry.group.dev.dependencies]
@@ -26,6 +25,12 @@ nonebug = "^0.3.0"
 nonebot2 = { version = "^2.0.0-rc.1", extras = ["fastapi"] }
 asyncpg = "^0.27.0"
 aiomysql = "^0.1.0"
+
+[tool.poetry.group.adapters]
+optional = true
+
+[tool.poetry.group.adapters.dependencies]
+nonebot-adapter-onebot = "^2.2.0"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
