@@ -1236,6 +1236,27 @@ nonebot2 = ">=2.0.0,<3.0.0"
 typing-extensions = ">=4.0.0"
 
 [[package]]
+name = "nonebot-plugin-session"
+version = "0.0.5"
+description = "Nonebot2 会话信息提取与会话id定义"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "nonebot_plugin_session-0.0.5-py3-none-any.whl", hash = "sha256:185ec7113bc956bcdadc0892d503802bfff8dc98d0fde674423204f88d49124a"},
+    {file = "nonebot_plugin_session-0.0.5.tar.gz", hash = "sha256:bbdf0dd46e411b3213f7473045d95cf62f40e9578e48478de1cf015556a26307"},
+]
+
+[package.dependencies]
+nonebot2 = {version = ">=2.0.0,<3.0.0", extras = ["fastapi"]}
+strenum = ">=0.4.8,<0.5.0"
+
+[package.extras]
+all = ["nonebot-plugin-datastore (>=1.0.0,<2.0.0)", "nonebot-plugin-send-anything-anywhere (>=0.2.7,<0.3.0)"]
+datastore = ["nonebot-plugin-datastore (>=1.0.0,<2.0.0)"]
+saa = ["nonebot-plugin-send-anything-anywhere (>=0.2.7,<0.3.0)"]
+
+[[package]]
 name = "nonebot2"
 version = "2.0.0"
 description = "An asynchronous python bot framework."
@@ -1794,6 +1815,23 @@ typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyaml"]
 
 [[package]]
+name = "strenum"
+version = "0.4.10"
+description = "An Enum that inherits from str."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "StrEnum-0.4.10-py3-none-any.whl", hash = "sha256:aebf04bba8e5af435937c452d69a86798b6f8d5ca5f20ba18561dbfad571ccdd"},
+    {file = "StrEnum-0.4.10.tar.gz", hash = "sha256:898cc0ebb5054ee07400341ac1d75fdfee489d76d6df3fbc1c2eaf95971e3916"},
+]
+
+[package.extras]
+docs = ["myst-parser[linkify]", "sphinx", "sphinx-rtd-theme"]
+release = ["twine"]
+test = ["pylint", "pytest", "pytest-black", "pytest-cov", "pytest-pylint"]
+
+[[package]]
 name = "text-unidecode"
 version = "1.3"
 description = "The most basic Text::Unidecode port"
@@ -2200,4 +2238,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "29dd8745ccdf255a4fad1af1e20cfc5a1fe415ca9a7d78e755f2ddec6fa8db2a"
+content-hash = "1beb245b5cef5719a8e2aebd973aff09d3852021f3314ab4f2407c38d79bcd88"
