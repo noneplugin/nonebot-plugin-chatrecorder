@@ -65,6 +65,9 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Install dependencies
+        run: poetry install --with adapters
+
       - name: Run tests
         run: |
           sed -ie "s#sqlite+aiosqlite://#postgresql+asyncpg://postgres:postgres@localhost:5432/postgres#g" tests/conftest.py
@@ -101,6 +104,9 @@ jobs:
         uses: ./.github/actions/setup-python
         with:
           python-version: "3.10"
+
+      - name: Install dependencies
+        run: poetry install --with adapters
 
       - name: Run tests
         run: |
