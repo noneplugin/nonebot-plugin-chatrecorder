@@ -92,7 +92,9 @@ async def test_record_recv_msg(app: App):
     from nonebot_plugin_chatrecorder.adapters.onebot_v12 import record_recv_msg
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), platform="qq")
+        bot = ctx.create_bot(
+            base=Bot, adapter=Adapter(get_driver()), platform="qq", impl="walle-q"
+        )
     assert isinstance(bot, Bot)
 
     time = datetime.utcfromtimestamp(1000000)
@@ -167,7 +169,9 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.adapters.onebot_v12 import record_send_msg
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), platform="qq")
+        bot = ctx.create_bot(
+            base=Bot, adapter=Adapter(get_driver()), platform="qq", impl="walle-q"
+        )
     assert isinstance(bot, Bot)
 
     time = 1000000
