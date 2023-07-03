@@ -5,10 +5,10 @@ Revises: 9bca28bcb998
 Create Date: 2023-06-28 14:44:16.544879
 
 """
-from enum import Enum
 
 import sqlalchemy as sa
 from alembic import op
+from nonebot_plugin_session.model import SessionLevel, SessionModel
 from sqlalchemy import select
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -18,13 +18,6 @@ revision = "902a51ac4032"
 down_revision = "9bca28bcb998"
 branch_labels = None
 depends_on = None
-
-
-class SessionLevel(Enum):
-    LEVEL0 = 0
-    LEVEL1 = 1
-    LEVEL2 = 2
-    LEVEL3 = 3
 
 
 def upgrade() -> None:
@@ -43,7 +36,6 @@ def upgrade() -> None:
     Base = automap_base()
     Base.prepare(autoload_with=op.get_bind())
     MessageRecord = Base.classes.nonebot_plugin_chatrecorder_messagerecord
-    SessionModel = Base.classes.nonebot_plugin_session_sessionmodel
     with Session(op.get_bind()) as session:
         select_statement = select(MessageRecord)
         result = session.scalars(select_statement)
