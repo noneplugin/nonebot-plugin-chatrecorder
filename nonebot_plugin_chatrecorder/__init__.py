@@ -4,6 +4,17 @@ from nonebot.plugin import PluginMetadata
 require("nonebot_plugin_session")
 require("nonebot_plugin_datastore")
 
+from nonebot_plugin_datastore.db import pre_db_init
+
+
+@pre_db_init
+async def _():
+    from nonebot_plugin_datastore.script.command import upgrade
+    from nonebot_plugin_datastore.script.utils import Config
+
+    config = Config("nonebot_plugin_session")
+    await upgrade(config, "head")
+
 from . import adapters
 from .message import deserialize_message, serialize_message
 from .model import MessageRecord
