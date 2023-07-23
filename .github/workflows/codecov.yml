@@ -5,6 +5,7 @@ on:
     branches:
       - "main"
       - "dev"
+      - "feat/use_session"
   pull_request:
 
 jobs:
