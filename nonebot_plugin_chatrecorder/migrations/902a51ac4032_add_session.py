@@ -8,7 +8,6 @@ Create Date: 2023-06-28 14:44:16.544879
 
 import sqlalchemy as sa
 from alembic import op
-from nonebot_plugin_session.model import SessionLevel, SessionModel
 from sqlalchemy import select
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -36,19 +35,19 @@ def upgrade() -> None:
     Base = automap_base()
     Base.prepare(autoload_with=op.get_bind())
     MessageRecord = Base.classes.nonebot_plugin_chatrecorder_messagerecord
+    SessionModel = Base.classes.nonebot_plugin_session_sessionmodel
     with Session(op.get_bind()) as session:
         select_statement = select(MessageRecord)
-        result = session.scalars(select_statement)
-        messages = result.all()
+        messages = session.scalars(select_statement).all()
 
         for message in messages:
-            level = SessionLevel.LEVEL0
+            level = "LEVEL0"
             if message.detail_type == "private":
-                level = SessionLevel.LEVEL1
+                level = "LEVEL1"
             elif message.detail_type == "group":
-                level = SessionLevel.LEVEL2
+                level = "LEVEL2"
             elif message.detail_type == "channel":
-                level = SessionLevel.LEVEL3
+                level = "LEVEL3"
 
             model = SessionModel(
                 bot_id=message.bot_id,
@@ -70,8 +69,7 @@ def upgrade() -> None:
                 .where(SessionModel.id2 == model.id2)
                 .where(SessionModel.id3 == model.id3)
             )
-            results = session.scalars(statement)
-            if results.one_or_none():
+            if session.scalars(statement).one_or_none():
                 continue
 
             session.add(model)
