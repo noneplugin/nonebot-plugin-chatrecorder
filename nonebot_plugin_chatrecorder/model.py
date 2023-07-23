@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import Optional
 
 from nonebot_plugin_datastore import get_plugin_data
-from sqlalchemy import JSON, TEXT, String
-from sqlalchemy.orm import Mapped, mapped_column
+from nonebot_plugin_session.model import SessionModel
+from sqlalchemy import JSON, TEXT, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .message import JsonMsg
 
@@ -16,6 +17,11 @@ class MessageRecord(Model):
     __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    session_id: Mapped[int] = mapped_column(
+        ForeignKey("nonebot_plugin_session_sessionmodel.id")
+    )
+    session: Mapped[SessionModel] = relationship(back_populates="message_records")
+    """ 会话属性 """
     bot_type: Mapped[str] = mapped_column(String(32))
     """ 协议适配器名称 """
     bot_id: Mapped[str] = mapped_column(String(64))
@@ -46,3 +52,6 @@ class MessageRecord(Model):
     """ 两级群组消息中的 群组id """
     channel_id: Mapped[Optional[str]] = mapped_column(String(64))
     """ 两级群组消息中的 频道id """
+
+
+SessionModel.message_records = relationship("MessageRecord", back_populates="session")
