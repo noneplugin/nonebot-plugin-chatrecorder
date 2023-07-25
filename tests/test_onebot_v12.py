@@ -173,7 +173,7 @@ async def test_record_recv_msg(app: App):
         "qq",
         "LEVEL3",
         str(user_id),
-        None,
+        str(channel_id),
         str(guild_id),
         time,
         "message",

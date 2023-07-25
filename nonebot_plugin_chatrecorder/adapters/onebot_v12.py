@@ -32,7 +32,6 @@ try:
             session_id=session_model.id,
             time=event.time,
             type=event.type,
-            detail_type=event.detail_type,
             message_id=event.message_id,
             message=serialize_message(bot, event.message),
             plain_text=event.message.extract_plain_text(),
