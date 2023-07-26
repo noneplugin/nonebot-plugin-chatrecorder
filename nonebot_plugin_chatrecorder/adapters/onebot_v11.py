@@ -72,6 +72,17 @@ try:
             if api not in ["send_msg", "send_private_msg", "send_group_msg"]:
                 return
 
+            if api == "send_group_msg" or (
+                api == "send_msg"
+                and (
+                    data.get("message_type") == "group"
+                    or (data.get("message_type") == None and data.get("group_id"))
+                )
+            ):
+                detail_type = "group"
+            else:
+                detail_type = "private"
+
             message = Message(data["message"])
             record = MessageRecord(
                 bot_type=bot.type,
@@ -79,10 +90,7 @@ try:
                 platform="qq",
                 time=datetime.utcnow(),
                 type="message_sent",
-                detail_type="group"
-                if api == "send_group_msg"
-                or (api == "send_msg" and data["message_type"] == "group")
-                else "private",
+                detail_type=detail_type,
                 message_id=str(result["message_id"]),
                 message=serialize_message(bot, message),
                 plain_text=message.extract_plain_text(),
