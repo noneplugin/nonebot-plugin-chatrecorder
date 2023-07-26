@@ -13,7 +13,7 @@ from nonebug.app import App
 async def test_get_message_records(app: App):
     """测试获取消息记录"""
     from nonebot_plugin_datastore import create_session
-    from nonebot_plugin_session import Session, SessionLevel
+    from nonebot_plugin_session import Session, SessionIdType, SessionLevel
     from nonebot_plugin_session.model import get_or_add_session_model
 
     from nonebot_plugin_chatrecorder.message import serialize_message
@@ -140,6 +140,15 @@ async def test_get_message_records(app: App):
     assert len(msgs) == 5
     for msg in msgs:
         assert isinstance(msg, MessageRecord)
+
+    msgs = list(
+        filter(
+            lambda msg: msg.session.session.get_id(SessionIdType.GROUP)
+            == sessions[0].get_id(SessionIdType.GROUP),
+            msgs,
+        )
+    )
+    assert len(msgs) == 1
 
     msgs = await get_messages(v11_bot)
     assert len(msgs) == 2

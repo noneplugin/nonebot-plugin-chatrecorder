@@ -40,9 +40,22 @@ pip install nonebot_plugin_chatrecorder
 `nonebot-plugin-datastore` 插件默认使用 SQLite 数据库，
 消息记录文件会存放在 `nonebot-plugin-datastore` 插件设置的数据目录
 
-由于在 OneBot V11 适配器中，机器人发送的消息中可能存在 base64 形式的图片、语音等，
-为避免消息记录文件体积过大，本插件会将 base64 形式的图片、语音等存成文件，并在消息记录中以文件路径替代。
-这些文件会放置在 `nonebot-plugin-datastore` 插件设置的缓存目录，建议定期清理
+> **Note**
+> 
+> 由于在 OneBot V11 适配器中，机器人**发送的消息**中可能存在 base64 形式的图片、语音等，
+> 
+> 为避免消息记录文件体积过大，本插件会将 base64 形式的图片、语音等存成文件，并在消息记录中以文件路径替代。
+> 
+> 这些文件会放置在 `nonebot-plugin-datastore` 插件设置的缓存目录，**建议定期清理**
+
+
+插件依赖 [nonebot-plugin-session](https://github.com/noneplugin/nonebot-plugin-session) 插件来获取会话相关信息
+
+其中 `id1` 代表“用户级别”的 id，即 `user_id`；
+
+`id2` 代表“群组级别”的 id，如对于 `OneBot V11` 适配器，`id2` 代表 `group_id`，对于 `OneBot V12` 适配器中的单级群组，`id2` 代表群组 id，对于 `OneBot V12` 适配器中的两级群组，`id2` 代表 `channel_id`；
+
+`id3` 代表“两级群组”的 id，如对于 `OneBot V12` 适配器中的两级群组，`id3` 代表 `guild_id`；
 
 
 ### 使用
@@ -66,11 +79,55 @@ from nonebot_plugin_chatrecorder import get_message_records
 @matcher.handle()
 async def _(event: GroupMessageEvent):
     records = await get_message_records(
-        user_ids=["12345", "54321"],
-        group_ids=[str(event.group_id)],
+        id1s=["12345", "54321"],
+        id2s=[str(event.group_id)],
         time_start=datetime.utcnow() - timedelta(days=1),
     )
 ```
+
+
+ - 获取“当前会话”1天之内的消息记录
+
+```python
+from nonebot_plugin_session import extract_session
+from nonebot_plugin_chatrecorder import get_message_records
+
+@matcher.handle()
+async def _(bot: Bot, event: Event):
+    session = extract_session(bot, event)
+    records = await get_message_records(
+        bot_ids=[session.bot_id],
+        bot_types=[session.bot_type],
+        platforms=[session.platform],
+        levels=[session.level],
+        id1s=[session.id1],
+        id2s=[session.id2],
+        id3s=[session.id3],
+        time_start=datetime.utcnow() - timedelta(days=1),
+    )
+```
+
+
+ - 使用 ["session id"](https://github.com/noneplugin/nonebot-plugin-session) 筛选消息记录
+
+```python
+from nonebot_plugin_session import extract_session, SessionIdType
+from nonebot_plugin_chatrecorder import get_message_records
+
+@matcher.handle()
+async def _(bot: Bot, event: Event):
+    session = extract_session(bot, event)
+    records = await get_message_records(
+        time_start=datetime.utcnow() - timedelta(days=1),
+    )
+    records = [
+        record
+        for record in records
+        if record.session.session.get_id(SessionIdType.GROUP)
+        == session.get_id(SessionIdType.GROUP)
+    ]
+```
+
 
  - 获取所有 OneBot V11 适配器形式的消息
 
@@ -82,6 +139,7 @@ from nonebot_plugin_chatrecorder import get_messages
 async def _(bot: Bot):
     msgs = await get_messages(bot)
 ```
+
 
  - 获取本群除机器人发出的消息外，其他消息的纯本文形式
 
