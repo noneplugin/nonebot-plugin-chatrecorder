@@ -67,7 +67,11 @@ try:
                 return
 
             if api == "send_group_msg" or (
-                api == "send_msg" and data["message_type"] == "group"
+                api == "send_msg"
+                and (
+                    data.get("message_type") == "group"
+                    or (data.get("message_type") == None and data.get("group_id"))
+                )
             ):
                 level = SessionLevel.LEVEL2
             else:
