@@ -11,8 +11,8 @@ repository = "https://github.com/noneplugin/nonebot-plugin-chatrecorder"
 [tool.poetry.dependencies]
 python = "^3.8"
 nonebot2 = { version = "^2.0.0", extras = ["fastapi"] }
-nonebot-plugin-datastore = { git = "https://github.com/he0119/nonebot-plugin-datastore.git", rev = "31831d5"}
-nonebot-plugin-session = { git = "https://github.com/noneplugin/nonebot-plugin-session.git", rev = "2c03f5d" }
+nonebot-plugin-datastore = "^1.1.0"
+nonebot-plugin-session = ">=0.0.7,<0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 nb-cli = "^1.0.0"

@@ -1176,31 +1176,27 @@ nonebot2 = ">=2.0.0-beta.3,<3.0.0"
 
 [[package]]
 name = "nonebot-plugin-datastore"
-version = "1.0.0"
+version = "1.1.0"
 description = "适用于 Nonebot2 的数据存储插件"
 category = "main"
 optional = false
-python-versions = "^3.8"
-files = []
-develop = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "nonebot_plugin_datastore-1.1.0-py3-none-any.whl", hash = "sha256:8ca11b6da0f1ff09cf0effe9f1baf3475874ec1c7c8ffe0053bb21524112c95e"},
+    {file = "nonebot_plugin_datastore-1.1.0.tar.gz", hash = "sha256:1e7fdba17fba3986467a98e1938d3e2ad65767d548146a31b7ded340d050a22c"},
+]
 
 [package.dependencies]
-alembic = "^1.9.1"
-nonebot-plugin-localstore = ">=0.2.0,!=0.3.0,!=0.4.0,<0.6.0"
-nonebot2 = {version = "^2.0.0", extras = ["httpx"]}
-sqlalchemy = {version = "^2.0.0", extras = ["aiosqlite"]}
+alembic = ">=1.9.1,<2.0.0"
+nonebot-plugin-localstore = ">=0.2.0,<0.3.0 || >0.3.0,<0.4.0 || >0.4.0"
+nonebot2 = {version = ">=2.0.0,<3.0.0", extras = ["httpx"]}
+sqlalchemy = {version = ">=2.0.0,<3.0.0", extras = ["aiosqlite"]}
 
 [package.extras]
-all = ["anyio (>=3.6)", "click (>=8.0)", "pyyaml (>=6.0,<7.0)", "rtoml (>=0.9.0,<0.10.0)", "typing-extensions (>=4.4)"]
+all = ["anyio (>=3.6)", "click (>=8.0)", "pyyaml (>=6.0)", "rtoml (>=0.9.0)", "typing-extensions (>=4.4)"]
 cli = ["anyio (>=3.6)", "click (>=8.0)", "typing-extensions (>=4.4)"]
-toml = ["rtoml (>=0.9.0,<0.10.0)"]
-yaml = ["pyyaml (>=6.0,<7.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/he0119/nonebot-plugin-datastore.git"
-reference = "31831d5"
-resolved_reference = "31831d529327df6a1a3d95d10fb871f2b28076a6"
+toml = ["rtoml (>=0.9.0)"]
+yaml = ["pyyaml (>=6.0)"]
 
 [[package]]
 name = "nonebot-plugin-localstore"
@@ -1220,28 +1216,24 @@ typing-extensions = ">=4.0.0"
 
 [[package]]
 name = "nonebot-plugin-session"
-version = "0.0.6"
+version = "0.0.7"
 description = "Nonebot2 会话信息提取与会话id定义"
 category = "main"
 optional = false
-python-versions = "^3.8"
-files = []
-develop = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "nonebot_plugin_session-0.0.7-py3-none-any.whl", hash = "sha256:22f91eb01c61c743d91e164cdc3a22e3e56f6362b7d3d8b6aef1c540acf18560"},
+    {file = "nonebot_plugin_session-0.0.7.tar.gz", hash = "sha256:e9c5562b9077f152b45266b9b307ba4cd6b1d81c380e1d48a4615d847a3caa93"},
+]
 
 [package.dependencies]
-nonebot2 = {version = "^2.0.0", extras = ["fastapi"]}
-strenum = "^0.4.8"
+nonebot2 = {version = ">=2.0.0,<3.0.0", extras = ["fastapi"]}
+strenum = ">=0.4.8,<0.5.0"
 
 [package.extras]
-all = ["nonebot-plugin-datastore @ git+https://github.com/he0119/nonebot-plugin-datastore.git@254165a", "nonebot-plugin-send-anything-anywhere (>=0.2.7,<0.3.0)"]
-datastore = ["nonebot-plugin-datastore @ git+https://github.com/he0119/nonebot-plugin-datastore.git@254165a"]
+all = ["nonebot-plugin-datastore (>=1.1.0,<2.0.0)", "nonebot-plugin-send-anything-anywhere (>=0.2.7,<0.3.0)"]
+datastore = ["nonebot-plugin-datastore (>=1.1.0,<2.0.0)"]
 saa = ["nonebot-plugin-send-anything-anywhere (>=0.2.7,<0.3.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/noneplugin/nonebot-plugin-session.git"
-reference = "2c03f5d"
-resolved_reference = "2c03f5dc3b55f3da1e397345ee39d9fed21378bf"
 
 [[package]]
 name = "nonebot2"
@@ -2226,4 +2218,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "7c209cefa4475697162ebb5769e9d7a49613cc3964bf3b955e5760fdd98ec41d"
+content-hash = "357cf863727f2dcb01935c441d7b850ad0ec1a4dc5303982e6cb301cf78a2802"
