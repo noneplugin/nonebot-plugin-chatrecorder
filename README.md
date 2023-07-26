@@ -86,73 +86,35 @@ async def _(event: GroupMessageEvent):
 ```
 
 
- - 获取“当前会话”1天之内的消息记录
-
-```python
-from nonebot_plugin_session import extract_session
-from nonebot_plugin_chatrecorder import get_message_records
-
-@matcher.handle()
-async def _(bot: Bot, event: Event):
-    session = extract_session(bot, event)
-    records = await get_message_records(
-        bot_ids=[session.bot_id],
-        bot_types=[session.bot_type],
-        platforms=[session.platform],
-        levels=[session.level],
-        id1s=[session.id1],
-        id2s=[session.id2],
-        id3s=[session.id3],
-        time_start=datetime.utcnow() - timedelta(days=1),
-    )
-```
-
-
- - 使用 ["session id"](https://github.com/noneplugin/nonebot-plugin-session) 筛选消息记录
+ - 获取当前会话成员 1 天之内的消息记录
 
 ```python
 from nonebot_plugin_session import extract_session, SessionIdType
-from nonebot_plugin_chatrecorder import get_message_records
+from nonebot_plugin_chatrecorder import get_message_records_by_session
 
 @matcher.handle()
 async def _(bot: Bot, event: Event):
     session = extract_session(bot, event)
-    records = await get_message_records(
+    records = await get_message_records_by_session(
+        session, SessionIdType.GROUP_USER,
         time_start=datetime.utcnow() - timedelta(days=1),
     )
-    records = [
-        record
-        for record in records
-        if record.session.session.get_id(SessionIdType.GROUP)
-        == session.get_id(SessionIdType.GROUP)
-    ]
 ```
 
 
- - 获取所有 OneBot V11 适配器形式的消息
+ - 获取当前 群聊/私聊 除机器人发出的消息外，其他消息的纯本文形式
 
 ```python
-from nonebot.adapters.onebot.v11 import Bot
-from nonebot_plugin_chatrecorder import get_messages
+from nonebot_plugin_session import extract_session, SessionIdType
+from nonebot_plugin_chatrecorder import get_messages_plain_text_by_session
 
 @matcher.handle()
-async def _(bot: Bot):
-    msgs = await get_messages(bot)
-```
-
-
- - 获取本群除机器人发出的消息外，其他消息的纯本文形式
-
-```python
-from nonebot.adapters.onebot.v11 import GroupMessageEvent
-from nonebot_plugin_chatrecorder import get_messages_plain_text
-
-@matcher.handle()
-async def _(event: GroupMessageEvent):
-    msgs = await get_messages_plain_text(
-        types=["message"],
-        group_ids=[str(event.group_id)],
+async def _(bot: Bot, event: Event):
+    session = extract_session(bot, event)
+    msgs = await get_messages_plain_text_by_session(
+        session, SessionIdType.GROUP, types=["message"]
     )
 ```
+
 
 详细参数及说明见代码注释

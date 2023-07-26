@@ -22,6 +22,8 @@ from ..model import MessageRecord
 try:
     from nonebot.adapters.onebot.v12 import Bot, Message, MessageEvent
 
+    adapter = SupportedAdapter.onebot_v12
+
     @event_postprocessor
     async def record_recv_msg(bot: Bot, event: MessageEvent):
         session = extract_session(bot, event)
@@ -33,7 +35,7 @@ try:
             time=event.time,
             type=event.type,
             message_id=event.message_id,
-            message=serialize_message(bot, event.message),
+            message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),
         )
         async with create_session() as db_session:
@@ -83,7 +85,7 @@ try:
                 time=datetime.utcfromtimestamp(result["time"]),
                 type="message_sent",
                 message_id=result["message_id"],
-                message=serialize_message(bot, message),
+                message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )
             async with create_session() as db_session:
@@ -99,7 +101,6 @@ try:
         def get_message_class(cls) -> Type[Message]:
             return Message
 
-    adapter = SupportedAdapter.onebot_v12
     register_serializer(adapter, Serializer)
     register_deserializer(adapter, Deserializer)
 

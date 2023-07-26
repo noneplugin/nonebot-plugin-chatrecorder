@@ -1220,20 +1220,24 @@ version = "0.0.7"
 description = "Nonebot2 会话信息提取与会话id定义"
 category = "main"
 optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "nonebot_plugin_session-0.0.7-py3-none-any.whl", hash = "sha256:22f91eb01c61c743d91e164cdc3a22e3e56f6362b7d3d8b6aef1c540acf18560"},
-    {file = "nonebot_plugin_session-0.0.7.tar.gz", hash = "sha256:e9c5562b9077f152b45266b9b307ba4cd6b1d81c380e1d48a4615d847a3caa93"},
-]
+python-versions = "^3.8"
+files = []
+develop = false
 
 [package.dependencies]
-nonebot2 = {version = ">=2.0.0,<3.0.0", extras = ["fastapi"]}
-strenum = ">=0.4.8,<0.5.0"
+nonebot2 = {version = "^2.0.0", extras = ["fastapi"]}
+strenum = "^0.4.8"
 
 [package.extras]
 all = ["nonebot-plugin-datastore (>=1.1.0,<2.0.0)", "nonebot-plugin-send-anything-anywhere (>=0.2.7,<0.3.0)"]
 datastore = ["nonebot-plugin-datastore (>=1.1.0,<2.0.0)"]
 saa = ["nonebot-plugin-send-anything-anywhere (>=0.2.7,<0.3.0)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/noneplugin/nonebot-plugin-session.git"
+reference = "233c50f"
+resolved_reference = "233c50fccc6f9da25ac3d6a40d029956bd025de8"
 
 [[package]]
 name = "nonebot2"
@@ -2218,4 +2222,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "357cf863727f2dcb01935c441d7b850ad0ec1a4dc5303982e6cb301cf78a2802"
+content-hash = "016ad014e73c04bfae3d56345a39452314887f1b266e11fa6806306cb0673f14"

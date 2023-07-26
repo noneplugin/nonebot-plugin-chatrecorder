@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from nonebot import get_driver
+from nonebot.adapters import Message
 from nonebot.adapters.onebot.v11 import Adapter as V11Adapter
 from nonebot.adapters.onebot.v11 import Bot as V11Bot
 from nonebot.adapters.onebot.v11 import Message as V11Msg
@@ -20,8 +21,11 @@ async def test_get_message_records(app: App):
     from nonebot_plugin_chatrecorder.model import MessageRecord
     from nonebot_plugin_chatrecorder.record import (
         get_message_records,
+        get_message_records_by_session,
         get_messages,
+        get_messages_by_session,
         get_messages_plain_text,
+        get_messages_plain_text_by_session,
     )
 
     async with app.test_api() as ctx:
@@ -150,12 +154,17 @@ async def test_get_message_records(app: App):
     )
     assert len(msgs) == 1
 
-    msgs = await get_messages(v11_bot)
+    msgs = await get_messages()
+    assert len(msgs) == 5
+    for msg in msgs:
+        assert isinstance(msg, Message)
+
+    msgs = await get_messages(bot_types=["OneBot V11"])
     assert len(msgs) == 2
     for msg in msgs:
         assert isinstance(msg, V11Msg)
 
-    msgs = await get_messages(v12_bot)
+    msgs = await get_messages(bot_types=["OneBot V12"])
     assert len(msgs) == 3
     for msg in msgs:
         assert isinstance(msg, V12Msg)
@@ -224,3 +233,31 @@ async def test_get_message_records(app: App):
         time_stop=datetime.utcfromtimestamp(1000002).replace(tzinfo=timezone.utc)
     )
     assert len(msgs) == 3
+
+    msgs = await get_message_records_by_session(sessions[1], SessionIdType.GROUP)
+    assert len(msgs) == 1
+
+    msgs = await get_message_records_by_session(sessions[1], SessionIdType.GROUP_USER)
+    assert len(msgs) == 1
+
+    msgs = await get_message_records_by_session(sessions[1], SessionIdType.USER)
+    assert len(msgs) == 1
+
+    msgs = await get_message_records_by_session(
+        sessions[1], SessionIdType.USER, include_bot_id=False
+    )
+    assert len(msgs) == 2
+
+    msgs = await get_message_records_by_session(sessions[1], SessionIdType.GLOBAL)
+    assert len(msgs) == 1
+
+    msgs = await get_message_records_by_session(
+        sessions[0], SessionIdType.GLOBAL, include_bot_type=False
+    )
+    assert len(msgs) == 2
+
+    msgs = await get_messages_by_session(sessions[1], SessionIdType.GROUP)
+    assert len(msgs) == 1
+
+    msgs = await get_messages_plain_text_by_session(sessions[1], SessionIdType.GROUP)
+    assert len(msgs) == 1

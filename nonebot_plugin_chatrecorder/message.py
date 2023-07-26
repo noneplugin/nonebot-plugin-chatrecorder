@@ -1,12 +1,11 @@
 import abc
-from typing import Any, Dict, Generic, List, Type, TypeVar
+from typing import Any, Dict, Generic, List, Type, TypeVar, Union
 
 from nonebot.adapters import Bot, Message
 from pydantic import parse_obj_as
 
 from .consts import SupportedAdapter
-from .exception import AdapterNotInstalled
-from .utils import extract_adapter_type
+from .exception import AdapterNotInstalled, AdapterNotSupported
 
 JsonMsg = List[Dict[str, Any]]
 TM = TypeVar("TM", bound="Message")
@@ -33,15 +32,21 @@ _serializers: Dict[SupportedAdapter, Type[MessageSerializer]] = {}
 _deserializers: Dict[SupportedAdapter, Type[MessageDeserializer]] = {}
 
 
-def get_serializer(bot: Bot) -> Type[MessageSerializer]:
-    adapter = extract_adapter_type(bot)
+def get_adapter_type(bot_type: str) -> SupportedAdapter:
+    for adapter in SupportedAdapter:
+        if bot_type == adapter.value:
+            return adapter
+
+    raise AdapterNotSupported(bot_type)
+
+
+def get_serializer(adapter: SupportedAdapter) -> Type[MessageSerializer]:
     if adapter not in _serializers:
         raise AdapterNotInstalled(adapter.value)
     return _serializers[adapter]
 
 
-def get_deserializer(bot: Bot) -> Type[MessageDeserializer]:
-    adapter = extract_adapter_type(bot)
+def get_deserializer(adapter: SupportedAdapter) -> Type[MessageDeserializer]:
     if adapter not in _deserializers:
         raise AdapterNotInstalled(adapter.value)
     return _deserializers[adapter]
@@ -57,9 +62,21 @@ def register_deserializer(
     _deserializers[adapter] = deserializer
 
 
-def serialize_message(bot: Bot, msg: Message) -> JsonMsg:
-    return get_serializer(bot).serialize(msg)
+def serialize_message(
+    bot_type: Union[Bot, SupportedAdapter, str], msg: Message
+) -> JsonMsg:
+    if isinstance(bot_type, Bot):
+        bot_type = bot_type.type
+    if isinstance(bot_type, str):
+        bot_type = get_adapter_type(bot_type)
+    return get_serializer(bot_type).serialize(msg)
 
 
-def deserialize_message(bot: Bot, msg: JsonMsg) -> Message:
-    return get_deserializer(bot).deserialize(msg)
+def deserialize_message(
+    bot_type: Union[Bot, SupportedAdapter, str], msg: JsonMsg
+) -> Message:
+    if isinstance(bot_type, Bot):
+        bot_type = bot_type.type
+    if isinstance(bot_type, str):
+        bot_type = get_adapter_type(bot_type)
+    return get_deserializer(bot_type).deserialize(msg)
