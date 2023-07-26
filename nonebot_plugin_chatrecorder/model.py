@@ -7,7 +7,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .message import JsonMsg
 
-Model = get_plugin_data().Model
+plugin_data = get_plugin_data()
+plugin_data.use_global_registry()
+Model = plugin_data.Model
 
 
 class MessageRecord(Model):
