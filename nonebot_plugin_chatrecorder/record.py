@@ -7,6 +7,7 @@ from nonebot_plugin_session import Session, SessionIdType, SessionLevel
 from nonebot_plugin_session.model import SessionModel
 from sqlalchemy import or_, select
 from sqlalchemy.orm import selectinload
+from sqlalchemy.sql import ColumnElement
 
 from .message import deserialize_message
 from .model import MessageRecord
@@ -21,7 +22,7 @@ def remove_timezone(dt: datetime) -> datetime:
     return dt.replace(tzinfo=None)
 
 
-async def get_message_records(
+def filter_statement(
     *,
     bot_ids: Optional[Iterable[str]] = None,
     bot_types: Optional[Iterable[str]] = None,
@@ -36,8 +37,8 @@ async def get_message_records(
     time_start: Optional[datetime] = None,
     time_stop: Optional[datetime] = None,
     types: Optional[Iterable[Literal["message", "message_sent"]]] = None,
-) -> Sequence[MessageRecord]:
-    """获取消息记录
+) -> List[ColumnElement[bool]]:
+    """筛选消息记录
 
     参数:
       * ``bot_ids: Optional[Iterable[str]]``: bot id 列表，为空表示所有 bot id
@@ -55,7 +56,7 @@ async def get_message_records(
       * ``types: Optional[Iterable[Literal["message", "message_sent"]]]``: 消息事件类型列表，为空表示所有类型
 
     返回值:
-      * ``List[MessageRecord]``: 消息记录列表
+      * ``List[ColumnElement[bool]]``: 筛选语句
     """
 
     whereclause = []
@@ -93,7 +94,19 @@ async def get_message_records(
         whereclause.append(MessageRecord.time <= remove_timezone(time_stop))
     if types:
         whereclause.append(or_(*[MessageRecord.type == type for type in types]))
+    return whereclause
 
+
+async def get_message_records(**kwargs) -> Sequence[MessageRecord]:
+    """获取消息记录
+
+    参数:
+      * ``**kwargs``: 筛选参数，具体查看 `filter_statement` 中的定义
+
+    返回值:
+      * ``List[MessageRecord]``: 消息记录列表
+    """
+    whereclause = filter_statement(**kwargs)
     statement = (
         select(MessageRecord)
         .where(*whereclause)
@@ -109,7 +122,7 @@ async def get_messages(**kwargs) -> List[Message]:
     """获取消息记录的消息列表
 
     参数:
-      * ``**kwargs``: 筛选参数，具体查看 `get_message_records` 中的定义
+      * ``**kwargs``: 筛选参数，具体查看 `filter_statement` 中的定义
 
     返回值:
       * ``List[Message]``: 消息列表
@@ -121,20 +134,23 @@ async def get_messages(**kwargs) -> List[Message]:
     ]
 
 
-async def get_messages_plain_text(**kwargs) -> List[str]:
+async def get_messages_plain_text(**kwargs) -> Sequence[str]:
     """获取消息记录的纯文本消息列表
 
     参数:
-      * ``**kwargs``: 筛选参数，具体查看 `get_message_records` 中的定义
+      * ``**kwargs``: 筛选参数，具体查看 `filter_statement` 中的定义
 
     返回值:
       * ``List[str]``: 纯文本消息列表
     """
-    records = await get_message_records(**kwargs)
-    return [record.plain_text for record in records]
+    whereclause = filter_statement(**kwargs)
+    statement = select(MessageRecord.plain_text).where(*whereclause).join(SessionModel)
+    async with create_session() as db_session:
+        records = (await db_session.scalars(statement)).all()
+    return records
 
 
-async def get_message_records_by_session(
+def filter_statement_by_session(
     session: Session,
     id_type: SessionIdType,
     *,
@@ -144,8 +160,8 @@ async def get_message_records_by_session(
     time_start: Optional[datetime] = None,
     time_stop: Optional[datetime] = None,
     types: Optional[Iterable[Literal["message", "message_sent"]]] = None,
-) -> Sequence[MessageRecord]:
-    """根据当前会话和类型获取消息记录
+) -> List[ColumnElement[bool]]:
+    """根据当前会话和类型筛选消息记录
 
     参数:
       * ``session: Session``: 会话模型
@@ -158,7 +174,7 @@ async def get_message_records_by_session(
       * ``types: Optional[Iterable[Literal["message", "message_sent"]]]``: 消息事件类型列表，为空表示所有类型
 
     返回值:
-      * ``List[MessageRecord]``: 消息记录列表
+      * ``List[ColumnElement[bool]]``: 筛选语句
     """
     whereclause = SessionModel.filter_statement(
         session,
@@ -173,7 +189,21 @@ async def get_message_records_by_session(
         whereclause.append(MessageRecord.time <= remove_timezone(time_stop))
     if types:
         whereclause.append(or_(*[MessageRecord.type == type for type in types]))
+    return whereclause
 
+
+async def get_message_records_by_session(
+    session: Session, id_type: SessionIdType, **kwargs
+) -> Sequence[MessageRecord]:
+    """根据当前会话和类型获取消息记录
+
+    参数:
+      * ``**kwargs``: 筛选参数，具体查看 `filter_statement_by_session` 中的定义
+
+    返回值:
+      * ``List[MessageRecord]``: 消息记录列表
+    """
+    whereclause = filter_statement_by_session(session, id_type, **kwargs)
     statement = (
         select(MessageRecord)
         .where(*whereclause)
@@ -193,7 +223,7 @@ async def get_messages_by_session(
     参数:
       * ``session: Session``: 会话模型
       * ``id_type: SessionIdType``: 会话 id 类型
-      * ``**kwargs``: 筛选参数，具体查看 `get_message_records_by_session` 中的定义
+      * ``**kwargs``: 筛选参数，具体查看 `filter_statement_by_session` 中的定义
 
     返回值:
       * ``List[Message]``: 消息列表
@@ -207,16 +237,19 @@ async def get_messages_by_session(
 
 async def get_messages_plain_text_by_session(
     session: Session, id_type: SessionIdType, **kwargs
-) -> List[str]:
+) -> Sequence[str]:
     """根据当前会话和类型获取消息记录的纯文本消息列表
 
     参数:
       * ``session: Session``: 会话模型
       * ``id_type: SessionIdType``: 会话 id 类型
-      * ``**kwargs``: 筛选参数，具体查看 `get_message_records_by_session` 中的定义
+      * ``**kwargs``: 筛选参数，具体查看 `filter_statement_by_session` 中的定义
 
     返回值:
       * ``List[str]``: 纯文本消息列表
     """
-    records = await get_message_records_by_session(session, id_type, **kwargs)
-    return [record.plain_text for record in records]
+    whereclause = filter_statement_by_session(session, id_type, **kwargs)
+    statement = select(MessageRecord.plain_text).where(*whereclause).join(SessionModel)
+    async with create_session() as db_session:
+        records = (await db_session.scalars(statement)).all()
+    return records
