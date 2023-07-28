@@ -40,7 +40,7 @@ pip install nonebot_plugin_chatrecorder
 `nonebot-plugin-datastore` 插件默认使用 SQLite 数据库，
 消息记录文件会存放在 `nonebot-plugin-datastore` 插件设置的数据目录
 
-> **Note**
+> [!NOTE]
 > 
 > 由于在 OneBot V11 适配器中，机器人**发送的消息**中可能存在 base64 形式的图片、语音等，
 > 
@@ -85,7 +85,7 @@ async def _(event: GroupMessageEvent):
     )
 ```
 
-> **Note**
+> [!NOTE]
 >
 > `time_start` 和 `time_stop` 参数 传入的 `datetime` 对象必须为 [感知型对象](https://docs.python.org/zh-cn/3/library/datetime.html#determining-if-an-object-is-aware-or-naive)（即包含时区信息），或者确保其为 UTC 时间
 
