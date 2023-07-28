@@ -3,10 +3,10 @@ from typing import Any, Dict, Optional, Type
 
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
-from nonebot.typing import overrides
 from nonebot_plugin_datastore import create_session
 from nonebot_plugin_session import Session, SessionLevel, extract_session
 from nonebot_plugin_session.model import get_or_add_session_model
+from typing_extensions import override
 
 from ..config import plugin_config
 from ..consts import SupportedAdapter
@@ -97,7 +97,7 @@ try:
 
     class Deserializer(MessageDeserializer[Message]):
         @classmethod
-        @overrides(MessageDeserializer)
+        @override
         def get_message_class(cls) -> Type[Message]:
             return Message
 
