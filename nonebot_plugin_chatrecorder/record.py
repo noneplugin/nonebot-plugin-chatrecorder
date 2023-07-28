@@ -51,8 +51,8 @@ def filter_statement(
       * ``exclude_id1s: Optional[Iterable[str]]``: 不包含的会话 id1（用户级 id）列表，为空表示不限制
       * ``exclude_id2s: Optional[Iterable[str]]``: 不包含的会话 id2（群组级 id）列表，为空表示不限制
       * ``exclude_id3s: Optional[Iterable[str]]``: 不包含的会话 id3（两级群组级 id）列表，为空表示不限制
-      * ``time_start: Optional[datetime]``: 起始时间，为空表示不限制起始时间
-      * ``time_stop: Optional[datetime]``: 结束时间，为空表示不限制结束时间
+      * ``time_start: Optional[datetime]``: 起始时间，为空表示不限制起始时间（传入带时区的时间或 UTC 时间）
+      * ``time_stop: Optional[datetime]``: 结束时间，为空表示不限制结束时间（传入带时区的时间或 UTC 时间）
       * ``types: Optional[Iterable[Literal["message", "message_sent"]]]``: 消息事件类型列表，为空表示所有类型
 
     返回值:
@@ -169,8 +169,8 @@ def filter_statement_by_session(
       * ``include_platform: bool``: 是否限制平台类型
       * ``include_bot_type: bool``: 是否限制适配器类型
       * ``include_bot_id: bool``: 是否限制 bot id
-      * ``time_start: Optional[datetime]``: 起始时间，为空表示不限制起始时间
-      * ``time_stop: Optional[datetime]``: 结束时间，为空表示不限制结束时间
+      * ``time_start: Optional[datetime]``: 起始时间，为空表示不限制起始时间（传入带时区的时间或 UTC 时间）
+      * ``time_stop: Optional[datetime]``: 结束时间，为空表示不限制结束时间（传入带时区的时间或 UTC 时间）
       * ``types: Optional[Iterable[Literal["message", "message_sent"]]]``: 消息事件类型列表，为空表示所有类型
 
     返回值:

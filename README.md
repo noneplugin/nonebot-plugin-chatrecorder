@@ -85,6 +85,10 @@ async def _(event: GroupMessageEvent):
     )
 ```
 
+> **Note**
+>
+> `time_start` 和 `time_stop` 参数 传入的 `datetime` 对象必须为 [感知型对象](https://docs.python.org/zh-cn/3/library/datetime.html#determining-if-an-object-is-aware-or-naive)（即包含时区信息），或者确保其为 UTC 时间
+
 
  - 获取当前会话成员 1 天之内的消息记录
 
