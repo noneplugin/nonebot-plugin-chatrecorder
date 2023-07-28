@@ -17,6 +17,7 @@ from ..consts import (
     RECORD_CACHE_DIR,
     VIDEO_CACHE_DIR,
     SupportedAdapter,
+    SupportedPlatform,
 )
 from ..message import (
     JsonMsg,
@@ -80,7 +81,7 @@ try:
             session = Session(
                 bot_id=bot.self_id,
                 bot_type=bot.type,
-                platform="qq",
+                platform=SupportedPlatform.qq,
                 level=level,
                 id1=str(data.get("user_id", "")) or None,
                 id2=str(data.get("group_id", "")) or None,
