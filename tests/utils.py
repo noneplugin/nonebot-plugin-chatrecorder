@@ -21,6 +21,7 @@ async def check_record(
     from sqlalchemy.orm import selectinload
 
     from nonebot_plugin_chatrecorder.model import MessageRecord
+    from nonebot_plugin_chatrecorder.utils import remove_timezone
 
     statement = (
         select(MessageRecord)
@@ -42,6 +43,6 @@ async def check_record(
     assert session.id3 == id3
     assert record.type == type
     if time:
-        assert record.time == time
+        assert record.time == remove_timezone(time)
     assert record.message == message
     assert record.plain_text == plain_text
