@@ -38,7 +38,7 @@ try:
             session_id=session_model.id,
             time=event.time.astimezone(timezone.utc),
             type=event.post_type,
-            message_id=next(id),
+            message_id=str(next(id)),
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),
         )
@@ -101,7 +101,7 @@ try:
                 session_id=session_model.id,
                 time=datetime.utcnow(),
                 type="message_sent",
-                message_id=next(id),
+                message_id=str(next(id)),
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )
