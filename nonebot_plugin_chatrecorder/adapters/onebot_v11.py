@@ -8,6 +8,8 @@ from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot.typing import overrides
 from nonebot_plugin_datastore import create_session
+from nonebot_plugin_session import Session, SessionLevel, extract_session
+from nonebot_plugin_session.model import get_or_add_session_model
 
 from ..config import plugin_config
 from ..consts import (
@@ -27,35 +29,27 @@ from ..message import (
 from ..model import MessageRecord
 
 try:
-    from nonebot.adapters.onebot.v11 import (
-        Bot,
-        GroupMessageEvent,
-        Message,
-        MessageEvent,
-        MessageSegment,
-    )
+    from nonebot.adapters.onebot.v11 import Bot, Message, MessageEvent, MessageSegment
+
+    adapter = SupportedAdapter.onebot_v11
 
     @event_postprocessor
     async def record_recv_msg(bot: Bot, event: MessageEvent):
+        session = extract_session(bot, event)
+        async with create_session() as db_session:
+            session_model = await get_or_add_session_model(session, db_session)
+
         record = MessageRecord(
-            bot_type=bot.type,
-            bot_id=bot.self_id,
-            platform="qq",
+            session_id=session_model.id,
             time=datetime.utcfromtimestamp(event.time),
             type=event.post_type,
-            detail_type=event.message_type,
             message_id=str(event.message_id),
-            message=serialize_message(bot, event.message),
+            message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),
-            user_id=str(event.user_id),
-            group_id=str(event.group_id)
-            if isinstance(event, GroupMessageEvent)
-            else None,
         )
-
-        async with create_session() as session:
-            session.add(record)
-            await session.commit()
+        async with create_session() as db_session:
+            db_session.add(record)
+            await db_session.commit()
 
     if plugin_config.chatrecorder_record_send_msg:
 
@@ -79,28 +73,34 @@ try:
                     or (data.get("message_type") == None and data.get("group_id"))
                 )
             ):
-                detail_type = "group"
+                level = SessionLevel.LEVEL2
             else:
-                detail_type = "private"
+                level = SessionLevel.LEVEL1
+
+            session = Session(
+                bot_id=bot.self_id,
+                bot_type=bot.type,
+                platform="qq",
+                level=level,
+                id1=str(data.get("user_id", "")) or None,
+                id2=str(data.get("group_id", "")) or None,
+                id3=None,
+            )
+            async with create_session() as db_session:
+                session_model = await get_or_add_session_model(session, db_session)
 
             message = Message(data["message"])
             record = MessageRecord(
-                bot_type=bot.type,
-                bot_id=bot.self_id,
-                platform="qq",
+                session_id=session_model.id,
                 time=datetime.utcnow(),
                 type="message_sent",
-                detail_type=detail_type,
                 message_id=str(result["message_id"]),
-                message=serialize_message(bot, message),
+                message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
-                user_id=str(bot.self_id),
-                group_id=str(data.get("group_id", "")) or None,
             )
-
-            async with create_session() as session:
-                session.add(record)
-                await session.commit()
+            async with create_session() as db_session:
+                db_session.add(record)
+                await db_session.commit()
 
     def cache_b64_msg(msg: Message):
         for seg in msg:
@@ -144,7 +144,6 @@ try:
         def get_message_class(cls) -> Type[Message]:
             return Message
 
-    adapter = SupportedAdapter.onebot_v11
     register_serializer(adapter, Serializer)
     register_deserializer(adapter, Deserializer)
 

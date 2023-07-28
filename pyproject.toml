@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot_plugin_chatrecorder"
-version = "0.2.5"
+version = "0.3.0"
 description = "适用于 Nonebot2 的聊天记录插件"
 authors = ["meetwq <meetwq@gmail.com>"]
 license = "MIT"
@@ -11,7 +11,8 @@ repository = "https://github.com/noneplugin/nonebot-plugin-chatrecorder"
 [tool.poetry.dependencies]
 python = "^3.8"
 nonebot2 = { version = "^2.0.0", extras = ["fastapi"] }
-nonebot-plugin-datastore = "^1.0.0"
+nonebot-plugin-datastore = "^1.1.0"
+nonebot-plugin-session = ">=0.0.8,<0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 nb-cli = "^1.0.0"

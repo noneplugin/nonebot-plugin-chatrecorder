@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 from nonebot import get_driver
 from nonebot.adapters.onebot.v11 import (
@@ -12,6 +12,8 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.adapters.onebot.v11.event import Sender
 from nonebug.app import App
 from pydantic import create_model
+
+from .utils import check_record
 
 
 def fake_group_message_event(**field) -> GroupMessageEvent:
@@ -70,9 +72,10 @@ def fake_private_message_event(**field) -> PrivateMessageEvent:
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
     from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_recv_msg
+    from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()))
+        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), self_id="11")
     assert isinstance(bot, Bot)
 
     time = 1000000
@@ -89,14 +92,18 @@ async def test_record_recv_msg(app: App):
     )
     await record_recv_msg(bot, event)
     await check_record(
-        bot,
-        str(message_id),
-        "message",
-        "group",
-        message,
+        "11",
+        "OneBot V11",
+        "qq",
+        "LEVEL2",
         str(user_id),
         str(group_id),
-        time,
+        None,
+        datetime.utcfromtimestamp(time),
+        "message",
+        str(message_id),
+        serialize_message(bot, message),
+        message.extract_plain_text(),
     )
 
     message_id = 11451422222
@@ -106,16 +113,28 @@ async def test_record_recv_msg(app: App):
     )
     await record_recv_msg(bot, event)
     await check_record(
-        bot, str(message_id), "message", "private", message, str(user_id), None, time
+        "11",
+        "OneBot V11",
+        "qq",
+        "LEVEL1",
+        str(user_id),
+        None,
+        None,
+        datetime.utcfromtimestamp(time),
+        "message",
+        str(message_id),
+        serialize_message(bot, message),
+        message.extract_plain_text(),
     )
 
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
     from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_send_msg
+    from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()))
+        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), self_id="11")
     assert isinstance(bot, Bot)
 
     user_id = 123456
@@ -131,7 +150,18 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
-        bot, str(message_id), "message_sent", "group", message, user_id=bot.self_id
+        "11",
+        "OneBot V11",
+        "qq",
+        "LEVEL2",
+        None,
+        str(group_id),
+        None,
+        None,
+        "message_sent",
+        str(message_id),
+        serialize_message(bot, message),
+        message.extract_plain_text(),
     )
 
     message_id = 11451444444
@@ -144,7 +174,18 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
-        bot, str(message_id), "message_sent", "group", message, user_id=bot.self_id
+        "11",
+        "OneBot V11",
+        "qq",
+        "LEVEL2",
+        None,
+        str(group_id),
+        None,
+        None,
+        "message_sent",
+        str(message_id),
+        serialize_message(bot, message),
+        message.extract_plain_text(),
     )
 
     message_id = 11451455555
@@ -157,45 +198,16 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
-        bot,
-        str(message_id),
+        "11",
+        "OneBot V11",
+        "qq",
+        "LEVEL1",
+        str(user_id),
+        None,
+        None,
+        None,
         "message_sent",
-        "private",
-        message,
-        user_id=bot.self_id,
-        group_id=None,
+        str(message_id),
+        serialize_message(bot, message),
+        message.extract_plain_text(),
     )
-
-
-async def check_record(
-    bot: Bot,
-    message_id: str,
-    type: str,
-    detail_type: str,
-    message: "Message",
-    user_id: str,
-    group_id: Optional[str] = None,
-    time: Optional[int] = None,
-):
-    from nonebot_plugin_datastore import create_session
-    from sqlalchemy import select
-
-    from nonebot_plugin_chatrecorder.message import serialize_message
-    from nonebot_plugin_chatrecorder.model import MessageRecord
-
-    statement = select(MessageRecord).where(MessageRecord.message_id == message_id)
-    async with create_session() as session:
-        records = (await session.scalars(statement)).all()
-
-    assert len(records) == 1
-    record = records[0]
-    assert record.platform == "qq"
-    assert record.type == type
-    assert record.detail_type == detail_type
-    assert record.message == serialize_message(bot, message)
-    assert record.plain_text == message.extract_plain_text()
-    assert record.user_id == user_id
-    if group_id:
-        assert record.group_id == group_id
-    if time:
-        assert record.time == datetime.utcfromtimestamp(time)
