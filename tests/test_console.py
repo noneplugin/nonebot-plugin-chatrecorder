@@ -26,18 +26,15 @@ def fake_message_event(**field) -> MessageEvent:
     return FakeEvent(**field)
 
 
-async def test_console(app: App):
-    from nonebot_plugin_chatrecorder.adapters.console import (
-        record_recv_msg,
-        record_send_msg,
-    )
+async def test_record_recv_msg(app: App):
+    # 测试记录收到的消息
+    from nonebot_plugin_chatrecorder.adapters.console import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
         bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), self_id="console")
     assert isinstance(bot, Bot)
 
-    # 测试记录收到的消息
     time = 1000000
     user_id = "User"
     message = Message("test_record_recv_msg")
@@ -60,7 +57,16 @@ async def test_console(app: App):
         message.extract_plain_text(),
     )
 
+
+async def test_record_send_msg(app: App):
     # 测试记录发送的消息
+    from nonebot_plugin_chatrecorder.adapters.console import record_send_msg
+    from nonebot_plugin_chatrecorder.message import serialize_message
+
+    async with app.test_api() as ctx:
+        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), self_id="console")
+    assert isinstance(bot, Bot)
+
     user_id = "User"
     elements = ConsoleMessage([Text("test_record_send_msg")])
     message = Message("test_record_send_msg")

@@ -21,13 +21,29 @@ from ..message import (
 )
 from ..model import MessageRecord
 
-id = count(0)
-
 try:
     from nonebot.adapters.console import Bot, Message, MessageEvent, MessageSegment
+    from nonebot_plugin_session.model import SessionModel
     from nonechat import ConsoleMessage, Emoji, Text
+    from sqlalchemy import select
 
     adapter = SupportedAdapter.console
+
+    id = None
+
+    async def get_id() -> str:
+        global id
+        if not id:
+            statement = (
+                select(MessageRecord)
+                .where(SessionModel.bot_type == adapter)
+                .order_by(MessageRecord.message_id.desc())
+                .join(SessionModel)
+            )
+            async with create_session() as db_session:
+                record = await db_session.scalar(statement)
+            id = count(int(record.message_id) + 1) if record else count(0)
+        return str(next(id))
 
     @event_postprocessor
     async def record_recv_msg(bot: Bot, event: MessageEvent):
@@ -39,7 +55,7 @@ try:
             session_id=session_model.id,
             time=event.time.astimezone(timezone.utc),
             type=event.post_type,
-            message_id=str(next(id)),
+            message_id=await get_id(),
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),
         )
@@ -90,7 +106,7 @@ try:
                 session_id=session_model.id,
                 time=datetime.utcnow(),
                 type="message_sent",
-                message_id=str(next(id)),
+                message_id=await get_id(),
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )
