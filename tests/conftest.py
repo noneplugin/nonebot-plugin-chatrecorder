@@ -15,6 +15,7 @@ def pytest_configure(config: pytest.Config) -> None:
             # 必须保持连接，不然连接关闭后，内存中的数据库会被删除
             "poolclass": StaticPool,
         },
+        "driver": "~fastapi+~websockets",
     }
 
 
