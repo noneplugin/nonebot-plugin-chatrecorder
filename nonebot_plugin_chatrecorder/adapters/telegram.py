@@ -94,20 +94,20 @@ try:
             else:
                 return
 
-            message_thread_id = str(tg_message.message_thread_id)
-            chat_id = str(tg_message.chat.id)
+            message_thread_id = tg_message.message_thread_id
+            chat_id = tg_message.chat.id
             id1 = None
             id2 = None
             id3 = None
-            if chat.type == "channel":
-                id3 = chat_id
-                id2 = message_thread_id
+            if message_thread_id:
+                id3 = str(chat_id)
+                id2 = str(message_thread_id)
                 level = SessionLevel.LEVEL3
             elif chat.type == "private":
-                id1 = chat_id
+                id1 = str(chat_id)
                 level = SessionLevel.LEVEL1
             else:
-                id2 = chat_id
+                id2 = str(chat_id)
                 level = SessionLevel.LEVEL2
 
             session = Session(
