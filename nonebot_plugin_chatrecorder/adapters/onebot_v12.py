@@ -52,11 +52,12 @@ try:
             data: Dict[str, Any],
             result: Optional[Dict[str, Any]],
         ):
+            if not isinstance(bot, Bot):
+                return
             if e or not result:
                 return
             if api not in ["send_message"]:
                 return
-            assert isinstance(bot, Bot)
 
             detail_type = data["detail_type"]
             level = SessionLevel.LEVEL0

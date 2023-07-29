@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from datetime import datetime, timezone
 from itertools import count
 from typing import Any, Dict, Optional, Type
@@ -24,7 +25,7 @@ id = count(0)
 
 try:
     from nonebot.adapters.console import Bot, Message, MessageEvent, MessageSegment
-    from nonechat import ConsoleMessage, Emoji, Markdown, Markup, Text
+    from nonechat import ConsoleMessage, Emoji, Text
 
     adapter = SupportedAdapter.console
 
@@ -54,11 +55,12 @@ try:
             e: Optional[Exception],
             api: str,
             data: Dict[str, Any],
-            result: Optional[Dict[str, Any]],
+            result: Any,
         ):
+            if not isinstance(bot, Bot):
+                return
             if e or api not in ["send_msg"]:
                 return
-            assert isinstance(bot, Bot)
 
             session = Session(
                 bot_id=bot.self_id,
@@ -74,27 +76,14 @@ try:
 
             elements = ConsoleMessage(data["message"])
             message = Message()
-            for element in elements:
-                if isinstance(element, Text):
-                    message += MessageSegment.text(element.text)
-                elif isinstance(element, Emoji):
-                    message += MessageSegment.emoji(element.name)
-                elif isinstance(element, Markdown):
-                    message += MessageSegment.markdown(
-                        element.markup,
-                        element.code_theme,
-                        element.justify,
-                        element.style,
-                        element.hyperlinks,
-                        element.inline_code_lexer,
-                        element.inline_code_theme,
-                    )
-                elif isinstance(element, Markup):
-                    message += MessageSegment.markup(
-                        element.markup,
-                        element.style,
-                        element.emoji,
-                        element.emoji_variant,
+            for elem in elements:
+                if isinstance(elem, Text):
+                    message += MessageSegment.text(elem.text)
+                elif isinstance(elem, Emoji):
+                    message += MessageSegment.emoji(elem.name)
+                else:
+                    message += MessageSegment(
+                        type=elem.__class__.__name__.lower(), data=asdict(elem)  # type: ignore
                     )
 
             record = MessageRecord(

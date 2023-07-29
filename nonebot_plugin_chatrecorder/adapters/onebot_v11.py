@@ -62,6 +62,8 @@ try:
             data: Dict[str, Any],
             result: Optional[Dict[str, Any]],
         ):
+            if not isinstance(bot, Bot):
+                return
             if e or not result:
                 return
             if api not in ["send_msg", "send_private_msg", "send_group_msg"]:
