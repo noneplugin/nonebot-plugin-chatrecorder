@@ -1,4 +1,3 @@
-from datetime import timezone
 from typing import Any, Dict, Optional, Type
 
 from nonebot.adapters import Bot as BaseBot
@@ -18,6 +17,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
+from ..utils import remove_timezone
 
 try:
     from nonebot.adapters.qqguild import Bot, Message, MessageEvent
@@ -36,7 +36,7 @@ try:
 
         record = MessageRecord(
             session_id=session_model.id,
-            time=event.timestamp.astimezone(timezone.utc),
+            time=remove_timezone(event.timestamp),
             type=event.get_type(),
             message_id=event.id,
             message=serialize_message(adapter, event.get_message()),
@@ -99,7 +99,7 @@ try:
 
             record = MessageRecord(
                 session_id=session_model.id,
-                time=result.timestamp.astimezone(timezone.utc),
+                time=remove_timezone(result.timestamp),
                 type="message_sent",
                 message_id=result.id,
                 message=serialize_message(adapter, message),
