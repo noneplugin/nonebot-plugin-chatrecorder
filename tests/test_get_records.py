@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import List
 
 from nonebot import get_driver
 from nonebot.adapters import Message
@@ -15,7 +16,7 @@ async def test_get_message_records(app: App):
     """测试获取消息记录"""
     from nonebot_plugin_datastore import create_session
     from nonebot_plugin_session import Session, SessionIdType, SessionLevel
-    from nonebot_plugin_session.model import get_or_add_session_model
+    from nonebot_plugin_session.model import SessionModel, get_or_add_session_model
 
     from nonebot_plugin_chatrecorder.message import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
@@ -89,13 +90,14 @@ async def test_get_message_records(app: App):
             id3="100000",
         ),
     ]
+    session_models: List[SessionModel] = []
     async with create_session() as db_session:
         for session in sessions:
-            await get_or_add_session_model(session, db_session)
+            session_models.append(await get_or_add_session_model(session, db_session))
 
     records = [
         MessageRecord(
-            session_id=1,
+            session_id=session_models[0].id,
             time=datetime.utcfromtimestamp(1000000),
             type="message",
             message_id="1",
@@ -103,7 +105,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 1",
         ),
         MessageRecord(
-            session_id=2,
+            session_id=session_models[1].id,
             time=datetime.utcfromtimestamp(1000001),
             type="message_sent",
             message_id="2",
@@ -111,7 +113,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 2",
         ),
         MessageRecord(
-            session_id=3,
+            session_id=session_models[2].id,
             time=datetime.utcfromtimestamp(1000002),
             type="message",
             message_id="3",
@@ -119,7 +121,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 3",
         ),
         MessageRecord(
-            session_id=4,
+            session_id=session_models[3].id,
             time=datetime.utcfromtimestamp(1000003),
             type="message",
             message_id="3",
@@ -127,7 +129,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 4",
         ),
         MessageRecord(
-            session_id=5,
+            session_id=session_models[4].id,
             time=datetime.utcfromtimestamp(1000004),
             type="message",
             message_id="3",
