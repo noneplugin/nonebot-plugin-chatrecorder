@@ -15,6 +15,7 @@ async def _():
     config = Config("nonebot_plugin_session")
     await upgrade(config, "head")
 
+
 from . import adapters
 from .message import deserialize_message, serialize_message
 from .model import MessageRecord
@@ -26,5 +27,12 @@ __plugin_meta__ = PluginMetadata(
     usage="请参考文档",
     type="library",
     homepage="https://github.com/noneplugin/nonebot-plugin-chatrecorder",
-    supported_adapters={"~onebot.v11", "~onebot.v12"},
+    supported_adapters={
+        "~onebot.v11",
+        "~onebot.v12",
+        "~console",
+        "~kaiheila",
+        "~qqguild",
+        "~telegram",
+    },
 )
