@@ -90,14 +90,15 @@ async def test_get_message_records(app: App):
             id3="100000",
         ),
     ]
-    session_models: List[SessionModel] = []
+    session_ids: List[int] = []
     async with create_session() as db_session:
         for session in sessions:
-            session_models.append(await get_or_add_session_model(session, db_session))
+            session_model = await get_or_add_session_model(session, db_session)
+            session_ids.append(session_model.id)
 
     records = [
         MessageRecord(
-            session_id=session_models[0].id,
+            session_id=session_ids[0],
             time=datetime.utcfromtimestamp(1000000),
             type="message",
             message_id="1",
@@ -105,7 +106,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 1",
         ),
         MessageRecord(
-            session_id=session_models[1].id,
+            session_id=session_ids[1],
             time=datetime.utcfromtimestamp(1000001),
             type="message_sent",
             message_id="2",
@@ -113,7 +114,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 2",
         ),
         MessageRecord(
-            session_id=session_models[2].id,
+            session_id=session_ids[2],
             time=datetime.utcfromtimestamp(1000002),
             type="message",
             message_id="3",
@@ -121,7 +122,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 3",
         ),
         MessageRecord(
-            session_id=session_models[3].id,
+            session_id=session_ids[3],
             time=datetime.utcfromtimestamp(1000003),
             type="message",
             message_id="3",
@@ -129,7 +130,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 4",
         ),
         MessageRecord(
-            session_id=session_models[4].id,
+            session_id=session_ids[4],
             time=datetime.utcfromtimestamp(1000004),
             type="message",
             message_id="3",
