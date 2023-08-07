@@ -7,7 +7,7 @@ Create Date: 2023-06-28 14:44:16.544879
 """
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 
@@ -28,6 +28,9 @@ def upgrade() -> None:
         statement = select(MessageRecord)
         messages = session.scalars(statement).all()
 
+        # 批量插入 session，注意去重
+        bulk_insert_sessions = {}
+        message_id_session_key_map = {}
         for message in messages:
             bot_id = message.bot_id
             bot_type = message.bot_type
@@ -43,33 +46,45 @@ def upgrade() -> None:
             id2 = message.group_id or message.channel_id
             id3 = message.guild_id
 
-            statement = (
-                select(SessionModel)
-                .where(SessionModel.bot_id == bot_id)
-                .where(SessionModel.bot_type == bot_type)
-                .where(SessionModel.platform == platform)
-                .where(SessionModel.level == level)
-                .where(SessionModel.id1 == id1)
-                .where(SessionModel.id2 == id2)
-                .where(SessionModel.id3 == id3)
-            )
-            if not (model := session.scalars(statement).one_or_none()):
-                model = SessionModel(
-                    bot_id=bot_id,
-                    bot_type=bot_type,
-                    platform=platform,
-                    level=level,
-                    id1=id1,
-                    id2=id2,
-                    id3=id3,
-                )
-                session.add(model)
-                session.commit()
-                session.refresh(model)
+            session_key = (bot_id, bot_type, platform, level, id1, id2, id3)
+            # 保存 message id 和 session key 的对应关系
+            message_id_session_key_map[message.id] = session_key
+            if session_key not in bulk_insert_sessions:
+                bulk_insert_sessions[session_key] = {
+                    "bot_id": bot_id,
+                    "bot_type": bot_type,
+                    "platform": platform,
+                    "level": level,
+                    "id1": id1,
+                    "id2": id2,
+                    "id3": id3,
+                }
+        session.bulk_insert_mappings(SessionModel, bulk_insert_sessions.values())
 
-            message.session_id = model.id
-            session.add(message)
-            session.commit()
+        # 获取提交后的 session id
+        session_key_id_map = {}
+        for session_obj in session.scalars(select(SessionModel)).all():
+            session_key = (
+                session_obj.bot_id,
+                session_obj.bot_type,
+                session_obj.platform,
+                session_obj.level,
+                session_obj.id1,
+                session_obj.id2,
+                session_obj.id3,
+            )
+            session_key_id_map[session_key] = session_obj.id
+        
+        # 更新 message 的 session id
+        bulk_update_messages = []
+        for message_id, session_key in message_id_session_key_map.items():
+            bulk_update_messages.append(
+                {
+                    "id": message_id,
+                    "session_id": session_key_id_map[session_key],
+                }
+            )
+        session.bulk_update_mappings(MessageRecord, bulk_update_messages)
 
     with op.batch_alter_table(
         "nonebot_plugin_chatrecorder_messagerecord", schema=None
