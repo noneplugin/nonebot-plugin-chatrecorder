@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
 from nonebot.adapters import Bot as BaseBot
@@ -9,7 +8,7 @@ from nonebot_plugin_session.model import get_or_add_session_model
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter
+from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -18,11 +17,13 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
+from ..utils import remove_timezone
 
 try:
-    from nonebot.adapters.onebot.v12 import Bot, Message, MessageEvent
+    from nonebot.adapters.qqguild import Bot, Message, MessageEvent
+    from nonebot.adapters.qqguild.api.model import Message as GuildMessage
 
-    adapter = SupportedAdapter.onebot_v12
+    adapter = SupportedAdapter.qqguild
 
     @event_postprocessor
     async def record_recv_msg(bot: Bot, event: MessageEvent):
@@ -30,13 +31,16 @@ try:
         async with create_session() as db_session:
             session_model = await get_or_add_session_model(session, db_session)
 
+        assert event.id
+        assert event.timestamp
+
         record = MessageRecord(
             session_id=session_model.id,
-            time=event.time,
-            type=event.type,
-            message_id=event.message_id,
-            message=serialize_message(adapter, event.message),
-            plain_text=event.message.extract_plain_text(),
+            time=remove_timezone(event.timestamp),
+            type=event.get_type(),
+            message_id=event.id,
+            message=serialize_message(adapter, event.get_message()),
+            plain_text=event.get_plaintext(),
         )
         async with create_session() as db_session:
             db_session.add(record)
@@ -50,42 +54,54 @@ try:
             e: Optional[Exception],
             api: str,
             data: Dict[str, Any],
-            result: Optional[Dict[str, Any]],
+            result: Any,
         ):
             if not isinstance(bot, Bot):
                 return
             if e or not result:
                 return
-            if api not in ["send_message"]:
+            if not isinstance(result, GuildMessage):
                 return
 
-            detail_type = data["detail_type"]
-            level = SessionLevel.LEVEL0
-            if detail_type == "channel":
+            id1 = None
+            id2 = None
+            id3 = None
+            if api == "post_messages":
                 level = SessionLevel.LEVEL3
-            elif detail_type == "group":
-                level = SessionLevel.LEVEL2
-            elif detail_type == "private":
+                assert result.guild_id
+                assert result.channel_id
+                id3 = str(result.guild_id)
+                id2 = str(result.channel_id)
+            elif api == "post_dms_messages":
+                # TODO "post_dms_messages" 的返回值是什么样的？
+                # 是否应该存 src_guild_id 和 recipient_id？
                 level = SessionLevel.LEVEL1
+                assert result.guild_id
+                id3 = str(result.guild_id)
+            else:
+                return
 
             session = Session(
                 bot_id=bot.self_id,
                 bot_type=bot.type,
-                platform=bot.platform,
+                platform=SupportedPlatform.qqguild,
                 level=level,
-                id1=data.get("user_id"),
-                id2=data.get("group_id") or data.get("channel_id"),
-                id3=data.get("guild_id"),
+                id1=id1,
+                id2=id2,
+                id3=id3,
             )
             async with create_session() as db_session:
                 session_model = await get_or_add_session_model(session, db_session)
 
-            message = Message(data["message"])
+            assert result.id
+            assert result.timestamp
+            message = Message.from_guild_message(result)
+
             record = MessageRecord(
                 session_id=session_model.id,
-                time=datetime.utcfromtimestamp(result["time"]),
+                time=remove_timezone(result.timestamp),
                 type="message_sent",
-                message_id=result["message_id"],
+                message_id=result.id,
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )

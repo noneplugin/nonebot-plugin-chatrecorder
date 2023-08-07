@@ -9,7 +9,7 @@ from nonebot_plugin_session.model import get_or_add_session_model
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter
+from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -20,9 +20,12 @@ from ..message import (
 from ..model import MessageRecord
 
 try:
-    from nonebot.adapters.onebot.v12 import Bot, Message, MessageEvent
+    from nonebot.adapters.kaiheila import Bot, Message, MessageSegment
+    from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
+    from nonebot.adapters.kaiheila.event import MessageEvent
+    from nonebot.adapters.kaiheila.message import rev_msg_type_map
 
-    adapter = SupportedAdapter.onebot_v12
+    adapter = SupportedAdapter.kaiheila
 
     @event_postprocessor
     async def record_recv_msg(bot: Bot, event: MessageEvent):
@@ -32,9 +35,9 @@ try:
 
         record = MessageRecord(
             session_id=session_model.id,
-            time=event.time,
-            type=event.type,
-            message_id=event.message_id,
+            time=datetime.utcfromtimestamp(event.msg_timestamp / 1000),
+            type=event.post_type,
+            message_id=event.msg_id,
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),
         )
@@ -56,36 +59,62 @@ try:
                 return
             if e or not result:
                 return
-            if api not in ["send_message"]:
+            if not (
+                isinstance(result, MessageCreateReturn)
+                and result.msg_id
+                and result.msg_timestamp
+            ):
                 return
 
-            detail_type = data["detail_type"]
-            level = SessionLevel.LEVEL0
-            if detail_type == "channel":
+            if api == "message/create":
                 level = SessionLevel.LEVEL3
-            elif detail_type == "group":
-                level = SessionLevel.LEVEL2
-            elif detail_type == "private":
+                channel_id = data["target_id"]
+                user_id = data.get("temp_target_id")
+            elif api == "direct-message/create":
                 level = SessionLevel.LEVEL1
+                channel_id = None
+                user_id = data["target_id"]
+            else:
+                return
+
+            type_code = data["type"]
+            content = data["content"]
+            type = rev_msg_type_map.get(type_code, "")
+            if type == "text":
+                message = MessageSegment.text(content)
+            elif type == "image":
+                message = MessageSegment.image(content)
+            elif type == "video":
+                message = MessageSegment.video(content)
+            elif type == "file":
+                message = MessageSegment.file(content)
+            elif type == "audio":
+                message = MessageSegment.audio(content)
+            elif type == "kmarkdown":
+                message = MessageSegment.KMarkdown(content)
+            elif type == "card":
+                message = MessageSegment.Card(content)
+            else:
+                message = MessageSegment(type, {"content": content})
+            message = Message(message)
 
             session = Session(
                 bot_id=bot.self_id,
                 bot_type=bot.type,
-                platform=bot.platform,
+                platform=SupportedPlatform.kaiheila,
                 level=level,
-                id1=data.get("user_id"),
-                id2=data.get("group_id") or data.get("channel_id"),
-                id3=data.get("guild_id"),
+                id1=user_id,
+                id2=None,
+                id3=channel_id,
             )
             async with create_session() as db_session:
                 session_model = await get_or_add_session_model(session, db_session)
 
-            message = Message(data["message"])
             record = MessageRecord(
                 session_id=session_model.id,
-                time=datetime.utcfromtimestamp(result["time"]),
+                time=datetime.utcfromtimestamp(result.msg_timestamp / 1000),
                 type="message_sent",
-                message_id=result["message_id"],
+                message_id=result.msg_id,
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )

@@ -122,3 +122,16 @@ async def _(bot: Bot, event: Event):
 
 
 详细参数及说明见代码注释
+
+
+### 支持的 adapter
+
+| OneBot v11 | OneBot v12 | Console | Kaiheila | QQ Guild | Telegram |
+| :--------: | :--------: | :------: | :------: | :------: | :------: |
+|     ✅     |     ✅     |    ✅    |    ✅    |    ✅    |    ✅    |
+
+
+### 鸣谢
+
+- [nonebot-plugin-send-anything-anywhere](https://github.com/felinae98/nonebot-plugin-send-anything-anywhere) 项目的灵感来源以及部分实现的参考
+- [uy/sun](https://github.com/he0119) 感谢歪日佬的技术支持

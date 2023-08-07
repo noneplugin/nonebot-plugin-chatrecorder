@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Iterable, List, Literal, Optional, Sequence, Union
 
 from nonebot.adapters import Message
@@ -11,15 +11,7 @@ from sqlalchemy.sql import ColumnElement
 
 from .message import deserialize_message
 from .model import MessageRecord
-
-
-def remove_timezone(dt: datetime) -> datetime:
-    """移除时区"""
-    if dt.tzinfo is None:
-        return dt
-    # 先转至 UTC 时间，再移除时区
-    dt = dt.astimezone(timezone.utc)
-    return dt.replace(tzinfo=None)
+from .utils import remove_timezone
 
 
 def filter_statement(

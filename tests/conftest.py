@@ -15,6 +15,7 @@ def pytest_configure(config: pytest.Config) -> None:
             # 必须保持连接，不然连接关闭后，内存中的数据库会被删除
             "poolclass": StaticPool,
         },
+        "driver": "~fastapi+~websockets",
     }
 
 
@@ -23,6 +24,7 @@ async def app(tmp_path: Path):
     nonebot.require("nonebot_plugin_chatrecorder")
     from nonebot_plugin_datastore.config import plugin_config
     from nonebot_plugin_datastore.db import create_session, init_db
+    from nonebot_plugin_session.model import SessionModel
 
     from nonebot_plugin_chatrecorder.model import MessageRecord
 
@@ -36,3 +38,4 @@ async def app(tmp_path: Path):
 
     async with create_session() as session, session.begin():
         await session.execute(delete(MessageRecord))
+        await session.execute(delete(SessionModel))

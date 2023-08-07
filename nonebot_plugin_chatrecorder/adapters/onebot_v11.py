@@ -17,6 +17,7 @@ from ..consts import (
     RECORD_CACHE_DIR,
     VIDEO_CACHE_DIR,
     SupportedAdapter,
+    SupportedPlatform,
 )
 from ..message import (
     JsonMsg,
@@ -61,6 +62,8 @@ try:
             data: Dict[str, Any],
             result: Optional[Dict[str, Any]],
         ):
+            if not isinstance(bot, Bot):
+                return
             if e or not result:
                 return
             if api not in ["send_msg", "send_private_msg", "send_group_msg"]:
@@ -80,7 +83,7 @@ try:
             session = Session(
                 bot_id=bot.self_id,
                 bot_type=bot.type,
-                platform="qq",
+                platform=SupportedPlatform.qq,
                 level=level,
                 id1=str(data.get("user_id", "")) or None,
                 id2=str(data.get("group_id", "")) or None,

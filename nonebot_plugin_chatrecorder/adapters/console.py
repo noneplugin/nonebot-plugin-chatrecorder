@@ -1,4 +1,6 @@
-from datetime import datetime
+from dataclasses import asdict
+from datetime import datetime, timezone
+from itertools import count
 from typing import Any, Dict, Optional, Type
 
 from nonebot.adapters import Bot as BaseBot
@@ -9,7 +11,7 @@ from nonebot_plugin_session.model import get_or_add_session_model
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter
+from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -18,11 +20,31 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
+from ..utils import remove_timezone
 
 try:
-    from nonebot.adapters.onebot.v12 import Bot, Message, MessageEvent
+    from nonebot.adapters.console import Bot, Message, MessageEvent, MessageSegment
+    from nonebot_plugin_session.model import SessionModel
+    from nonechat import ConsoleMessage, Emoji, Text
+    from sqlalchemy import select
 
-    adapter = SupportedAdapter.onebot_v12
+    adapter = SupportedAdapter.console
+
+    id = None
+
+    async def get_id() -> str:
+        global id
+        if not id:
+            statement = (
+                select(MessageRecord)
+                .where(SessionModel.bot_type == adapter)
+                .order_by(MessageRecord.message_id.desc())
+                .join(SessionModel)
+            )
+            async with create_session() as db_session:
+                record = await db_session.scalar(statement)
+            id = count(int(record.message_id) + 1) if record else count(0)
+        return str(next(id))
 
     @event_postprocessor
     async def record_recv_msg(bot: Bot, event: MessageEvent):
@@ -32,9 +54,9 @@ try:
 
         record = MessageRecord(
             session_id=session_model.id,
-            time=event.time,
-            type=event.type,
-            message_id=event.message_id,
+            time=remove_timezone(event.time.astimezone(timezone.utc)),
+            type=event.post_type,
+            message_id=await get_id(),
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),
         )
@@ -50,42 +72,42 @@ try:
             e: Optional[Exception],
             api: str,
             data: Dict[str, Any],
-            result: Optional[Dict[str, Any]],
+            result: Any,
         ):
             if not isinstance(bot, Bot):
                 return
-            if e or not result:
+            if e or api not in ["send_msg"]:
                 return
-            if api not in ["send_message"]:
-                return
-
-            detail_type = data["detail_type"]
-            level = SessionLevel.LEVEL0
-            if detail_type == "channel":
-                level = SessionLevel.LEVEL3
-            elif detail_type == "group":
-                level = SessionLevel.LEVEL2
-            elif detail_type == "private":
-                level = SessionLevel.LEVEL1
 
             session = Session(
                 bot_id=bot.self_id,
                 bot_type=bot.type,
-                platform=bot.platform,
-                level=level,
+                platform=SupportedPlatform.console,
+                level=SessionLevel.LEVEL1,
                 id1=data.get("user_id"),
-                id2=data.get("group_id") or data.get("channel_id"),
-                id3=data.get("guild_id"),
+                id2=None,
+                id3=None,
             )
             async with create_session() as db_session:
                 session_model = await get_or_add_session_model(session, db_session)
 
-            message = Message(data["message"])
+            elements = ConsoleMessage(data["message"])
+            message = Message()
+            for elem in elements:
+                if isinstance(elem, Text):
+                    message += MessageSegment.text(elem.text)
+                elif isinstance(elem, Emoji):
+                    message += MessageSegment.emoji(elem.name)
+                else:
+                    message += MessageSegment(
+                        type=elem.__class__.__name__.lower(), data=asdict(elem)  # type: ignore
+                    )
+
             record = MessageRecord(
                 session_id=session_model.id,
-                time=datetime.utcfromtimestamp(result["time"]),
+                time=datetime.utcnow(),
                 type="message_sent",
-                message_id=result["message_id"],
+                message_id=await get_id(),
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )
