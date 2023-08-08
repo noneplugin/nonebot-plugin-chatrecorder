@@ -16,17 +16,14 @@ async def test_get_message_records(app: App):
     """测试获取消息记录"""
     from nonebot_plugin_datastore import create_session
     from nonebot_plugin_session import Session, SessionIdType, SessionLevel
-    from nonebot_plugin_session.model import SessionModel, get_or_add_session_model
+    from nonebot_plugin_session.model import get_or_add_session_model
 
     from nonebot_plugin_chatrecorder.message import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
     from nonebot_plugin_chatrecorder.record import (
         get_message_records,
-        get_message_records_by_session,
         get_messages,
-        get_messages_by_session,
         get_messages_plain_text,
-        get_messages_plain_text_by_session,
     )
 
     async with app.test_api() as ctx:
@@ -237,35 +234,42 @@ async def test_get_message_records(app: App):
     )
     assert len(msgs) == 3
 
-    msgs = await get_message_records_by_session(sessions[1], SessionIdType.GROUP)
+    msgs = await get_message_records(session=sessions[1], id_type=SessionIdType.GROUP)
     assert len(msgs) == 1
 
-    msgs = await get_message_records_by_session(sessions[1], SessionIdType.GROUP_USER)
+    msgs = await get_message_records(
+        session=sessions[1], id_type=SessionIdType.GROUP_USER
+    )
     assert len(msgs) == 1
 
-    msgs = await get_message_records_by_session(sessions[1], SessionIdType.USER)
+    msgs = await get_message_records(session=sessions[1], id_type=SessionIdType.USER)
     assert len(msgs) == 1
 
-    msgs = await get_message_records_by_session(
-        sessions[1], SessionIdType.USER, include_bot_id=False
+    msgs = await get_message_records(
+        session=sessions[1], id_type=SessionIdType.USER, include_bot_id=False
     )
     assert len(msgs) == 2
 
-    msgs = await get_message_records_by_session(sessions[1], SessionIdType.GLOBAL)
+    msgs = await get_message_records(session=sessions[1], id_type=SessionIdType.GLOBAL)
     assert len(msgs) == 1
 
-    msgs = await get_message_records_by_session(
-        sessions[0], SessionIdType.GLOBAL, include_bot_type=False
+    msgs = await get_message_records(
+        session=sessions[0], id_type=SessionIdType.GLOBAL, include_bot_type=False
     )
     assert len(msgs) == 2
 
-    msgs = await get_message_records_by_session(
-        sessions[0], SessionIdType.GLOBAL, include_bot_type=False, exclude_id1s=["1000"]
+    msgs = await get_message_records(
+        session=sessions[0],
+        id_type=SessionIdType.GLOBAL,
+        include_bot_type=False,
+        exclude_id1s=["1000"],
     )
     assert len(msgs) == 1
 
-    msgs = await get_messages_by_session(sessions[1], SessionIdType.GROUP)
+    msgs = await get_messages(session=sessions[1], id_type=SessionIdType.GROUP)
     assert len(msgs) == 1
 
-    msgs = await get_messages_plain_text_by_session(sessions[1], SessionIdType.GROUP)
+    msgs = await get_messages_plain_text(
+        session=sessions[1], id_type=SessionIdType.GROUP
+    )
     assert len(msgs) == 1
