@@ -149,6 +149,13 @@ def filter_statement_by_session(
     include_platform: bool = True,
     include_bot_type: bool = True,
     include_bot_id: bool = True,
+    levels: Optional[Iterable[Union[str, SessionLevel]]] = None,
+    id1s: Optional[Iterable[str]] = None,
+    id2s: Optional[Iterable[str]] = None,
+    id3s: Optional[Iterable[str]] = None,
+    exclude_id1s: Optional[Iterable[str]] = None,
+    exclude_id2s: Optional[Iterable[str]] = None,
+    exclude_id3s: Optional[Iterable[str]] = None,
     time_start: Optional[datetime] = None,
     time_stop: Optional[datetime] = None,
     types: Optional[Iterable[Literal["message", "message_sent"]]] = None,
@@ -161,6 +168,13 @@ def filter_statement_by_session(
       * ``include_platform: bool``: 是否限制平台类型
       * ``include_bot_type: bool``: 是否限制适配器类型
       * ``include_bot_id: bool``: 是否限制 bot id
+      * ``levels: Optional[Iterable[Union[str, SessionLevel]]]``: 会话级别列表，为空表示所有级别
+      * ``id1s: Optional[Iterable[str]]``: 会话 id1（用户级 id）列表，为空表示所有 id
+      * ``id2s: Optional[Iterable[str]]``: 会话 id2（群组级 id）列表，为空表示所有 id
+      * ``id3s: Optional[Iterable[str]]``: 会话 id3（两级群组级 id）列表，为空表示所有 id
+      * ``exclude_id1s: Optional[Iterable[str]]``: 不包含的会话 id1（用户级 id）列表，为空表示不限制
+      * ``exclude_id2s: Optional[Iterable[str]]``: 不包含的会话 id2（群组级 id）列表，为空表示不限制
+      * ``exclude_id3s: Optional[Iterable[str]]``: 不包含的会话 id3（两级群组级 id）列表，为空表示不限制
       * ``time_start: Optional[datetime]``: 起始时间，为空表示不限制起始时间（传入带时区的时间或 UTC 时间）
       * ``time_stop: Optional[datetime]``: 结束时间，为空表示不限制结束时间（传入带时区的时间或 UTC 时间）
       * ``types: Optional[Iterable[Literal["message", "message_sent"]]]``: 消息事件类型列表，为空表示所有类型
@@ -175,6 +189,23 @@ def filter_statement_by_session(
         include_bot_type=include_bot_type,
         include_bot_id=include_bot_id,
     )
+    if levels:
+        whereclause.append(or_(*[SessionModel.level == level for level in levels]))
+    if id1s:
+        whereclause.append(or_(*[SessionModel.id1 == id1 for id1 in id1s]))
+    if id2s:
+        whereclause.append(or_(*[SessionModel.id2 == id2 for id2 in id2s]))
+    if id3s:
+        whereclause.append(or_(*[SessionModel.id3 == id3 for id3 in id3s]))
+    if exclude_id1s:
+        for id1 in exclude_id1s:
+            whereclause.append(SessionModel.id1 != id1)
+    if exclude_id2s:
+        for id2 in exclude_id2s:
+            whereclause.append(SessionModel.id2 != id2)
+    if exclude_id3s:
+        for id3 in exclude_id3s:
+            whereclause.append(SessionModel.id3 != id3)
     if time_start:
         whereclause.append(MessageRecord.time >= remove_timezone(time_start))
     if time_stop:

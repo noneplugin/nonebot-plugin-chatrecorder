@@ -259,6 +259,11 @@ async def test_get_message_records(app: App):
     )
     assert len(msgs) == 2
 
+    msgs = await get_message_records_by_session(
+        sessions[0], SessionIdType.GLOBAL, include_bot_type=False, exclude_id1s=["1000"]
+    )
+    assert len(msgs) == 1
+
     msgs = await get_messages_by_session(sessions[1], SessionIdType.GROUP)
     assert len(msgs) == 1
 
