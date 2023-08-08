@@ -7,6 +7,7 @@ Create Date: 2023-06-28 14:44:16.544879
 """
 import sqlalchemy as sa
 from alembic import op
+from nonebot.log import logger
 from sqlalchemy import insert, select, update
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -25,6 +26,8 @@ def upgrade() -> None:
     MessageRecord = Base.classes.nonebot_plugin_chatrecorder_messagerecord
     SessionModel = Base.classes.nonebot_plugin_session_sessionmodel
     with Session(op.get_bind()) as session:
+        logger.warning("正在迁移聊天记录数据，请不要关闭程序...")
+
         statement = select(MessageRecord)
         messages = session.scalars(statement).all()
 
@@ -105,6 +108,7 @@ def upgrade() -> None:
             )
         if bulk_update_messages:
             session.execute(update(MessageRecord), bulk_update_messages)
+        logger.warning("聊天记录数据迁移完成！")
 
     with op.batch_alter_table(
         "nonebot_plugin_chatrecorder_messagerecord", schema=None
