@@ -19,6 +19,12 @@ from nonebug.app import App
 from .utils import check_record
 
 
+@pytest.fixture(scope="session", autouse=True)
+def load_adapters(nonebug_init: None):
+    driver = get_driver()
+    driver.register_adapter(Adapter)
+
+
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
     from nonebot_plugin_chatrecorder.adapters.kaiheila import record_recv_msg

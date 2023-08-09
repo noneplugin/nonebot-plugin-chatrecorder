@@ -36,6 +36,7 @@ nonebot-adapter-console = "^0.4.0"
 nonebot-adapter-qqguild = "^0.2.1"
 nonebot-adapter-kaiheila = { version = "^0.2.4", python = ">=3.9" }
 nonebot-adapter-telegram = "^0.1.0b13"
+nonebot-adapter-feishu = "^2.0.1"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
