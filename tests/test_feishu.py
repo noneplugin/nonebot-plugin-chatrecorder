@@ -267,16 +267,6 @@ async def test_record_send_msg(app: App):
             message.extract_plain_text(),
         )
 
-        ctx.should_call_api(
-            "im/v1/chats/oc_123",
-            {"method": "GET", "query": {"user_id_type": "open_id"}},
-            {
-                "chat_mode": "group",
-                "name": "test",
-                "owner_id": "3344",
-                "owner_id_type": "open_id",
-            },
-        )
         await record_send_msg(
             bot,
             None,
@@ -318,16 +308,6 @@ async def test_record_send_msg(app: App):
             message.extract_plain_text(),
         )
 
-        ctx.should_call_api(
-            "im/v1/chats/oc_456",
-            {"method": "GET", "query": {"user_id_type": "open_id"}},
-            {
-                "chat_mode": "p2p",
-                "name": "test",
-                "owner_id": "3344",
-                "owner_id_type": "open_id",
-            },
-        )
         await record_send_msg(
             bot,
             None,

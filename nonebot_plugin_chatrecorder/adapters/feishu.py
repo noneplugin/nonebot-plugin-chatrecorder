@@ -46,6 +46,16 @@ try:
             db_session.add(record)
             await db_session.commit()
 
+    _chat_info_cache: Dict[str, Dict[str, Any]] = {}
+
+    async def get_chat_info(bot: Bot, chat_id: str) -> Dict[str, Any]:
+        if chat_id in _chat_info_cache:
+            return _chat_info_cache[chat_id]
+        params = {"method": "GET", "query": {"user_id_type": "open_id"}}
+        resp = await bot.call_api(f"im/v1/chats/{chat_id}", **params)
+        _chat_info_cache[chat_id] = resp
+        return resp
+
     if plugin_config.chatrecorder_record_send_msg:
 
         @Bot.on_called_api
@@ -67,8 +77,7 @@ try:
                 return
 
             chat_id = result["chat_id"]
-            params = {"method": "GET", "query": {"user_id_type": "open_id"}}
-            resp = await bot.call_api(f"im/v1/chats/{chat_id}", **params)
+            resp = await get_chat_info(bot, chat_id)
             chat_mode = resp["chat_mode"]
 
             level = SessionLevel.LEVEL0
