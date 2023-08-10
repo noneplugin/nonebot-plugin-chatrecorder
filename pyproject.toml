@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot_plugin_chatrecorder"
-version = "0.4.0"
+version = "0.4.1"
 description = "适用于 Nonebot2 的聊天记录插件"
 authors = ["meetwq <meetwq@gmail.com>"]
 license = "MIT"

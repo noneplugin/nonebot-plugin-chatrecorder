@@ -20,7 +20,7 @@ pip install nonebot_plugin_chatrecorder
 
 ### 配置项
 
-> 以下配置项可在 `.env.*` 文件中设置，具体参考 [NoneBot 配置方式](https://v2.nonebot.dev/docs/tutorial/configuration#%E9%85%8D%E7%BD%AE%E6%96%B9%E5%BC%8F)
+> 以下配置项可在 `.env.*` 文件中设置，具体参考 [NoneBot 配置方式](https://nonebot.dev/docs/appendices/config)
 
 #### `chatrecorder_record_send_msg`
  - 类型：`bool`
@@ -126,9 +126,9 @@ async def _(bot: Bot, event: Event):
 
 ### 支持的 adapter
 
-| OneBot v11 | OneBot v12 | Console | Kaiheila | QQ Guild | Telegram |
-| :--------: | :--------: | :------: | :------: | :------: | :------: |
-|     ✅     |     ✅     |    ✅    |    ✅    |    ✅    |    ✅    |
+| OneBot v11 | OneBot v12 | Console | Kaiheila | QQ Guild | Telegram | Feishu |
+| :--------: | :--------: | :-----: | :------: | :------: | :------: | :----: |
+|     ✅    |     ✅     |   ✅   |    ✅    |    ✅   |    ✅    |   ✅   |
 
 
 ### 鸣谢
