@@ -18,6 +18,7 @@ class SupportedAdapter(StrEnum):
     kaiheila = "Kaiheila"
     qqguild = "QQ Guild"
     telegram = "Telegram"
+    feishu = "Feishu"
 
 
 class SupportedPlatform(StrEnum):
@@ -26,4 +27,5 @@ class SupportedPlatform(StrEnum):
     kaiheila = "kaiheila"
     qqguild = "qqguild"
     telegram = "telegram"
+    feishu = "feishu"
     unknown = "unknown"
