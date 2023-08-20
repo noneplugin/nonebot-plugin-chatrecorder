@@ -94,13 +94,13 @@ async def _(event: GroupMessageEvent):
 
 ```python
 from nonebot_plugin_session import extract_session, SessionIdType
-from nonebot_plugin_chatrecorder import get_message_records_by_session
+from nonebot_plugin_chatrecorder import get_message_records
 
 @matcher.handle()
 async def _(bot: Bot, event: Event):
     session = extract_session(bot, event)
-    records = await get_message_records_by_session(
-        session, SessionIdType.GROUP_USER,
+    records = await get_message_records(
+        session=session,
         time_start=datetime.utcnow() - timedelta(days=1),
     )
 ```
@@ -110,13 +110,15 @@ async def _(bot: Bot, event: Event):
 
 ```python
 from nonebot_plugin_session import extract_session, SessionIdType
-from nonebot_plugin_chatrecorder import get_messages_plain_text_by_session
+from nonebot_plugin_chatrecorder import get_messages_plain_text
 
 @matcher.handle()
 async def _(bot: Bot, event: Event):
     session = extract_session(bot, event)
-    msgs = await get_messages_plain_text_by_session(
-        session, SessionIdType.GROUP, types=["message"]
+    msgs = await get_messages_plain_text(
+        session=session,
+        id_type=SessionIdType.GROUP,
+        types=["message"],
     )
 ```
 
