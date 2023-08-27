@@ -5,6 +5,8 @@ Revises: de6827ead8fe
 Create Date: 2023-06-28 14:44:16.544879
 
 """
+import math
+
 import sqlalchemy as sa
 from alembic import op
 from nonebot.log import logger
@@ -28,87 +30,110 @@ def upgrade() -> None:
     with Session(op.get_bind()) as session:
         logger.warning("正在迁移聊天记录数据，请不要关闭程序...")
 
-        statement = select(MessageRecord)
-        messages = session.scalars(statement).all()
-
-        bulk_insert_sessions = {}
-        message_id_session_key_map = {}
-        for message in messages:
-            bot_id = message.bot_id
-            bot_type = message.bot_type
-            platform = message.platform
-            level = "LEVEL0"
-            if message.detail_type == "private":
-                level = "LEVEL1"
-            elif message.detail_type == "group":
-                level = "LEVEL2"
-            elif message.detail_type == "channel":
-                level = "LEVEL3"
-            id1 = message.user_id
-            id2 = message.group_id or message.channel_id
-            id3 = message.guild_id
-
-            session_key = (bot_id, bot_type, platform, level, id1, id2, id3)
-            # 保存 message id 和 session key 的对应关系
-            message_id_session_key_map[message.id] = session_key
-            if session_key not in bulk_insert_sessions:
-                bulk_insert_sessions[session_key] = {
-                    "bot_id": bot_id,
-                    "bot_type": bot_type,
-                    "platform": platform,
-                    "level": level,
-                    "id1": id1,
-                    "id2": id2,
-                    "id3": id3,
-                }
-
         session_key_id_map = {}
-        if bulk_insert_sessions:
-            # 读取已经存在的 session
-            for session_obj in session.scalars(select(SessionModel)).all():
-                session_key = (
-                    session_obj.bot_id,
-                    session_obj.bot_type,
-                    session_obj.platform,
-                    session_obj.level,
-                    session_obj.id1,
-                    session_obj.id2,
-                    session_obj.id3,
-                )
-                session_key_id_map[session_key] = session_obj.id
-
-            # 更新新插入的 session
-            session.execute(
-                insert(SessionModel),
-                [
-                    session_dict
-                    for key, session_dict in bulk_insert_sessions.items()
-                    if key not in session_key_id_map  # 去重
-                ],
+        # 读取已经存在的 session
+        for session_obj in session.scalars(select(SessionModel)).all():
+            session_key = (
+                session_obj.bot_id,
+                session_obj.bot_type,
+                session_obj.platform,
+                session_obj.level,
+                session_obj.id1,
+                session_obj.id2,
+                session_obj.id3,
             )
-            for session_obj in session.scalars(select(SessionModel)).all():
-                session_key = (
-                    session_obj.bot_id,
-                    session_obj.bot_type,
-                    session_obj.platform,
-                    session_obj.level,
-                    session_obj.id1,
-                    session_obj.id2,
-                    session_obj.id3,
-                )
-                session_key_id_map[session_key] = session_obj.id
+            session_key_id_map[session_key] = session_obj.id
 
-        # 更新 message 的 session id
-        bulk_update_messages = []
-        for message_id, session_key in message_id_session_key_map.items():
-            bulk_update_messages.append(
-                {
-                    "id": message_id,
-                    "session_id": session_key_id_map[session_key],
-                }
+        # 每次迁移的数据量为 10000 条
+        migration_limit = 10000
+        last_message_id = -1
+        count = session.query(MessageRecord).count()
+        logger.info(f"聊天记录数据总数：{count}")
+        for i in range(math.ceil(count / migration_limit)):
+            statement = (
+                select(
+                    MessageRecord.bot_id,
+                    MessageRecord.bot_type,
+                    MessageRecord.platform,
+                    MessageRecord.detail_type,
+                    MessageRecord.user_id,
+                    MessageRecord.group_id,
+                    MessageRecord.channel_id,
+                    MessageRecord.guild_id,
+                    MessageRecord.id,
+                )
+                .order_by(MessageRecord.id)
+                .where(MessageRecord.id > last_message_id)
+                .limit(migration_limit)
             )
-        if bulk_update_messages:
-            session.execute(update(MessageRecord), bulk_update_messages)
+            messages = session.execute(statement).all()
+            last_message_id = messages[-1][8]
+
+            bulk_insert_sessions = {}
+            message_id_session_key_map = {}
+            for message in messages:
+                bot_id = message[0]
+                bot_type = message[1]
+                platform = message[2]
+                level = "LEVEL0"
+                if message[3] == "private":
+                    level = "LEVEL1"
+                elif message[3] == "group":
+                    level = "LEVEL2"
+                elif message[3] == "channel":
+                    level = "LEVEL3"
+                id1 = message[4]
+                id2 = message[5] or message[6]
+                id3 = message[7]
+
+                session_key = (bot_id, bot_type, platform, level, id1, id2, id3)
+                # 保存 message id 和 session key 的对应关系
+                message_id_session_key_map[message[8]] = session_key
+                if (
+                    session_key not in session_key_id_map
+                    and session_key not in bulk_insert_sessions
+                ):  # 去重
+                    bulk_insert_sessions[session_key] = {
+                        "bot_id": bot_id,
+                        "bot_type": bot_type,
+                        "platform": platform,
+                        "level": level,
+                        "id1": id1,
+                        "id2": id2,
+                        "id3": id3,
+                    }
+
+            if bulk_insert_sessions:
+                # 插入新的 session
+                session.execute(
+                    insert(SessionModel), list(bulk_insert_sessions.values())
+                )
+
+                # 更新已经存在的 session
+                for session_obj in session.scalars(select(SessionModel)).all():
+                    session_key = (
+                        session_obj.bot_id,
+                        session_obj.bot_type,
+                        session_obj.platform,
+                        session_obj.level,
+                        session_obj.id1,
+                        session_obj.id2,
+                        session_obj.id3,
+                    )
+                    session_key_id_map[session_key] = session_obj.id
+
+            # 更新 message 的 session id
+            bulk_update_messages = []
+            for message_id, session_key in message_id_session_key_map.items():
+                bulk_update_messages.append(
+                    {
+                        "id": message_id,
+                        "session_id": session_key_id_map[session_key],
+                    }
+                )
+            if bulk_update_messages:
+                session.execute(update(MessageRecord), bulk_update_messages)
+            logger.info(f"已迁移 {i * migration_limit + len(messages)}/{count}")
         logger.warning("聊天记录数据迁移完成！")
 
     with op.batch_alter_table(
