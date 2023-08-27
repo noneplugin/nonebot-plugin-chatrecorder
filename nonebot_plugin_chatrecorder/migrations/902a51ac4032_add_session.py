@@ -28,10 +28,22 @@ def upgrade() -> None:
     with Session(op.get_bind()) as session:
         logger.warning("正在迁移聊天记录数据，请不要关闭程序...")
 
+        session_key_id_map = {}
+        # 读取已经存在的 session
+        for session_obj in session.scalars(select(SessionModel)).all():
+            session_key = (
+                session_obj.bot_id,
+                session_obj.bot_type,
+                session_obj.platform,
+                session_obj.level,
+                session_obj.id1,
+                session_obj.id2,
+                session_obj.id3,
+            )
+            session_key_id_map[session_key] = session_obj.id
+
         # 每次迁移的数据量为 10000 条
         migration_limit = 10000
-
-        session_key_id_map = {}
         count = session.query(MessageRecord).count()
         logger.info(f"聊天记录数据总数：{count}")
         for i in range(count // migration_limit + 1):
@@ -72,7 +84,7 @@ def upgrade() -> None:
                 session_key = (bot_id, bot_type, platform, level, id1, id2, id3)
                 # 保存 message id 和 session key 的对应关系
                 message_id_session_key_map[message[8]] = session_key
-                if session_key not in bulk_insert_sessions:
+                if session_key not in session_key_id_map and session_key not in bulk_insert_sessions: # 去重
                     bulk_insert_sessions[session_key] = {
                         "bot_id": bot_id,
                         "bot_type": bot_type,
@@ -84,28 +96,10 @@ def upgrade() -> None:
                     }
 
             if bulk_insert_sessions:
-                # 读取已经存在的 session
-                for session_obj in session.scalars(select(SessionModel)).all():
-                    session_key = (
-                        session_obj.bot_id,
-                        session_obj.bot_type,
-                        session_obj.platform,
-                        session_obj.level,
-                        session_obj.id1,
-                        session_obj.id2,
-                        session_obj.id3,
-                    )
-                    session_key_id_map[session_key] = session_obj.id
+                # 插入新的 session
+                session.execute(insert(SessionModel), list(bulk_insert_sessions.values()))
 
-                # 更新新插入的 session
-                new_sessions_dict = [
-                    session_dict
-                    for key, session_dict in bulk_insert_sessions.items()
-                    if key not in session_key_id_map  # 去重
-                ]
-                if new_sessions_dict:
-                    session.execute(insert(SessionModel), new_sessions_dict)
-
+                # 更新已经存在的 session
                 for session_obj in session.scalars(select(SessionModel)).all():
                     session_key = (
                         session_obj.bot_id,
