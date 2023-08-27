@@ -33,6 +33,7 @@ def upgrade() -> None:
 
         session_key_id_map = {}
         count = session.query(MessageRecord).count()
+        logger.info(f"聊天记录数据总数：{count}")
         for i in range(count // migration_limit + 1):
             statement = (
                 select(
@@ -128,6 +129,7 @@ def upgrade() -> None:
                 )
             if bulk_update_messages:
                 session.execute(update(MessageRecord), bulk_update_messages)
+            logger.info(f"已迁移 {i * migration_limit + len(messages)}/{count}")
         logger.warning("聊天记录数据迁移完成！")
 
     with op.batch_alter_table(
