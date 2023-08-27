@@ -5,6 +5,8 @@ Revises: de6827ead8fe
 Create Date: 2023-06-28 14:44:16.544879
 
 """
+import math
+
 import sqlalchemy as sa
 from alembic import op
 from nonebot.log import logger
@@ -44,9 +46,10 @@ def upgrade() -> None:
 
         # 每次迁移的数据量为 10000 条
         migration_limit = 10000
+        last_message_id = -1
         count = session.query(MessageRecord).count()
         logger.info(f"聊天记录数据总数：{count}")
-        for i in range(count // migration_limit + 1):
+        for i in range(math.ceil(count / migration_limit)):
             statement = (
                 select(
                     MessageRecord.bot_id,
@@ -60,10 +63,11 @@ def upgrade() -> None:
                     MessageRecord.id,
                 )
                 .order_by(MessageRecord.id)
+                .where(MessageRecord.id > last_message_id)
                 .limit(migration_limit)
-                .offset(i * migration_limit)
             )
             messages = session.execute(statement).all()
+            last_message_id = messages[-1][8]
 
             bulk_insert_sessions = {}
             message_id_session_key_map = {}
@@ -85,7 +89,10 @@ def upgrade() -> None:
                 session_key = (bot_id, bot_type, platform, level, id1, id2, id3)
                 # 保存 message id 和 session key 的对应关系
                 message_id_session_key_map[message[8]] = session_key
-                if session_key not in session_key_id_map and session_key not in bulk_insert_sessions: # 去重
+                if (
+                    session_key not in session_key_id_map
+                    and session_key not in bulk_insert_sessions
+                ):  # 去重
                     bulk_insert_sessions[session_key] = {
                         "bot_id": bot_id,
                         "bot_type": bot_type,
@@ -98,7 +105,9 @@ def upgrade() -> None:
 
             if bulk_insert_sessions:
                 # 插入新的 session
-                session.execute(insert(SessionModel), list(bulk_insert_sessions.values()))
+                session.execute(
+                    insert(SessionModel), list(bulk_insert_sessions.values())
+                )
 
                 # 更新已经存在的 session
                 for session_obj in session.scalars(select(SessionModel)).all():
