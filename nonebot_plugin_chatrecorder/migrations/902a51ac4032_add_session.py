@@ -59,6 +59,7 @@ def upgrade() -> None:
                     MessageRecord.guild_id,
                     MessageRecord.id,
                 )
+                .order_by(MessageRecord.id)
                 .limit(migration_limit)
                 .offset(i * migration_limit)
             )
