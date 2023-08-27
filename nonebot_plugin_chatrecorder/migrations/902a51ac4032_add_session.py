@@ -78,14 +78,15 @@ def upgrade() -> None:
                 session_key_id_map[session_key] = session_obj.id
 
             # 更新新插入的 session
-            for session_obj in session.scalars(
-                insert(SessionModel).returning(SessionModel),
+            session.execute(
+                insert(SessionModel),
                 [
                     session_dict
                     for key, session_dict in bulk_insert_sessions.items()
                     if key not in session_key_id_map  # 去重
                 ],
-            ).all():
+            )
+            for session_obj in session.scalars(select(SessionModel)).all():
                 session_key = (
                     session_obj.bot_id,
                     session_obj.bot_type,
