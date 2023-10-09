@@ -34,6 +34,7 @@ async def app(app: App):
     async with get_session() as db_session:
         await db_session.execute(delete(MessageRecord))
         await db_session.execute(delete(SessionModel))
+        await db_session.commit()
 
 
 @pytest.fixture(scope="session", autouse=True)
