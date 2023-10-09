@@ -5,9 +5,9 @@ from typing import Any, Dict, Optional, Type
 
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
-from nonebot_plugin_datastore import create_session
+from nonebot_plugin_orm import get_session
 from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session.model import get_or_add_session_model
+from nonebot_plugin_session_orm import SessionModel, get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
@@ -24,7 +24,6 @@ from ..utils import remove_timezone
 
 try:
     from nonebot.adapters.console import Bot, Message, MessageEvent, MessageSegment
-    from nonebot_plugin_session.model import SessionModel
     from nonechat import ConsoleMessage, Emoji, Text
     from sqlalchemy import select
 
@@ -36,31 +35,30 @@ try:
         global id
         if not id:
             statement = (
-                select(MessageRecord)
+                select(MessageRecord.message_id)
                 .where(SessionModel.bot_type == adapter)
                 .order_by(MessageRecord.message_id.desc())
-                .join(SessionModel)
+                .join(SessionModel, SessionModel.id == MessageRecord.session_persist_id)
             )
-            async with create_session() as db_session:
-                record = await db_session.scalar(statement)
-            id = count(int(record.message_id) + 1) if record else count(0)
+            async with get_session() as db_session:
+                message_id = await db_session.scalar(statement)
+            id = count(int(message_id) + 1) if message_id else count(0)
         return str(next(id))
 
     @event_postprocessor
     async def record_recv_msg(bot: Bot, event: MessageEvent):
         session = extract_session(bot, event)
-        async with create_session() as db_session:
-            session_model = await get_or_add_session_model(session, db_session)
+        session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
-            session_id=session_model.id,
+            session_persist_id=session_persist_id,
             time=remove_timezone(event.time.astimezone(timezone.utc)),
             type=event.post_type,
             message_id=await get_id(),
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),
         )
-        async with create_session() as db_session:
+        async with get_session() as db_session:
             db_session.add(record)
             await db_session.commit()
 
@@ -88,8 +86,7 @@ try:
                 id2=None,
                 id3=None,
             )
-            async with create_session() as db_session:
-                session_model = await get_or_add_session_model(session, db_session)
+            session_persist_id = await get_session_persist_id(session)
 
             elements = ConsoleMessage(data["message"])
             message = Message()
@@ -104,14 +101,14 @@ try:
                     )
 
             record = MessageRecord(
-                session_id=session_model.id,
+                session_persist_id=session_persist_id,
                 time=datetime.utcnow(),
                 type="message_sent",
                 message_id=await get_id(),
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )
-            async with create_session() as db_session:
+            async with get_session() as db_session:
                 db_session.add(record)
                 await db_session.commit()
 

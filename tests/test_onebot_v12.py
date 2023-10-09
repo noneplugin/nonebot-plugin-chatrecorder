@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 from nonebot import get_driver
 from nonebot.adapters.onebot.v12 import (
@@ -124,7 +124,7 @@ async def test_record_recv_msg(app: App):
         "12",
         "OneBot V12",
         "qq",
-        "LEVEL2",
+        2,
         str(user_id),
         str(group_id),
         None,
@@ -145,7 +145,7 @@ async def test_record_recv_msg(app: App):
         "12",
         "OneBot V12",
         "qq",
-        "LEVEL1",
+        1,
         str(user_id),
         None,
         None,
@@ -171,7 +171,7 @@ async def test_record_recv_msg(app: App):
         "12",
         "OneBot V12",
         "qq",
-        "LEVEL3",
+        3,
         str(user_id),
         str(channel_id),
         str(guild_id),
@@ -221,7 +221,7 @@ async def test_record_send_msg(app: App):
         "12",
         "OneBot V12",
         "qq",
-        "LEVEL2",
+        2,
         None,
         str(group_id),
         None,
@@ -249,7 +249,7 @@ async def test_record_send_msg(app: App):
         "12",
         "OneBot V12",
         "qq",
-        "LEVEL1",
+        1,
         str(user_id),
         None,
         None,
@@ -278,7 +278,7 @@ async def test_record_send_msg(app: App):
         "12",
         "OneBot V12",
         "qq",
-        "LEVEL3",
+        3,
         None,
         str(channel_id),
         str(guild_id),

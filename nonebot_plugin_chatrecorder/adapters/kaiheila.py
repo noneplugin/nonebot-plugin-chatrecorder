@@ -3,9 +3,9 @@ from typing import Any, Dict, Optional, Type
 
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
-from nonebot_plugin_datastore import create_session
+from nonebot_plugin_orm import get_session
 from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session.model import get_or_add_session_model
+from nonebot_plugin_session_orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
@@ -30,18 +30,17 @@ try:
     @event_postprocessor
     async def record_recv_msg(bot: Bot, event: MessageEvent):
         session = extract_session(bot, event)
-        async with create_session() as db_session:
-            session_model = await get_or_add_session_model(session, db_session)
+        session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
-            session_id=session_model.id,
+            session_persist_id=session_persist_id,
             time=datetime.utcfromtimestamp(event.msg_timestamp / 1000),
             type=event.post_type,
             message_id=event.msg_id,
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),
         )
-        async with create_session() as db_session:
+        async with get_session() as db_session:
             db_session.add(record)
             await db_session.commit()
 
@@ -107,18 +106,17 @@ try:
                 id2=None,
                 id3=channel_id,
             )
-            async with create_session() as db_session:
-                session_model = await get_or_add_session_model(session, db_session)
+            session_persist_id = await get_session_persist_id(session)
 
             record = MessageRecord(
-                session_id=session_model.id,
+                session_persist_id=session_persist_id,
                 time=datetime.utcfromtimestamp(result.msg_timestamp / 1000),
                 type="message_sent",
                 message_id=result.msg_id,
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )
-            async with create_session() as db_session:
+            async with get_session() as db_session:
                 db_session.add(record)
                 await db_session.commit()
 
