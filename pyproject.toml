@@ -38,8 +38,8 @@ nonebot-adapter-qqguild = "^0.2.5"
 nonebot-adapter-kaiheila = "^0.2.12"
 nonebot-adapter-telegram = "^0.1.0b14"
 nonebot-adapter-feishu = "^2.0.1"
-nonebot-adapter-red = "^0.4.2"
-nonebot-adapter-discord = "^0.1.0b1"
+nonebot-adapter-red = "^0.5.2"
+nonebot-adapter-discord = "^0.1.0b4"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
