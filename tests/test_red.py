@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from nonebot import get_driver
-from nonebot.adapters.red import Adapter, Bot, Message
+from nonebot.adapters.red import Bot, Message
 from nonebot.adapters.red.api.model import ChatType, Element, MsgType, RoleInfo
 from nonebot.adapters.red.config import BotInfo
 from nonebot.adapters.red.event import GroupMessageEvent, PrivateMessageEvent
@@ -18,7 +18,7 @@ async def test_record_recv_msg(app: App):
     async with app.test_api() as ctx:
         bot = ctx.create_bot(
             base=Bot,
-            adapter=Adapter(get_driver()),
+            adapter=get_driver()._adapters["RedProtocol"],
             self_id="2233",
             info=BotInfo(port=1234, token="1234"),
         )
@@ -177,7 +177,7 @@ async def test_record_send_msg(app: App):
     async with app.test_api() as ctx:
         bot = ctx.create_bot(
             base=Bot,
-            adapter=Adapter(get_driver()),
+            adapter=get_driver()._adapters["RedProtocol"],
             self_id="2233",
             info=BotInfo(port=1234, token="1234"),
         )
