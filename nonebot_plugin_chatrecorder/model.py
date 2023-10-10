@@ -1,15 +1,10 @@
 from datetime import datetime
 
-from nonebot_plugin_datastore import get_plugin_data
-from nonebot_plugin_session.model import SessionModel
-from sqlalchemy import JSON, TEXT, ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from nonebot_plugin_orm import Model
+from sqlalchemy import JSON, TEXT, String
+from sqlalchemy.orm import Mapped, mapped_column
 
 from .message import JsonMsg
-
-plugin_data = get_plugin_data()
-plugin_data.use_global_registry()
-Model = plugin_data.Model
 
 
 class MessageRecord(Model):
@@ -18,11 +13,8 @@ class MessageRecord(Model):
     __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    session_id: Mapped[int] = mapped_column(
-        ForeignKey("nonebot_plugin_session_sessionmodel.id")
-    )
-    session: Mapped[SessionModel] = relationship(back_populates="message_records")
-    """ 会话属性 """
+    session_persist_id: Mapped[int]
+    """ 会话持久化id """
     time: Mapped[datetime]
     """ 消息时间\n\n存放 UTC 时间 """
     type: Mapped[str] = mapped_column(String(32))
@@ -37,6 +29,3 @@ class MessageRecord(Model):
     """ 消息内容的纯文本形式
     存放纯文本消息（忽略非纯文本消息段）
     """
-
-
-SessionModel.message_records = relationship(MessageRecord, back_populates="session")

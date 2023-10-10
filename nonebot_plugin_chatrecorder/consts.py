@@ -1,7 +1,7 @@
-from nonebot_plugin_datastore import get_plugin_data
+from nonebot_plugin_localstore import get_cache_dir
 from strenum import StrEnum
 
-CACHE_DIR = get_plugin_data().cache_dir
+CACHE_DIR = get_cache_dir("nonebot_plugin_chatrecorder")
 IMAGE_CACHE_DIR = CACHE_DIR / "images"
 RECORD_CACHE_DIR = CACHE_DIR / "records"
 VIDEO_CACHE_DIR = CACHE_DIR / "videos"

@@ -33,7 +33,7 @@ jobs:
         run: poetry install --with adapters
 
       - name: Run tests
-        run: poetry run pytest -n auto --cov-report xml
+        run: poetry run pytest --cov-report xml  --cov=./nonebot_plugin_chatrecorder
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
@@ -70,7 +70,7 @@ jobs:
 
       - name: Run tests
         run: |
-          sed -ie "s#sqlite+aiosqlite://#postgresql+asyncpg://postgres:postgres@localhost:5432/postgres#g" tests/conftest.py
+          sed -ie "s#sqlite+aiosqlite:///:memory:#postgresql+asyncpg://postgres:postgres@localhost:5432/postgres#g" tests/conftest.py
           sed -ie "s#StaticPool#NullPool#g" tests/conftest.py
           poetry run pytest --cov-report xml
 
@@ -110,7 +110,7 @@ jobs:
 
       - name: Run tests
         run: |
-          sed -ie "s#sqlite+aiosqlite://#mysql+aiomysql://mysql:mysql@localhost:3306/mysql#g" tests/conftest.py
+          sed -ie "s#sqlite+aiosqlite:///:memory:#mysql+aiomysql://mysql:mysql@localhost:3306/mysql#g" tests/conftest.py
           sed -ie "s#StaticPool#NullPool#g" tests/conftest.py
           poetry run pytest --cov-report xml
 

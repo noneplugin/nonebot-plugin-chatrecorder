@@ -14,9 +14,9 @@ from nonebug.app import App
 
 async def test_get_message_records(app: App):
     """测试获取消息记录"""
-    from nonebot_plugin_datastore import create_session
+    from nonebot_plugin_orm import get_session
     from nonebot_plugin_session import Session, SessionIdType, SessionLevel
-    from nonebot_plugin_session.model import get_or_add_session_model
+    from nonebot_plugin_session_orm import get_session_persist_id
 
     from nonebot_plugin_chatrecorder.message import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
@@ -87,15 +87,14 @@ async def test_get_message_records(app: App):
             id3="100000",
         ),
     ]
-    session_ids: List[int] = []
-    async with create_session() as db_session:
-        for session in sessions:
-            session_model = await get_or_add_session_model(session, db_session)
-            session_ids.append(session_model.id)
+    session_persist_ids: List[int] = []
+    for session in sessions:
+        session_persist_id = await get_session_persist_id(session)
+        session_persist_ids.append(session_persist_id)
 
     records = [
         MessageRecord(
-            session_id=session_ids[0],
+            session_persist_id=session_persist_ids[0],
             time=datetime.utcfromtimestamp(1000000),
             type="message",
             message_id="1",
@@ -103,7 +102,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 1",
         ),
         MessageRecord(
-            session_id=session_ids[1],
+            session_persist_id=session_persist_ids[1],
             time=datetime.utcfromtimestamp(1000001),
             type="message_sent",
             message_id="2",
@@ -111,7 +110,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 2",
         ),
         MessageRecord(
-            session_id=session_ids[2],
+            session_persist_id=session_persist_ids[2],
             time=datetime.utcfromtimestamp(1000002),
             type="message",
             message_id="3",
@@ -119,7 +118,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 3",
         ),
         MessageRecord(
-            session_id=session_ids[3],
+            session_persist_id=session_persist_ids[3],
             time=datetime.utcfromtimestamp(1000003),
             type="message",
             message_id="3",
@@ -127,7 +126,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 4",
         ),
         MessageRecord(
-            session_id=session_ids[4],
+            session_persist_id=session_persist_ids[4],
             time=datetime.utcfromtimestamp(1000004),
             type="message",
             message_id="3",
@@ -135,7 +134,7 @@ async def test_get_message_records(app: App):
             plain_text="test message 5",
         ),
     ]
-    async with create_session() as db_session:
+    async with get_session() as db_session:
         for record in records:
             db_session.add(record)
         await db_session.commit()
@@ -144,15 +143,6 @@ async def test_get_message_records(app: App):
     assert len(msgs) == 5
     for msg in msgs:
         assert isinstance(msg, MessageRecord)
-
-    msgs = list(
-        filter(
-            lambda msg: msg.session.session.get_id(SessionIdType.GROUP)
-            == sessions[0].get_id(SessionIdType.GROUP),
-            msgs,
-        )
-    )
-    assert len(msgs) == 1
 
     msgs = await get_messages()
     assert len(msgs) == 5
@@ -204,11 +194,11 @@ async def test_get_message_records(app: App):
     msgs = await get_message_records(types=["message_sent"])
     assert len(msgs) == 1
 
-    msgs = await get_message_records(levels=["LEVEL1"])
+    msgs = await get_message_records(levels=[1])
     assert len(msgs) == 2
-    msgs = await get_message_records(levels=["LEVEL2"])
+    msgs = await get_message_records(levels=[2])
     assert len(msgs) == 2
-    msgs = await get_message_records(levels=["LEVEL3"])
+    msgs = await get_message_records(levels=[3])
     assert len(msgs) == 1
 
     msgs = await get_message_records(id1s=["1000"])
@@ -219,12 +209,12 @@ async def test_get_message_records(app: App):
     msgs = await get_message_records(id2s=["10000"])
     assert len(msgs) == 1
     msgs = await get_message_records(exclude_id2s=["10000"])
-    assert len(msgs) == 2
+    assert len(msgs) == 4
 
     msgs = await get_message_records(id3s=["100000"])
     assert len(msgs) == 1
     msgs = await get_message_records(exclude_id3s=["100000"])
-    assert len(msgs) == 0
+    assert len(msgs) == 4
 
     # 测试 datetime with timezone
     # postgresql 下如果用含有时区信息的 datetime 作为查询条件，会报错
