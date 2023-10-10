@@ -23,6 +23,8 @@ __plugin_meta__ = PluginMetadata(
         "~qqguild",
         "~telegram",
         "~feishu",
+        "~red",
+        "~discord",
     },
     extra={"orm_version_location": migrations},
 )
