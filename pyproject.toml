@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nonebot_plugin_chatrecorder"
-version = "0.5.0"
+version = "0.5.1"
 description = "适用于 Nonebot2 的聊天记录插件"
 authors = ["meetwq <meetwq@gmail.com>"]
 license = "MIT"
@@ -12,13 +12,13 @@ repository = "https://github.com/noneplugin/nonebot-plugin-chatrecorder"
 python = "^3.8"
 nonebot2 = { version = "^2.0.1", extras = ["fastapi"] }
 nonebot-plugin-session = "^0.2.0"
-nonebot-plugin-orm = "^0.2.3"
-nonebot-plugin-session-orm = "^0.1.0"
+nonebot-plugin-orm = ">=0.3.0,<1.0.0"
+nonebot-plugin-session-orm = "^0.1.1"
 nonebot-plugin-localstore = "^0.5.0"
 
 [tool.poetry.group.dev.dependencies]
 nb-cli = "^1.0.0"
-nonebot-plugin-orm = { extras = ["default"], version = "^0.2.3" }
+nonebot-plugin-orm = { extras = ["default"], version = ">=0.3.0,<1.0.0" }
 nonebot-plugin-datastore = "^1.0.0"
 
 [tool.poetry.group.test.dependencies]
@@ -38,7 +38,7 @@ nonebot-adapter-console = "^0.4.0"
 nonebot-adapter-qqguild = "^0.2.5"
 nonebot-adapter-kaiheila = "^0.2.12"
 nonebot-adapter-telegram = "^0.1.0b14"
-nonebot-adapter-feishu = "^2.0.1"
+nonebot-adapter-feishu = "^2.2.0"
 nonebot-adapter-red = "^0.5.2"
 nonebot-adapter-discord = "^0.1.0b4"
 

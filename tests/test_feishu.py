@@ -1,22 +1,23 @@
-import json
 from datetime import datetime
 
 from nonebot import get_driver
 from nonebot.adapters.feishu import (
     Bot,
     EventHeader,
-    GroupEventMessage,
     GroupMessageEvent,
     GroupMessageEventDetail,
-    MessageDeserializer,
-    PrivateEventMessage,
+    Message,
     PrivateMessageEvent,
     PrivateMessageEventDetail,
-    Sender,
     UserId,
 )
 from nonebot.adapters.feishu.bot import BotInfo
 from nonebot.adapters.feishu.config import BotConfig
+from nonebot.adapters.feishu.models import (
+    GroupEventMessage,
+    PrivateEventMessage,
+    Sender,
+)
 from nonebug.app import App
 
 from .utils import check_record
@@ -69,7 +70,7 @@ async def test_record_recv_msg(app: App):
     )
     msg_type = "text"
     content = '{"text": "test"}'
-    message = MessageDeserializer(msg_type, json.loads(content), None).deserialize()
+    message = Message.deserialize(content, None, msg_type)
 
     event = PrivateMessageEvent(
         schema="2.0",
@@ -84,7 +85,7 @@ async def test_record_recv_msg(app: App):
                 create_time="123456000",
                 chat_id="oc_123",
                 message_type=msg_type,
-                content=content,  # type: ignore
+                content=content,
                 mentions=None,
             ),
         ),
@@ -119,7 +120,7 @@ async def test_record_recv_msg(app: App):
                 create_time="123456000",
                 chat_id="1122",
                 message_type=msg_type,
-                content=content,  # type: ignore
+                content=content,
                 mentions=None,
             ),
         ),
@@ -159,7 +160,7 @@ async def test_record_send_msg(app: App):
 
         msg_type = "text"
         content = '{"text": "test"}'
-        message = MessageDeserializer(msg_type, json.loads(content), None).deserialize()
+        message = Message.deserialize(content, None, msg_type)
 
         ctx.should_call_api(
             "im/v1/chats/oc_123",

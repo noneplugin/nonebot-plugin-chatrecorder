@@ -22,9 +22,7 @@ from ..message import (
 from ..model import MessageRecord
 
 try:
-    from nonebot.adapters.feishu import Bot, Message
-    from nonebot.adapters.feishu import MessageDeserializer as FeishuMessageDeserializer
-    from nonebot.adapters.feishu import MessageEvent
+    from nonebot.adapters.feishu import Bot, Message, MessageEvent
 
     adapter = SupportedAdapter.feishu
 
@@ -103,9 +101,7 @@ try:
             msg_type = result["msg_type"]
             content = result["body"]["content"]
             mentions = result.get("mentions")
-            message = FeishuMessageDeserializer(
-                msg_type, json.loads(content), mentions
-            ).deserialize()
+            message = Message.deserialize(content, mentions, msg_type)
 
             record = MessageRecord(
                 session_persist_id=session_persist_id,
