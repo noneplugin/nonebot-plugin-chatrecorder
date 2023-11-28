@@ -48,6 +48,24 @@ asyncio_mode = "auto"
 [tool.nonebot]
 plugins = ["nonebot_plugin_chatrecorder"]
 
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+
+[tool.ruff]
+select = ["E", "W", "F", "UP", "C", "T", "PYI", "Q"]
+ignore = ["E402", "E501", "E711", "C901", "UP037"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+  "@overload",
+  "except ImportError:",
+]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
