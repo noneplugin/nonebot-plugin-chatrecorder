@@ -25,7 +25,7 @@ async def test_record_recv_msg(app: App):
             base=Bot,
             adapter=Adapter(get_driver()),
             self_id="2233",
-            config=BotConfig(token=f"2233:xxx"),
+            config=BotConfig(token="2233:xxx"),
         )
     assert isinstance(bot, Bot)
 
@@ -132,7 +132,7 @@ async def test_record_send_msg(app: App):
             base=Bot,
             adapter=Adapter(get_driver()),
             self_id="2233",
-            config=BotConfig(token=f"2233:xxx"),
+            config=BotConfig(token="2233:xxx"),
         )
     assert isinstance(bot, Bot)
 
