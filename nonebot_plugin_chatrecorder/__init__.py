@@ -4,10 +4,14 @@ from nonebot.plugin import PluginMetadata
 require("nonebot_plugin_session_orm")
 require("nonebot_plugin_localstore")
 
-from . import adapters, migrations
-from .message import deserialize_message, serialize_message
-from .model import MessageRecord
-from .record import get_message_records, get_messages, get_messages_plain_text
+from . import adapters as adapters
+from . import migrations
+from .message import deserialize_message as deserialize_message
+from .message import serialize_message as serialize_message
+from .model import MessageRecord as MessageRecord
+from .record import get_message_records as get_message_records
+from .record import get_messages as get_messages
+from .record import get_messages_plain_text as get_messages_plain_text
 
 __plugin_meta__ = PluginMetadata(
     name="聊天记录",
