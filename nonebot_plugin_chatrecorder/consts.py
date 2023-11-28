@@ -21,6 +21,7 @@ class SupportedAdapter(StrEnum):
     feishu = "Feishu"
     red = "RedProtocol"
     discord = "Discord"
+    dodo = "DoDo"
 
 
 class SupportedPlatform(StrEnum):
@@ -31,4 +32,5 @@ class SupportedPlatform(StrEnum):
     telegram = "telegram"
     feishu = "feishu"
     discord = "discord"
+    dodo = "dodo"
     unknown = "unknown"
