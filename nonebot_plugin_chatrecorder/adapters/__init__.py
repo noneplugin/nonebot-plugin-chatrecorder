@@ -1,5 +1,6 @@
 from . import console as console
 from . import discord as discord
+from . import dodo as dodo
 from . import feishu as feishu
 from . import kaiheila as kaiheila
 from . import onebot_v11 as onebot_v11

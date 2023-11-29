@@ -93,7 +93,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: mysql
           MYSQL_USER: mysql
           MYSQL_PASSWORD: mysql
-          MYSQL_DATABASE: mysql
+          MYSQL_DATABASE: test
         ports:
           - 3306:3306
         options: --health-cmd "mysqladmin ping -h localhost -umysql -pmysql" --health-interval 10s --health-timeout 5s --health-retries 5
@@ -110,7 +110,7 @@ jobs:
 
       - name: Run tests
         run: |
-          sed -ie "s#sqlite+aiosqlite:///:memory:#mysql+aiomysql://mysql:mysql@localhost:3306/mysql#g" tests/conftest.py
+          sed -ie "s#sqlite+aiosqlite:///:memory:#mysql+aiomysql://mysql:mysql@localhost:3306/test#g" tests/conftest.py
           sed -ie "s#StaticPool#NullPool#g" tests/conftest.py
           poetry run pytest --cov-report xml
 
