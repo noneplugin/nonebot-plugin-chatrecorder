@@ -22,6 +22,7 @@ class SupportedAdapter(StrEnum):
     red = "RedProtocol"
     discord = "Discord"
     dodo = "DoDo"
+    villa = "Villa"
 
 
 class SupportedPlatform(StrEnum):
@@ -33,4 +34,5 @@ class SupportedPlatform(StrEnum):
     feishu = "feishu"
     discord = "discord"
     dodo = "dodo"
+    villa = "villa"
     unknown = "unknown"
