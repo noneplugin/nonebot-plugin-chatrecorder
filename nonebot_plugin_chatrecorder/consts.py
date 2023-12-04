@@ -23,6 +23,7 @@ class SupportedAdapter(StrEnum):
     discord = "Discord"
     dodo = "DoDo"
     villa = "Villa"
+    satori = "Satori"
 
 
 class SupportedPlatform(StrEnum):
