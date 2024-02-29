@@ -5,3 +5,4 @@ dist/
 data/
 .env
 data.db
+node_modules/
