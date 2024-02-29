@@ -24,11 +24,12 @@ __plugin_meta__ = PluginMetadata(
         "~onebot.v12",
         "~console",
         "~kaiheila",
-        # "~qqguild",
         "~telegram",
         "~feishu",
         "~red",
         "~discord",
+        "~dodo",
+        "~satori",
     },
     extra={"orm_version_location": migrations},
 )
