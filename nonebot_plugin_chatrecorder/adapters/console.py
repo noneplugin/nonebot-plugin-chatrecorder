@@ -97,7 +97,8 @@ try:
                     message += MessageSegment.emoji(elem.name)
                 else:
                     message += MessageSegment(
-                        type=elem.__class__.__name__.lower(), data=asdict(elem)  # type: ignore
+                        type=elem.__class__.__name__.lower(),
+                        data=asdict(elem),  # type: ignore
                     )
 
             record = MessageRecord(
