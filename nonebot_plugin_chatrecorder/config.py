@@ -1,9 +1,9 @@
-from nonebot import get_driver
-from pydantic import BaseModel, Extra
+from nonebot import get_plugin_config
+from pydantic import BaseModel
 
 
-class Config(BaseModel, extra=Extra.ignore):
+class Config(BaseModel):
     chatrecorder_record_send_msg: bool = True
 
 
-plugin_config = Config.parse_obj(get_driver().config.dict())
+plugin_config = get_plugin_config(Config)

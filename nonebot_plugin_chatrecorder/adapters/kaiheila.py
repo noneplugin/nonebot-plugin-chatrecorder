@@ -23,7 +23,6 @@ try:
     from nonebot.adapters.kaiheila import Bot, Message, MessageSegment
     from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
     from nonebot.adapters.kaiheila.event import MessageEvent
-    from nonebot.adapters.kaiheila.message import rev_msg_type_map
 
     adapter = SupportedAdapter.kaiheila
 
@@ -65,11 +64,11 @@ try:
             ):
                 return
 
-            if api == "message/create":
+            if api == "message_create":
                 level = SessionLevel.LEVEL3
                 channel_id = data["target_id"]
                 user_id = data.get("temp_target_id")
-            elif api == "direct-message/create":
+            elif api == "directMessage_create":
                 level = SessionLevel.LEVEL1
                 channel_id = None
                 user_id = data["target_id"]
@@ -78,23 +77,22 @@ try:
 
             type_code = data["type"]
             content = data["content"]
-            type = rev_msg_type_map.get(type_code, "")
-            if type == "text":
+            if type_code == 1:
                 message = MessageSegment.text(content)
-            elif type == "image":
+            elif type_code == 2:
                 message = MessageSegment.image(content)
-            elif type == "video":
+            elif type_code == 3:
                 message = MessageSegment.video(content)
-            elif type == "file":
+            elif type_code == 4:
                 message = MessageSegment.file(content)
-            elif type == "audio":
+            elif type_code == 8:
                 message = MessageSegment.audio(content)
-            elif type == "kmarkdown":
+            elif type_code == 9:
                 message = MessageSegment.KMarkdown(content)
-            elif type == "card":
+            elif type_code == 10:
                 message = MessageSegment.Card(content)
             else:
-                message = MessageSegment(type, {"content": content})
+                message = content
             message = Message(message)
 
             session = Session(

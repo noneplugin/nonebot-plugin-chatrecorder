@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
 from nonebot.adapters import Bot as BaseBot
+from nonebot.compat import type_validate_python
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
 from nonebot_plugin_session import Session, SessionLevel, extract_session
@@ -75,20 +76,20 @@ try:
                 "send_sticker",
                 "send_invoice",
             ]:
-                tg_message = TGMessage.parse_obj(result)
+                tg_message = type_validate_python(TGMessage, result)
                 chat = tg_message.chat
                 message_id = f"{chat.id}_{tg_message.message_id}"
-                message = Message.parse_obj(result)
+                message = Message.model_validate(result)
 
             elif api == "send_media_group":
-                tg_messages = [TGMessage.parse_obj(res) for res in result]
+                tg_messages = [type_validate_python(TGMessage, res) for res in result]
                 tg_message = tg_messages[0]
                 chat = tg_message.chat
                 message_id = "_".join([str(msg.message_id) for msg in tg_messages])
                 message_id = f"{chat.id}_{message_id}"
                 message = Message()
                 for res in result:
-                    message += Message.parse_obj(res)
+                    message += Message.model_validate(res)
 
             else:
                 return

@@ -6,3 +6,4 @@ data/
 .env
 data.db
 node_modules/
+bot.py

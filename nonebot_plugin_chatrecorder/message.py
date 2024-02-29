@@ -2,7 +2,7 @@ import abc
 from typing import Any, Dict, Generic, List, Type, TypeVar, Union
 
 from nonebot.adapters import Bot, Message
-from pydantic import parse_obj_as
+from nonebot.compat import type_validate_python
 
 from .consts import SupportedAdapter
 from .exception import AdapterNotInstalled, AdapterNotSupported
@@ -25,7 +25,7 @@ class MessageDeserializer(abc.ABC, Generic[TM]):
 
     @classmethod
     def deserialize(cls, msg: JsonMsg) -> TM:
-        return parse_obj_as(cls.get_message_class(), msg)
+        return type_validate_python(cls.get_message_class(), msg)
 
 
 _serializers: Dict[SupportedAdapter, Type[MessageSerializer]] = {}
