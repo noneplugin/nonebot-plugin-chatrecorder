@@ -92,7 +92,7 @@ async def test_record_recv_msg(app: App):
             ),
         ),
         reply=None,
-    )
+    )  # type: ignore
     await record_recv_msg(bot, event)
     await check_record(
         "2233",
@@ -127,7 +127,7 @@ async def test_record_recv_msg(app: App):
             ),
         ),
         reply=None,
-    )
+    )  # type: ignore
     await record_recv_msg(bot, event)
     await check_record(
         "2233",
@@ -168,10 +168,14 @@ async def test_record_send_msg(app: App):
             "im/v1/chats/oc_123",
             {"method": "GET", "query": {"user_id_type": "open_id"}},
             {
-                "chat_mode": "group",
-                "name": "test",
-                "owner_id": "3344",
-                "owner_id_type": "open_id",
+                "code": 0,
+                "msg": "success",
+                "data": {
+                    "chat_mode": "group",
+                    "name": "test",
+                    "owner_id": "3344",
+                    "owner_id_type": "open_id",
+                },
             },
         )
         await record_send_msg(
@@ -188,17 +192,21 @@ async def test_record_send_msg(app: App):
                 },
             },
             {
-                "body": {"content": content},
-                "chat_id": "oc_123",
-                "create_time": "123456000",
-                "mentions": [],
-                "message_id": "om_3",
-                "msg_type": msg_type,
-                "sender": {
-                    "id": "2233",
-                    "id_type": "app_id",
-                    "sender_type": "app",
-                    "tenant_key": "tenant_key",
+                "code": 0,
+                "msg": "success",
+                "data": {
+                    "body": {"content": content},
+                    "chat_id": "oc_123",
+                    "create_time": "123456000",
+                    "mentions": [],
+                    "message_id": "om_3",
+                    "msg_type": msg_type,
+                    "sender": {
+                        "id": "2233",
+                        "id_type": "app_id",
+                        "sender_type": "app",
+                        "tenant_key": "tenant_key",
+                    },
                 },
             },
         )
@@ -221,10 +229,14 @@ async def test_record_send_msg(app: App):
             "im/v1/chats/oc_456",
             {"method": "GET", "query": {"user_id_type": "open_id"}},
             {
-                "chat_mode": "p2p",
-                "name": "test",
-                "owner_id": "3344",
-                "owner_id_type": "open_id",
+                "code": 0,
+                "msg": "success",
+                "data": {
+                    "chat_mode": "p2p",
+                    "name": "test",
+                    "owner_id": "3344",
+                    "owner_id_type": "open_id",
+                },
             },
         )
         await record_send_msg(
@@ -241,17 +253,21 @@ async def test_record_send_msg(app: App):
                 },
             },
             {
-                "body": {"content": content},
-                "chat_id": "oc_456",
-                "create_time": "123456000",
-                "mentions": [],
-                "message_id": "om_4",
-                "msg_type": msg_type,
-                "sender": {
-                    "id": "2233",
-                    "id_type": "app_id",
-                    "sender_type": "app",
-                    "tenant_key": "tenant_key",
+                "code": 0,
+                "msg": "success",
+                "data": {
+                    "body": {"content": content},
+                    "chat_id": "oc_456",
+                    "create_time": "123456000",
+                    "mentions": [],
+                    "message_id": "om_4",
+                    "msg_type": msg_type,
+                    "sender": {
+                        "id": "2233",
+                        "id_type": "app_id",
+                        "sender_type": "app",
+                        "tenant_key": "tenant_key",
+                    },
                 },
             },
         )
@@ -282,17 +298,21 @@ async def test_record_send_msg(app: App):
                 },
             },
             {
-                "body": {"content": content},
-                "chat_id": "oc_123",
-                "create_time": "123456000",
-                "mentions": [],
-                "message_id": "om_5",
-                "msg_type": msg_type,
-                "sender": {
-                    "id": "2233",
-                    "id_type": "app_id",
-                    "sender_type": "app",
-                    "tenant_key": "tenant_key",
+                "code": 0,
+                "msg": "success",
+                "data": {
+                    "body": {"content": content},
+                    "chat_id": "oc_123",
+                    "create_time": "123456000",
+                    "mentions": [],
+                    "message_id": "om_5",
+                    "msg_type": msg_type,
+                    "sender": {
+                        "id": "2233",
+                        "id_type": "app_id",
+                        "sender_type": "app",
+                        "tenant_key": "tenant_key",
+                    },
                 },
             },
         )
@@ -323,17 +343,21 @@ async def test_record_send_msg(app: App):
                 },
             },
             {
-                "body": {"content": content},
-                "chat_id": "oc_456",
-                "create_time": "123456000",
-                "mentions": [],
-                "message_id": "om_6",
-                "msg_type": msg_type,
-                "sender": {
-                    "id": "2233",
-                    "id_type": "app_id",
-                    "sender_type": "app",
-                    "tenant_key": "tenant_key",
+                "code": 0,
+                "msg": "success",
+                "data": {
+                    "body": {"content": content},
+                    "chat_id": "oc_456",
+                    "create_time": "123456000",
+                    "mentions": [],
+                    "message_id": "om_6",
+                    "msg_type": msg_type,
+                    "sender": {
+                        "id": "2233",
+                        "id_type": "app_id",
+                        "sender_type": "app",
+                        "tenant_key": "tenant_key",
+                    },
                 },
             },
         )

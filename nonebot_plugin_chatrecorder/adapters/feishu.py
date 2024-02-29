@@ -72,16 +72,17 @@ try:
             ):
                 return
 
-            chat_id = result["chat_id"]
+            result_data = result["data"]
+            chat_id = result_data["chat_id"]
             resp = await get_chat_info(bot, chat_id)
-            chat_mode = resp["chat_mode"]
+            chat_mode = resp["data"]["chat_mode"]
 
             level = SessionLevel.LEVEL0
             id1 = None
             id2 = None
             if chat_mode == "p2p":
                 level = SessionLevel.LEVEL1
-                id1 = resp["owner_id"]
+                id1 = resp["data"]["owner_id"]
             elif chat_mode == "group":
                 level = SessionLevel.LEVEL2
                 id2 = chat_id
@@ -97,16 +98,16 @@ try:
             )
             session_persist_id = await get_session_persist_id(session)
 
-            msg_type = result["msg_type"]
-            content = result["body"]["content"]
-            mentions = result.get("mentions")
+            msg_type = result_data["msg_type"]
+            content = result_data["body"]["content"]
+            mentions = result_data.get("mentions")
             message = Message.deserialize(content, mentions, msg_type)
 
             record = MessageRecord(
                 session_persist_id=session_persist_id,
-                time=datetime.utcfromtimestamp(int(result["create_time"]) / 1000),
+                time=datetime.utcfromtimestamp(int(result_data["create_time"]) / 1000),
                 type="message_sent",
-                message_id=result["message_id"],
+                message_id=result_data["message_id"],
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )
