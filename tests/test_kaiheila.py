@@ -5,7 +5,7 @@ pytest.importorskip("nonebot.adapters.kaiheila")
 from datetime import datetime
 
 from nonebot import get_driver
-from nonebot.adapters.kaiheila import Adapter, Bot, Message
+from nonebot.adapters.kaiheila import Adapter, Bot, Message, MessageSegment
 from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
 from nonebot.adapters.kaiheila.event import (
     ChannelMessageEvent,
@@ -15,6 +15,7 @@ from nonebot.adapters.kaiheila.event import (
     User,
 )
 from nonebug.app import App
+import json
 
 from .utils import check_record
 
@@ -215,4 +216,75 @@ async def test_record_send_msg(app: App):
         "4458",
         serialize_message(bot, Message("test direct-message/create")),
         "test direct-message/create",
+    )
+
+    await record_send_msg(
+        bot,
+        None,
+        "message_create",
+        {"type": 2, "content": "https://img.kaiheila.cn/xxx.jpg", "target_id": "6677"},
+        MessageCreateReturn(msg_id="4459", msg_timestamp=1234000, nonce="xxx"),
+    )
+    await check_record(
+        "2233",
+        "Kaiheila",
+        "kaiheila",
+        3,
+        None,
+        None,
+        "6677",
+        datetime.utcfromtimestamp(1234000 / 1000),
+        "message_sent",
+        "4459",
+        serialize_message(
+            bot, Message(MessageSegment.image("https://img.kaiheila.cn/xxx.jpg"))
+        ),
+        "",
+    )
+
+    card_content = json.dumps(
+        [
+            {
+                "type": "card",
+                "theme": "none",
+                "size": "lg",
+                "modules": [
+                    {
+                        "type": "section",
+                        "text": {"type": "plain-text", "content": "test"},
+                    },
+                    {
+                        "type": "container",
+                        "elements": [
+                            {"type": "image", "src": "https://img.kaiheila.cn/xxx.jpg"}
+                        ],
+                    },
+                ],
+            }
+        ]
+    )
+    await record_send_msg(
+        bot,
+        None,
+        "message_create",
+        {
+            "type": 10,
+            "content": card_content,
+            "target_id": "6677",
+        },
+        MessageCreateReturn(msg_id="4460", msg_timestamp=1234000, nonce="xxx"),
+    )
+    await check_record(
+        "2233",
+        "Kaiheila",
+        "kaiheila",
+        3,
+        None,
+        None,
+        "6677",
+        datetime.utcfromtimestamp(1234000 / 1000),
+        "message_sent",
+        "4460",
+        serialize_message(bot, Message(MessageSegment.Card(card_content))),
+        "",
     )

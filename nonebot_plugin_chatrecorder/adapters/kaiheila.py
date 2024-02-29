@@ -20,12 +20,9 @@ from ..message import (
 from ..model import MessageRecord
 
 try:
-    from nonebot.adapters.kaiheila import Bot, Message
+    from nonebot.adapters.kaiheila import Bot, Message, MessageSegment
     from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
     from nonebot.adapters.kaiheila.event import MessageEvent
-    from nonebot.adapters.kaiheila.message import (
-        MessageDeserializer as KaiheilaMessageDeserializer,
-    )
 
     adapter = SupportedAdapter.kaiheila
 
@@ -78,7 +75,25 @@ try:
             else:
                 return
 
-            message = KaiheilaMessageDeserializer(data["type"], data).deserialize()
+            type_code = data["type"]
+            content = data["content"]
+            if type_code == 1:
+                message = MessageSegment.text(content)
+            elif type_code == 2:
+                message = MessageSegment.image(content)
+            elif type_code == 3:
+                message = MessageSegment.video(content)
+            elif type_code == 4:
+                message = MessageSegment.file(content)
+            elif type_code == 8:
+                message = MessageSegment.audio(content)
+            elif type_code == 9:
+                message = MessageSegment.KMarkdown(content)
+            elif type_code == 10:
+                message = MessageSegment.Card(content)
+            else:
+                message = content
+            message = Message(message)
 
             session = Session(
                 bot_id=bot.self_id,
