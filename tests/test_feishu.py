@@ -11,26 +11,28 @@ from nonebot.adapters.feishu import (
     PrivateMessageEventDetail,
     UserId,
 )
-from nonebot.adapters.feishu.bot import BotInfo
 from nonebot.adapters.feishu.config import BotConfig
 from nonebot.adapters.feishu.models import (
+    BotInfo,
     GroupEventMessage,
     PrivateEventMessage,
     Sender,
 )
+from nonebot.compat import type_validate_python
 from nonebug.app import App
 
 from .utils import check_record
 
 BOT_CONFIG = BotConfig(app_id="114", app_secret="514", verification_token="1919810")
-BOT_INFO = BotInfo.parse_obj(
+BOT_INFO = type_validate_python(
+    BotInfo,
     {
         "activate_status": 2,
         "app_name": "name",
         "avatar_url": "https://s1-imfile.feishucdn.com/test.jpg",
         "ip_white_list": [],
         "open_id": "ou_123456",
-    }
+    },
 )
 
 

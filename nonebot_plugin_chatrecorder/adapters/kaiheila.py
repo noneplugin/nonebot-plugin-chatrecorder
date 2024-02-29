@@ -20,10 +20,12 @@ from ..message import (
 from ..model import MessageRecord
 
 try:
-    from nonebot.adapters.kaiheila import Bot, Message, MessageSegment
+    from nonebot.adapters.kaiheila import Bot, Message
     from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
     from nonebot.adapters.kaiheila.event import MessageEvent
-    from nonebot.adapters.kaiheila.message import rev_msg_type_map
+    from nonebot.adapters.kaiheila.message import (
+        MessageDeserializer as KaiheilaMessageDeserializer,
+    )
 
     adapter = SupportedAdapter.kaiheila
 
@@ -65,37 +67,18 @@ try:
             ):
                 return
 
-            if api == "message/create":
+            if api == "message_create":
                 level = SessionLevel.LEVEL3
                 channel_id = data["target_id"]
                 user_id = data.get("temp_target_id")
-            elif api == "direct-message/create":
+            elif api == "directMessage_create":
                 level = SessionLevel.LEVEL1
                 channel_id = None
                 user_id = data["target_id"]
             else:
                 return
 
-            type_code = data["type"]
-            content = data["content"]
-            type = rev_msg_type_map.get(type_code, "")
-            if type == "text":
-                message = MessageSegment.text(content)
-            elif type == "image":
-                message = MessageSegment.image(content)
-            elif type == "video":
-                message = MessageSegment.video(content)
-            elif type == "file":
-                message = MessageSegment.file(content)
-            elif type == "audio":
-                message = MessageSegment.audio(content)
-            elif type == "kmarkdown":
-                message = MessageSegment.KMarkdown(content)
-            elif type == "card":
-                message = MessageSegment.Card(content)
-            else:
-                message = MessageSegment(type, {"content": content})
-            message = Message(message)
+            message = KaiheilaMessageDeserializer(data["type"], data).deserialize()
 
             session = Session(
                 bot_id=bot.self_id,

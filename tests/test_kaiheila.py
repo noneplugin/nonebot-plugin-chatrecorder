@@ -176,7 +176,7 @@ async def test_record_send_msg(app: App):
     await record_send_msg(
         bot,
         None,
-        "message/create",
+        "message_create",
         {"type": 1, "content": "test message/create", "target_id": "6677"},
         MessageCreateReturn(msg_id="4457", msg_timestamp=1234000, nonce="xxx"),
     )
@@ -198,7 +198,7 @@ async def test_record_send_msg(app: App):
     await record_send_msg(
         bot,
         None,
-        "direct-message/create",
+        "directMessage_create",
         {"type": 1, "content": "test direct-message/create", "target_id": "3344"},
         MessageCreateReturn(msg_id="4458", msg_timestamp=1234000, nonce="xxx"),
     )

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Type
 
 from nonebot.adapters import Bot as BaseBot
+from nonebot.compat import type_validate_python
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
 from nonebot_plugin_session import Session, SessionLevel, extract_session
@@ -62,7 +63,7 @@ try:
                 return
 
             try:
-                resp = MessageModel.parse_obj(result)
+                resp = type_validate_python(MessageModel, result)
             except ValidationError:
                 return
             if not resp.elements:

@@ -5,6 +5,7 @@ from nonebot.adapters.red import Bot, Message
 from nonebot.adapters.red.api.model import ChatType, Element, MsgType, RoleInfo
 from nonebot.adapters.red.config import BotInfo
 from nonebot.adapters.red.event import GroupMessageEvent, PrivateMessageEvent
+from nonebot.compat import type_validate_python
 from nonebug.app import App
 
 from .utils import check_record
@@ -26,7 +27,7 @@ async def test_record_recv_msg(app: App):
 
     message = Message("test private message")
     elements_dict = await message.export(bot)
-    elements = [Element.parse_obj(element) for element in elements_dict]
+    elements = [type_validate_python(Element, element) for element in elements_dict]
     event = PrivateMessageEvent(
         message=message,
         original_message=message,
@@ -98,7 +99,7 @@ async def test_record_recv_msg(app: App):
 
     message = Message("test group message")
     elements_dict = await message.export(bot)
-    elements = [Element.parse_obj(element) for element in elements_dict]
+    elements = [type_validate_python(Element, element) for element in elements_dict]
     event = GroupMessageEvent(
         message=message,
         original_message=message,

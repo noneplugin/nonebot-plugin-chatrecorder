@@ -4,11 +4,11 @@ from nonebot import get_driver
 from nonebot.adapters.satori import Adapter, Bot, Message
 from nonebot.adapters.satori.config import ClientInfo
 from nonebot.adapters.satori.event import PublicMessageCreatedEvent
-from nonebot.adapters.satori.models import Channel, ChannelType, Guild
+from nonebot.adapters.satori.models import Channel, ChannelType, Guild, User
 from nonebot.adapters.satori.models import InnerMember as Member
 from nonebot.adapters.satori.models import InnerMessage as SatoriMessage
-from nonebot.adapters.satori.models import User
 from nonebot.adapters.satori.utils import Element
+from nonebot.compat import type_validate_python
 from nonebug.app import App
 
 from .utils import check_record
@@ -29,7 +29,8 @@ async def test_record_recv_msg(app: App):
         )
     assert isinstance(bot, Bot)
 
-    event = PublicMessageCreatedEvent.parse_obj(
+    event = type_validate_python(
+        PublicMessageCreatedEvent,
         {
             "id": 4,
             "type": "message-created",
@@ -112,13 +113,13 @@ async def test_record_recv_msg(app: App):
                 "discriminator": "4261",
             },
             "_type": "kook",
-        }
+        },
     )
     await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "Satori",
-        "kook",
+        "kaiheila",
         3,
         "3344",
         "6677",

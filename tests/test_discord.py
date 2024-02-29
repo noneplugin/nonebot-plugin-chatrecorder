@@ -15,6 +15,7 @@ from nonebot.adapters.discord.api.model import (
     User,
 )
 from nonebot.adapters.discord.config import BotInfo
+from nonebot.compat import type_validate_python
 from nonebug.app import App
 
 from .utils import check_record
@@ -35,7 +36,8 @@ async def test_record_recv_msg(app: App):
     assert isinstance(bot, Bot)
 
     content = "test guild message"
-    event = GuildMessageCreateEvent.parse_obj(
+    event = type_validate_python(
+        GuildMessageCreateEvent,
         {
             "id": 11234,
             "channel_id": 5566,
@@ -65,7 +67,7 @@ async def test_record_recv_msg(app: App):
             "components": [],
             "to_me": False,
             "reply": None,
-        }
+        },
     )
     await record_recv_msg(bot, event)
     await check_record(
@@ -84,7 +86,8 @@ async def test_record_recv_msg(app: App):
     )
 
     content = "test direct message"
-    event = DirectMessageCreateEvent.parse_obj(
+    event = type_validate_python(
+        DirectMessageCreateEvent,
         {
             "id": 11235,
             "channel_id": 5566,
@@ -113,7 +116,7 @@ async def test_record_recv_msg(app: App):
             "components": [],
             "to_me": False,
             "reply": None,
-        }
+        },
     )
     await record_recv_msg(bot, event)
     await check_record(
@@ -150,7 +153,8 @@ async def test_record_send_msg(app: App):
         ctx.should_call_api(
             "get_channel",
             {"channel_id": 5566},
-            Channel.parse_obj(
+            type_validate_python(
+                Channel,
                 {
                     "id": 5566,
                     "type": 0,
@@ -162,7 +166,7 @@ async def test_record_send_msg(app: App):
                     "nsfw": False,
                     "rate_limit_per_user": 0,
                     "parent_id": 6678,
-                }
+                },
             ),
         )
         await record_send_msg(
@@ -176,7 +180,8 @@ async def test_record_send_msg(app: App):
                 "allowed_mentions": None,
                 "content": content,
             },
-            MessageGet.parse_obj(
+            type_validate_python(
+                MessageGet,
                 {
                     "id": 11236,
                     "channel_id": 5566,
@@ -199,7 +204,7 @@ async def test_record_send_msg(app: App):
                     "embeds": [],
                     "pinned": False,
                     "type": 0,
-                }
+                },
             ),
         )
         await check_record(
@@ -221,7 +226,8 @@ async def test_record_send_msg(app: App):
         ctx.should_call_api(
             "get_channel",
             {"channel_id": 5555},
-            Channel.parse_obj(
+            type_validate_python(
+                Channel,
                 {
                     "id": 5555,
                     "type": 1,
@@ -242,7 +248,7 @@ async def test_record_send_msg(app: App):
                             }
                         )
                     ],
-                }
+                },
             ),
         )
         await record_send_msg(
@@ -256,7 +262,8 @@ async def test_record_send_msg(app: App):
                 "allowed_mentions": None,
                 "content": content,
             },
-            MessageGet.parse_obj(
+            type_validate_python(
+                MessageGet,
                 {
                     "id": 11237,
                     "channel_id": 5555,
@@ -279,7 +286,7 @@ async def test_record_send_msg(app: App):
                     "embeds": [],
                     "pinned": False,
                     "type": 0,
-                }
+                },
             ),
         )
         await check_record(
