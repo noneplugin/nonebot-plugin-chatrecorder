@@ -12,25 +12,26 @@ VIDEO_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class SupportedAdapter(StrEnum):
-    onebot_v11 = "OneBot V11"
-    onebot_v12 = "OneBot V12"
     console = "Console"
-    kaiheila = "Kaiheila"
-    telegram = "Telegram"
-    feishu = "Feishu"
-    red = "RedProtocol"
     discord = "Discord"
     dodo = "DoDo"
+    feishu = "Feishu"
+    kaiheila = "Kaiheila"
+    onebot_v11 = "OneBot V11"
+    onebot_v12 = "OneBot V12"
+    qq = "QQ"
+    red = "RedProtocol"
     satori = "Satori"
+    telegram = "Telegram"
 
 
 class SupportedPlatform(StrEnum):
-    qq = "qq"
     console = "console"
-    kaiheila = "kaiheila"
-    qqguild = "qqguild"
-    telegram = "telegram"
-    feishu = "feishu"
     discord = "discord"
     dodo = "dodo"
+    feishu = "feishu"
+    kaiheila = "kaiheila"
+    qq = "qq"
+    qqguild = "qqguild"
+    telegram = "telegram"
     unknown = "unknown"
