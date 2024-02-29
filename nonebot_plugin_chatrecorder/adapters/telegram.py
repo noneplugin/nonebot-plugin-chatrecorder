@@ -79,7 +79,7 @@ try:
                 tg_message = type_validate_python(TGMessage, result)
                 chat = tg_message.chat
                 message_id = f"{chat.id}_{tg_message.message_id}"
-                message = type_validate_python(Message, result)
+                message = Message.model_validate(result)
 
             elif api == "send_media_group":
                 tg_messages = [type_validate_python(TGMessage, res) for res in result]
@@ -89,7 +89,7 @@ try:
                 message_id = f"{chat.id}_{message_id}"
                 message = Message()
                 for res in result:
-                    message += type_validate_python(Message, res)
+                    message += Message.model_validate(res)
 
             else:
                 return

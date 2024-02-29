@@ -9,7 +9,7 @@ from nonebot.adapters.telegram.event import (
     GroupMessageEvent,
     PrivateMessageEvent,
 )
-from nonebot.adapters.telegram.model import InputMedia
+from nonebot.adapters.telegram.model import InputMediaPhoto
 from nonebug import App
 
 from .utils import check_record
@@ -194,14 +194,14 @@ async def test_record_send_msg(app: App):
             "chat_id": 3344,
             "message_thread_id": None,
             "media": [
-                InputMedia(
+                InputMediaPhoto(
                     type="photo",
                     media="attach://ac01.jpg",
                     caption=None,
                     parse_mode=None,
                     caption_entities=None,
                 ),
-                InputMedia(
+                InputMediaPhoto(
                     type="photo",
                     media="attach://ac02.jpg",
                     caption=None,
