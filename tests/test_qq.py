@@ -2,22 +2,22 @@ from datetime import datetime, timedelta, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.qq import Adapter, Bot, Message
-from nonebot.adapters.qq.models import (
-    User,
-    GroupMemberAuthor,
-    FriendAuthor,
-    PostGroupMessagesReturn,
-    PostC2CMessagesReturn,
-)
-from nonebot.adapters.qq.models import Message as GuildMessage
 from nonebot.adapters.qq.config import BotInfo
 from nonebot.adapters.qq.event import (
+    C2CMessageCreateEvent,
     DirectMessageCreateEvent,
     EventType,
-    MessageCreateEvent,
     GroupAtMessageCreateEvent,
-    C2CMessageCreateEvent,
+    MessageCreateEvent,
 )
+from nonebot.adapters.qq.models import (
+    FriendAuthor,
+    GroupMemberAuthor,
+    PostC2CMessagesReturn,
+    PostGroupMessagesReturn,
+    User,
+)
+from nonebot.adapters.qq.models import Message as GuildMessage
 from nonebug import App
 
 from .utils import check_record
@@ -93,7 +93,7 @@ async def test_record_recv_msg(app: App):
     event = GroupAtMessageCreateEvent(
         __type__=EventType.GROUP_AT_MESSAGE_CREATE,
         id="1236",
-        timestamp="12345678",
+        timestamp="2023-11-06T13:37:18+08:00",
         group_openid="195747FDF0D845E98CF3886C5C7ED328",
         author=GroupMemberAuthor(
             id="3344", member_openid="8BE608110EAA4328A1883DEF239F5580"
@@ -109,7 +109,7 @@ async def test_record_recv_msg(app: App):
         "8BE608110EAA4328A1883DEF239F5580",
         "195747FDF0D845E98CF3886C5C7ED328",
         None,
-        datetime.utcfromtimestamp(12345678),
+        datetime.fromisoformat("2023-11-06T13:37:18+08:00"),
         "message",
         "1236",
         serialize_message(bot, Message("test group at message create event")),
@@ -119,7 +119,7 @@ async def test_record_recv_msg(app: App):
     event = C2CMessageCreateEvent(
         __type__=EventType.C2C_MESSAGE_CREATE,
         id="1237",
-        timestamp="12345678",
+        timestamp="2023-11-06T13:37:18+08:00",
         author=FriendAuthor(id="3344", user_openid="451368C569A1401D87172E9435EE8663"),
         content="test c2c message create event",
     )
@@ -132,7 +132,7 @@ async def test_record_recv_msg(app: App):
         "451368C569A1401D87172E9435EE8663",
         None,
         None,
-        datetime.utcfromtimestamp(12345678),
+        datetime.fromisoformat("2023-11-06T13:37:18+08:00"),
         "message",
         "1237",
         serialize_message(bot, Message("test c2c message create event")),
