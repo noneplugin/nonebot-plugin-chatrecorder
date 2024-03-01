@@ -1157,6 +1157,23 @@ pydantic = ">=1.10.0,<2.5.0 || >2.5.0,<2.5.1 || >2.5.1,<3.0.0"
 typing-extensions = ">=4.0.0,<5.0.0"
 
 [[package]]
+name = "nonebot-adapter-qq"
+version = "1.4.2"
+description = "QQ adapter for nonebot2"
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "nonebot_adapter_qq-1.4.2-py3-none-any.whl", hash = "sha256:1bae0016420140841baad81365a8226f448d89ce8bd375f9ec5dd030e244e1da"},
+    {file = "nonebot_adapter_qq-1.4.2.tar.gz", hash = "sha256:69331998182ecbeec2efa3dee89c63a0d359b93936afa39f158224d96e087c3a"},
+]
+
+[package.dependencies]
+nonebot2 = ">=2.2.0,<3.0.0"
+pydantic = ">=1.10.0,<2.5.0 || >2.5.0,<2.5.1 || >2.5.1,<3.0.0"
+typing-extensions = ">=4.4.0,<5.0.0"
+yarl = ">=1.9.0,<2.0.0"
+
+[[package]]
 name = "nonebot-adapter-red"
 version = "0.9.0"
 description = "Red Protocol Adapter for Nonebot2"
@@ -2362,4 +2379,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "a663524c5bbeeb3c37f6a6dda9d89f559f041672fad35a898694cd48b31be4fa"
+content-hash = "b12875d51a57090c2b64dafa63506dcf6ef711092e368384d82d509d5c073029"
