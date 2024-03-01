@@ -186,7 +186,7 @@ async def test_record_send_msg(app: App):
     await check_record(
         "2233",
         "Satori",
-        "kook",
+        "kaiheila",
         3,
         None,
         "6677",
