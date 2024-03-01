@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, Optional, Type, Union
 
 from nonebot.adapters import Bot as BaseBot
@@ -6,7 +7,6 @@ from nonebot_plugin_orm import get_session
 from nonebot_plugin_session import Session, SessionLevel, extract_session
 from nonebot_plugin_session_orm import get_session_persist_id
 from typing_extensions import override
-from datetime import datetime
 
 from ..config import plugin_config
 from ..consts import SupportedAdapter, SupportedPlatform
@@ -21,11 +21,11 @@ from ..model import MessageRecord
 from ..utils import remove_timezone
 
 try:
-    from nonebot.adapters.qq import Bot, Message, GuildMessageEvent, QQMessageEvent
+    from nonebot.adapters.qq import Bot, GuildMessageEvent, Message, QQMessageEvent
     from nonebot.adapters.qq.models import Message as GuildMessage
     from nonebot.adapters.qq.models import (
-        PostGroupMessagesReturn,
         PostC2CMessagesReturn,
+        PostGroupMessagesReturn,
     )
 
     adapter = SupportedAdapter.qq
@@ -38,7 +38,8 @@ try:
         session_persist_id = await get_session_persist_id(session)
 
         if isinstance(event, QQMessageEvent):
-            time = datetime.utcfromtimestamp(int(event.timestamp))
+            time = datetime.fromisoformat(event.timestamp)
+            time = remove_timezone(time)
         else:
             if event.timestamp:
                 time = remove_timezone(event.timestamp)
