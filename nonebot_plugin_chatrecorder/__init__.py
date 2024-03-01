@@ -30,6 +30,7 @@ __plugin_meta__ = PluginMetadata(
         "~discord",
         "~dodo",
         "~satori",
+        "~qq",
     },
     extra={"orm_version_location": migrations},
 )

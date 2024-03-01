@@ -11,7 +11,7 @@ _✨ [Nonebot2](https://github.com/nonebot/nonebot2) 聊天记录插件 ✨_
 <p align="center">
   <img src="https://img.shields.io/github/license/noneplugin/nonebot-plugin-chatrecorder" alt="license">
   <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="Python">
-  <img src="https://img.shields.io/badge/nonebot-2.0.0+-red.svg" alt="NoneBot">
+  <img src="https://img.shields.io/badge/nonebot-2.2.0+-red.svg" alt="NoneBot">
   <a href="https://pypi.org/project/nonebot-plugin-chatrecorder">
     <img src="https://badgen.net/pypi/v/nonebot-plugin-chatrecorder" alt="pypi">
   </a>
@@ -168,11 +168,13 @@ async def _(bot: Bot, event: Event):
 - [x] OneBot v12
 - [x] Console
 - [x] Kaiheila
-- [x] QQ Guild
 - [x] Telegram
 - [x] Feishu
 - [x] RedProtocol
 - [x] Discord
+- [x] DoDo
+- [x] Satori
+- [x] QQ
 
 ### 鸣谢
 
