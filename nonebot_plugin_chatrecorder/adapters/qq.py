@@ -38,7 +38,10 @@ try:
         session_persist_id = await get_session_persist_id(session)
 
         if isinstance(event, QQMessageEvent):
-            time = datetime.fromisoformat(event.timestamp)
+            if isinstance(event.timestamp, str):
+                time = datetime.fromisoformat(event.timestamp)
+            else:
+                time = event.timestamp
             time = remove_timezone(time)
         else:
             if event.timestamp:
