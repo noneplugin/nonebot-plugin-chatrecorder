@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import List
 
 from nonebot import get_driver
 from nonebot.adapters import Message
@@ -87,7 +86,7 @@ async def test_get_message_records(app: App):
             id3="100000",
         ),
     ]
-    session_persist_ids: List[int] = []
+    session_persist_ids: list[int] = []
     for session in sessions:
         session_persist_id = await get_session_persist_id(session)
         session_persist_ids.append(session_persist_id)

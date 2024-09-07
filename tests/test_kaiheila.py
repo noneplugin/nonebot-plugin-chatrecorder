@@ -1,7 +1,4 @@
-import pytest
-
-pytest.importorskip("nonebot.adapters.kaiheila")
-
+import json
 from datetime import datetime
 
 from nonebot import get_driver
@@ -15,15 +12,8 @@ from nonebot.adapters.kaiheila.event import (
     User,
 )
 from nonebug.app import App
-import json
 
 from .utils import check_record
-
-
-@pytest.fixture(scope="session", autouse=True)
-def load_adapters(nonebug_init: None):
-    driver = get_driver()
-    driver.register_adapter(Adapter)
 
 
 async def test_record_recv_msg(app: App):

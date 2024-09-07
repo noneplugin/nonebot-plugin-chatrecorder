@@ -53,14 +53,14 @@ plugins = ["nonebot_plugin_chatrecorder"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "UP", "C", "T", "PYI", "Q"]
 ignore = ["E402", "E501", "E711", "C901", "UP037"]
 
 [tool.pyright]
-pythonVersion = "3.8"
+pythonVersion = "3.9"
 pythonPlatform = "All"
 typeCheckingMode = "basic"
 

@@ -1,5 +1,6 @@
+from collections.abc import Iterable, Sequence
 from datetime import datetime
-from typing import Iterable, List, Literal, Optional, Sequence, Union
+from typing import Literal, Optional, Union
 
 from nonebot.adapters import Message
 from nonebot_plugin_orm import get_session
@@ -33,7 +34,7 @@ def filter_statement(
     time_start: Optional[datetime] = None,
     time_stop: Optional[datetime] = None,
     types: Optional[Iterable[Literal["message", "message_sent"]]] = None,
-) -> List[ColumnElement[bool]]:
+) -> list[ColumnElement[bool]]:
     """筛选消息记录
 
     参数:
@@ -60,7 +61,7 @@ def filter_statement(
       * ``List[ColumnElement[bool]]``: 筛选语句
     """
 
-    whereclause: List[ColumnElement[bool]] = []
+    whereclause: list[ColumnElement[bool]] = []
     if session:
         whereclause = SessionModel.filter_statement(
             session,
@@ -126,7 +127,7 @@ async def get_message_records(**kwargs) -> Sequence[MessageRecord]:
     return records
 
 
-async def get_messages(**kwargs) -> List[Message]:
+async def get_messages(**kwargs) -> list[Message]:
     """获取消息记录的消息列表
 
     参数:

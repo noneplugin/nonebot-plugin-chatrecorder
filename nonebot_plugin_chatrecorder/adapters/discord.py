@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
@@ -42,7 +42,7 @@ try:
             db_session.add(record)
             await db_session.commit()
 
-    _channel_cache: Dict[int, Channel] = {}
+    _channel_cache: dict[int, Channel] = {}
 
     async def get_channel(bot: Bot, channel_id: int) -> Channel:
         if channel_id in _channel_cache:
@@ -58,7 +58,7 @@ try:
             bot: BaseBot,
             e: Optional[Exception],
             api: str,
-            data: Dict[str, Any],
+            data: dict[str, Any],
             result: Any,
         ):
             if not isinstance(bot, Bot):
@@ -117,7 +117,7 @@ try:
     class Deserializer(MessageDeserializer[Message]):
         @classmethod
         @override
-        def get_message_class(cls) -> Type[Message]:
+        def get_message_class(cls) -> type[Message]:
             return Message
 
     register_serializer(adapter, Serializer)

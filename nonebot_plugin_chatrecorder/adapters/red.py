@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 from nonebot.adapters import Bot as BaseBot
 from nonebot.compat import type_validate_python
@@ -52,7 +52,7 @@ try:
             bot: BaseBot,
             e: Optional[Exception],
             api: str,
-            data: Dict[str, Any],
+            data: dict[str, Any],
             result: Any,
         ):
             if not isinstance(bot, Bot):
@@ -113,7 +113,7 @@ try:
     class Deserializer(MessageDeserializer[Message]):
         @classmethod
         @override
-        def get_message_class(cls) -> Type[Message]:
+        def get_message_class(cls) -> type[Message]:
             return Message
 
     register_serializer(adapter, Serializer)

@@ -1,5 +1,6 @@
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Iterable, Literal
+from typing import Literal
 
 from nonebot.adapters import Message
 from nonebot_plugin_session import Session, SessionIdType, SessionLevel
