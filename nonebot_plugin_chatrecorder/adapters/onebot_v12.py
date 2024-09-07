@@ -18,7 +18,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
-from ..utils import format_platform, remove_timezone
+from ..utils import format_platform, record_type, remove_timezone
 
 try:
     from nonebot.adapters.onebot.v12 import Bot, Message, MessageEvent
@@ -33,7 +33,7 @@ try:
         record = MessageRecord(
             session_persist_id=session_persist_id,
             time=remove_timezone(event.time),
-            type=event.type,
+            type=record_type(event),
             message_id=event.message_id,
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),

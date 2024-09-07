@@ -19,7 +19,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
-from ..utils import remove_timezone
+from ..utils import record_type, remove_timezone
 
 try:
     from nonebot.adapters.telegram import Bot, Message
@@ -36,7 +36,7 @@ try:
         record = MessageRecord(
             session_persist_id=session_persist_id,
             time=remove_timezone(datetime.fromtimestamp(event.date, timezone.utc)),
-            type=event.get_type(),
+            type=record_type(event),
             message_id=f"{event.chat.id}_{event.message_id}",
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),

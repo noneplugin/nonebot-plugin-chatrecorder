@@ -20,7 +20,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
-from ..utils import remove_timezone
+from ..utils import record_type, remove_timezone
 
 try:
     from nonebot.adapters.console import Bot, Message, MessageEvent, MessageSegment
@@ -53,7 +53,7 @@ try:
         record = MessageRecord(
             session_persist_id=session_persist_id,
             time=remove_timezone(event.time.astimezone(timezone.utc)),
-            type=event.post_type,
+            type=record_type(event),
             message_id=await get_id(),
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),

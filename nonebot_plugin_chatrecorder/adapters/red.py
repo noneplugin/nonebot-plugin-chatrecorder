@@ -20,7 +20,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
-from ..utils import remove_timezone
+from ..utils import record_type, remove_timezone
 
 try:
     from nonebot.adapters.red import Bot, Message, MessageEvent
@@ -39,7 +39,7 @@ try:
             time=remove_timezone(
                 datetime.fromtimestamp(int(event.msgTime), timezone.utc)
             ),
-            type=event.get_type(),
+            type=record_type(event),
             message_id=event.msgId,
             message=serialize_message(adapter, event.message),
             plain_text=event.message.extract_plain_text(),
