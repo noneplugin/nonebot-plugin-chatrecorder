@@ -22,7 +22,7 @@ from ..utils import remove_timezone
 
 try:
     from nonebot.adapters.satori import Bot, Message, MessageEvent
-    from nonebot.adapters.satori.models import InnerMessage as SatoriMessage
+    from nonebot.adapters.satori.models import MessageObject
 
     adapter = SupportedAdapter.satori
 
@@ -60,9 +60,9 @@ try:
             if api not in ["message_create"]:
                 return
             for res in result:
-                if not isinstance(res, SatoriMessage):
+                if not isinstance(res, MessageObject):
                     return
-            result_messages = cast(List[SatoriMessage], result)
+            result_messages = cast(List[MessageObject], result)
 
             result_message = result_messages[0]
             level = SessionLevel.LEVEL0
@@ -98,7 +98,7 @@ try:
             message_id = "_".join([msg.id for msg in result_messages])
             message = Message()
             for msg in result_messages:
-                message += Message.from_satori_element(msg.content)
+                message += Message(msg.content)
             message_time = (
                 remove_timezone(result_message.created_at.astimezone(timezone.utc))
                 if result_message.created_at

@@ -4,10 +4,16 @@ from nonebot import get_driver
 from nonebot.adapters.satori import Adapter, Bot, Message
 from nonebot.adapters.satori.config import ClientInfo
 from nonebot.adapters.satori.event import PublicMessageCreatedEvent
-from nonebot.adapters.satori.models import Channel, ChannelType, Guild, User
-from nonebot.adapters.satori.models import InnerMember as Member
-from nonebot.adapters.satori.models import InnerMessage as SatoriMessage
-from nonebot.adapters.satori.utils import Element
+from nonebot.adapters.satori.models import (
+    Channel,
+    ChannelType,
+    Guild,
+    Login,
+    LoginStatus,
+    Member,
+    MessageObject,
+    User,
+)
 from nonebot.compat import type_validate_python
 from nonebug.app import App
 
@@ -24,7 +30,16 @@ async def test_record_recv_msg(app: App):
             base=Bot,
             adapter=Adapter(get_driver()),
             self_id="2233",
-            platform="kook",
+            login=Login(
+                user=User(
+                    id="2233",
+                    name="Bot",
+                    avatar="https://xxx.png",
+                ),
+                self_id="2233",
+                platform="kook",
+                status=LoginStatus.ONLINE,
+            ),
             info=ClientInfo(port=5140),
         )
     assert isinstance(bot, Bot)
@@ -56,14 +71,7 @@ async def test_record_recv_msg(app: App):
             },
             "message": {
                 "id": "56163f81-de30-4c39-b4c4-3a205d0be9da",
-                "content": [
-                    {
-                        "type": "text",
-                        "attrs": {"text": "test"},
-                        "children": [],
-                        "source": None,
-                    }
-                ],
+                "content": "test",
                 "channel": None,
                 "guild": None,
                 "member": {
@@ -77,7 +85,6 @@ async def test_record_recv_msg(app: App):
                         "user_id": "3344",
                         "discriminator": "4261",
                     },
-                    "name": None,
                     "nick": "Aislinn",
                     "avatar": None,
                     "joined_at": None,
@@ -142,7 +149,16 @@ async def test_record_send_msg(app: App):
             base=Bot,
             adapter=Adapter(get_driver()),
             self_id="2233",
-            platform="kook",
+            login=Login(
+                user=User(
+                    id="2233",
+                    name="Bot",
+                    avatar="https://xxx.png",
+                ),
+                self_id="2233",
+                platform="kook",
+                status=LoginStatus.ONLINE,
+            ),
             info=ClientInfo(port=5140),
         )
     assert isinstance(bot, Bot)
@@ -153,20 +169,15 @@ async def test_record_send_msg(app: App):
         "message_create",
         {"channel_id": "6677", "content": "test"},
         [
-            SatoriMessage(
+            MessageObject(
                 id="6b701984-c185-4da9-9808-549dc9947b85",
-                content=[
-                    Element(
-                        type="text", attrs={"text": "test"}, children=[], source=None
-                    )
-                ],
+                content="test",
                 channel=Channel(
                     id="6677", type=ChannelType.TEXT, name="文字频道", parent_id=None
                 ),
                 guild=Guild(id="5566", name=None, avatar=None),
                 member=Member(
                     user=None,
-                    name=None,
                     nick="Aislinn",
                     avatar=None,
                     joined_at=None,

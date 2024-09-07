@@ -24,7 +24,7 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 @pytest.fixture
-async def app(app: App):
+async def app():
     nonebot.require("nonebot_plugin_chatrecorder")
 
     from nonebot_plugin_orm import get_session, init_orm
@@ -34,7 +34,7 @@ async def app(app: App):
 
     await init_orm()
 
-    yield app
+    yield App()
 
     async with get_session() as db_session:
         await db_session.execute(delete(MessageRecord))
