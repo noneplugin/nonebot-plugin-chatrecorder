@@ -9,7 +9,7 @@ from nonebot_plugin_session_orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter, SupportedPlatform
+from ..consts import SupportedAdapter
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -18,6 +18,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
+from ..utils import format_platform
 
 try:
     from nonebot.adapters.onebot.v12 import Bot, Message, MessageEvent
@@ -67,16 +68,10 @@ try:
             elif detail_type == "private":
                 level = SessionLevel.LEVEL1
 
-            platform = bot.platform
-            if platform in ("kook",):
-                platform = SupportedPlatform.kaiheila
-            elif platform not in list(SupportedPlatform):
-                platform = SupportedPlatform.unknown
-
             session = Session(
                 bot_id=bot.self_id,
                 bot_type=bot.type,
-                platform=bot.platform,
+                platform=format_platform(bot.platform),
                 level=level,
                 id1=data.get("user_id"),
                 id2=data.get("group_id") or data.get("channel_id"),

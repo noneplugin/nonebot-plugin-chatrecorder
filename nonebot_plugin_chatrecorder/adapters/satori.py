@@ -9,7 +9,7 @@ from nonebot_plugin_session_orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter, SupportedPlatform
+from ..consts import SupportedAdapter
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -18,7 +18,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
-from ..utils import remove_timezone
+from ..utils import format_platform, remove_timezone
 
 try:
     from nonebot.adapters.satori import Bot, Message, MessageEvent
@@ -76,18 +76,10 @@ try:
             id2 = result_message.channel.id if result_message.channel else None
             id3 = result_message.guild.id if result_message.guild else None
 
-            platform = bot.platform
-            if platform in ("onebot", "red", "chronocat"):
-                platform = SupportedPlatform.qq
-            elif platform in ("kook",):
-                platform = SupportedPlatform.kaiheila
-            elif platform not in list(SupportedPlatform):
-                platform = SupportedPlatform.unknown
-
             session = Session(
                 bot_id=bot.self_id,
                 bot_type=bot.type,
-                platform=platform,
+                platform=format_platform(bot.platform),
                 level=level,
                 id1=id1,
                 id2=id2,
