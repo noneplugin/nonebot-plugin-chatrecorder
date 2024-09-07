@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.kaiheila import Adapter, Bot, Message, MessageSegment
@@ -82,7 +82,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         None,
         None,
-        datetime.utcfromtimestamp(1234000 / 1000),
+        datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
         "4455",
         serialize_message(bot, Message("test private message")),
@@ -142,7 +142,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         "6677",
         "5566",
-        datetime.utcfromtimestamp(1234000 / 1000),
+        datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
         "4456",
         serialize_message(bot, Message("test channel message")),
@@ -179,7 +179,7 @@ async def test_record_send_msg(app: App):
         None,
         None,
         "6677",
-        datetime.utcfromtimestamp(1234000 / 1000),
+        datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4457",
         serialize_message(bot, Message("test message/create")),
@@ -201,7 +201,7 @@ async def test_record_send_msg(app: App):
         "3344",
         None,
         None,
-        datetime.utcfromtimestamp(1234000 / 1000),
+        datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4458",
         serialize_message(bot, Message("test direct-message/create")),
@@ -223,7 +223,7 @@ async def test_record_send_msg(app: App):
         None,
         None,
         "6677",
-        datetime.utcfromtimestamp(1234000 / 1000),
+        datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4459",
         serialize_message(
@@ -272,7 +272,7 @@ async def test_record_send_msg(app: App):
         None,
         None,
         "6677",
-        datetime.utcfromtimestamp(1234000 / 1000),
+        datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4460",
         serialize_message(bot, Message(MessageSegment.Card(card_content))),

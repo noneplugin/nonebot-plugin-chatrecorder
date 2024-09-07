@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.satori import Adapter, Bot, Message
@@ -131,7 +131,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         "6677",
         "5566",
-        datetime.utcfromtimestamp(17000000000 / 1000),
+        datetime.fromtimestamp(17000000000 / 1000, timezone.utc),
         "message",
         "56163f81-de30-4c39-b4c4-3a205d0be9da",
         serialize_message(bot, Message("test")),

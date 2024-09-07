@@ -92,10 +92,11 @@ try:
             for msg in result_messages:
                 message += Message(msg.content)
             message_time = (
-                remove_timezone(result_message.created_at.astimezone(timezone.utc))
+                result_message.created_at.astimezone(timezone.utc)
                 if result_message.created_at
-                else datetime.utcnow()
+                else datetime.now(timezone.utc)
             )
+            message_time = remove_timezone(message_time)
 
             record = MessageRecord(
                 session_persist_id=session_persist_id,

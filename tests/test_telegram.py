@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.telegram import Adapter, Bot, Message
@@ -52,7 +52,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         None,
         None,
-        datetime.utcfromtimestamp(1122),
+        datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "3344_1234",
         serialize_message(bot, Message("test private message")),
@@ -82,7 +82,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         "5566",
         None,
-        datetime.utcfromtimestamp(1122),
+        datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1235",
         serialize_message(bot, Message("test group message")),
@@ -114,7 +114,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         "6677",
         "5566",
-        datetime.utcfromtimestamp(1122),
+        datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1236",
         serialize_message(bot, Message("test forum topic message")),
@@ -179,7 +179,7 @@ async def test_record_send_msg(app: App):
         "3344",
         None,
         None,
-        datetime.utcfromtimestamp(1122),
+        datetime.fromtimestamp(1122, timezone.utc),
         "message_sent",
         "3344_1237",
         serialize_message(bot, Message("test call_api send_message")),
@@ -277,7 +277,7 @@ async def test_record_send_msg(app: App):
         "3344",
         None,
         None,
-        datetime.utcfromtimestamp(1122),
+        datetime.fromtimestamp(1122, timezone.utc),
         "message_sent",
         "3344_1238_1239",
         [

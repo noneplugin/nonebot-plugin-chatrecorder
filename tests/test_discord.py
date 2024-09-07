@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.discord import (
@@ -78,7 +78,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         "5566",
         "6677",
-        datetime.utcfromtimestamp(123456),
+        datetime.fromtimestamp(123456, timezone.utc),
         "message",
         "11234",
         serialize_message(bot, Message(content)),
@@ -127,7 +127,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         "5566",
         None,
-        datetime.utcfromtimestamp(123456),
+        datetime.fromtimestamp(123456, timezone.utc),
         "message",
         "11235",
         serialize_message(bot, Message(content)),
@@ -215,7 +215,7 @@ async def test_record_send_msg(app: App):
             None,
             "5566",
             "6677",
-            datetime.utcfromtimestamp(123456),
+            datetime.fromtimestamp(123456, timezone.utc),
             "message_sent",
             "11236",
             serialize_message(bot, Message(content)),
@@ -297,7 +297,7 @@ async def test_record_send_msg(app: App):
             "3344",
             "5555",
             None,
-            datetime.utcfromtimestamp(123456),
+            datetime.fromtimestamp(123456, timezone.utc),
             "message_sent",
             "11237",
             serialize_message(bot, Message(content)),

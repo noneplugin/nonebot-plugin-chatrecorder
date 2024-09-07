@@ -103,7 +103,7 @@ try:
 
             record = MessageRecord(
                 session_persist_id=session_persist_id,
-                time=datetime.utcnow(),
+                time=remove_timezone(datetime.now(timezone.utc)),
                 type="message_sent",
                 message_id=await get_id(),
                 message=serialize_message(adapter, message),

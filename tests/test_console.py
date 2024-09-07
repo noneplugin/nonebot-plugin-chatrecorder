@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.console import Adapter, Bot, Message, MessageEvent
@@ -14,7 +14,7 @@ def fake_message_event(**field) -> MessageEvent:
     _Fake = create_model("_Fake", __base__=MessageEvent)
 
     class FakeEvent(_Fake):
-        time: datetime = datetime.utcfromtimestamp(1000000)
+        time: datetime = datetime.fromtimestamp(1000000, timezone.utc)
         self_id: str = "console"
         post_type: str = "message"
         user: User = User(id="User")
@@ -39,7 +39,9 @@ async def test_record_recv_msg(app: App):
     user_id = "User"
     message = Message("test_record_recv_msg")
     event = fake_message_event(
-        time=datetime.fromtimestamp(time), user=User(id=user_id), message=message
+        time=datetime.fromtimestamp(time, timezone.utc),
+        user=User(id=user_id),
+        message=message,
     )
     await record_recv_msg(bot, event)
     await check_record(
@@ -50,7 +52,7 @@ async def test_record_recv_msg(app: App):
         user_id,
         None,
         None,
-        datetime.utcfromtimestamp(time),
+        datetime.fromtimestamp(time, timezone.utc),
         "message",
         "0",
         serialize_message(bot, message),

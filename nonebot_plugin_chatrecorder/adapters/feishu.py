@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from nonebot.adapters import Bot as BaseBot
@@ -19,6 +19,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
+from ..utils import remove_timezone
 
 try:
     from nonebot.adapters.feishu import Bot, Message, MessageEvent
@@ -32,7 +33,11 @@ try:
 
         record = MessageRecord(
             session_persist_id=session_persist_id,
-            time=datetime.utcfromtimestamp(int(event.event.message.create_time) / 1000),
+            time=remove_timezone(
+                datetime.fromtimestamp(
+                    int(event.event.message.create_time) / 1000, timezone.utc
+                )
+            ),
             type=event.get_type(),
             message_id=event.event.message.message_id,
             message=serialize_message(adapter, event.get_message()),
@@ -105,7 +110,11 @@ try:
 
             record = MessageRecord(
                 session_persist_id=session_persist_id,
-                time=datetime.utcfromtimestamp(int(result_data["create_time"]) / 1000),
+                time=remove_timezone(
+                    datetime.fromtimestamp(
+                        int(result_data["create_time"]) / 1000, timezone.utc
+                    )
+                ),
                 type="message_sent",
                 message_id=result_data["message_id"],
                 message=serialize_message(adapter, message),

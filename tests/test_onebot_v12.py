@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal
 
 from nonebot import get_driver
@@ -104,7 +104,7 @@ async def test_record_recv_msg(app: App):
         )
     assert isinstance(bot, Bot)
 
-    time = datetime.utcfromtimestamp(1000000)
+    time = datetime.fromtimestamp(1000000, timezone.utc)
     user_id = "111111"
     group_id = "222222"
     guild_id = "333333"
@@ -225,7 +225,7 @@ async def test_record_send_msg(app: App):
         None,
         str(group_id),
         None,
-        datetime.utcfromtimestamp(time),
+        datetime.fromtimestamp(time, timezone.utc),
         "message_sent",
         str(message_id),
         serialize_message(bot, message),
@@ -253,7 +253,7 @@ async def test_record_send_msg(app: App):
         str(user_id),
         None,
         None,
-        datetime.utcfromtimestamp(time),
+        datetime.fromtimestamp(time, timezone.utc),
         "message_sent",
         str(message_id),
         serialize_message(bot, message),
@@ -282,7 +282,7 @@ async def test_record_send_msg(app: App):
         None,
         str(channel_id),
         str(guild_id),
-        datetime.utcfromtimestamp(time),
+        datetime.fromtimestamp(time, timezone.utc),
         "message_sent",
         str(message_id),
         serialize_message(bot, message),

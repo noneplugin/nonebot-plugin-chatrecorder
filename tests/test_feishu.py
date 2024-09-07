@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.feishu import (
@@ -102,7 +102,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         None,
         None,
-        datetime.utcfromtimestamp(123456000 / 1000),
+        datetime.fromtimestamp(123456000 / 1000, timezone.utc),
         "message",
         "om_1",
         serialize_message(bot, message),
@@ -137,7 +137,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         "1122",
         None,
-        datetime.utcfromtimestamp(123456000 / 1000),
+        datetime.fromtimestamp(123456000 / 1000, timezone.utc),
         "message",
         "om_2",
         serialize_message(bot, message),
@@ -218,7 +218,7 @@ async def test_record_send_msg(app: App):
             None,
             "oc_123",
             None,
-            datetime.utcfromtimestamp(123456000 / 1000),
+            datetime.fromtimestamp(123456000 / 1000, timezone.utc),
             "message_sent",
             "om_3",
             serialize_message(bot, message),
@@ -279,7 +279,7 @@ async def test_record_send_msg(app: App):
             "3344",
             None,
             None,
-            datetime.utcfromtimestamp(123456000 / 1000),
+            datetime.fromtimestamp(123456000 / 1000, timezone.utc),
             "message_sent",
             "om_4",
             serialize_message(bot, message),
@@ -324,7 +324,7 @@ async def test_record_send_msg(app: App):
             None,
             "oc_123",
             None,
-            datetime.utcfromtimestamp(123456000 / 1000),
+            datetime.fromtimestamp(123456000 / 1000, timezone.utc),
             "message_sent",
             "om_5",
             serialize_message(bot, message),
@@ -369,7 +369,7 @@ async def test_record_send_msg(app: App):
             "3344",
             None,
             None,
-            datetime.utcfromtimestamp(123456000 / 1000),
+            datetime.fromtimestamp(123456000 / 1000, timezone.utc),
             "message_sent",
             "om_6",
             serialize_message(bot, message),

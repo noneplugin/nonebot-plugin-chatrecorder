@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional, Union
 
 from nonebot.adapters import Bot as BaseBot
@@ -42,12 +42,12 @@ try:
                 time = datetime.fromisoformat(event.timestamp)
             else:
                 time = event.timestamp
-            time = remove_timezone(time)
         else:
             if event.timestamp:
-                time = remove_timezone(event.timestamp)
+                time = event.timestamp
             else:
-                time = datetime.utcnow()
+                time = datetime.now(timezone.utc)
+        time = remove_timezone(time)
 
         record = MessageRecord(
             session_persist_id=session_persist_id,
@@ -124,11 +124,8 @@ try:
             session_persist_id = await get_session_persist_id(session)
 
             assert result.id
-            time = (
-                remove_timezone(result.timestamp)
-                if result.timestamp
-                else datetime.utcnow()
-            )
+            time = result.timestamp if result.timestamp else datetime.now(timezone.utc)
+            time = remove_timezone(time)
             message = (
                 Message.from_guild_message(result)
                 if isinstance(result, GuildMessage)
