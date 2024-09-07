@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from nonebot.adapters import Event
+
 from .consts import SupportedPlatform
 
 
@@ -20,3 +22,11 @@ def format_platform(platform: str) -> str:
     elif platform not in list(SupportedPlatform):
         return SupportedPlatform.unknown
     return platform
+
+
+def is_fake_event(event: Event) -> bool:
+    return hasattr(event, "_is_fake") and event._is_fake()  # type: ignore
+
+
+def record_type(event: Event) -> str:
+    return "fake" if is_fake_event(event) else "message"

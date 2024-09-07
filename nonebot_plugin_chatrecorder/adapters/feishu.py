@@ -19,7 +19,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
-from ..utils import remove_timezone
+from ..utils import record_type, remove_timezone
 
 try:
     from nonebot.adapters.feishu import Bot, Message, MessageEvent
@@ -38,7 +38,7 @@ try:
                     int(event.event.message.create_time) / 1000, timezone.utc
                 )
             ),
-            type=event.get_type(),
+            type=record_type(event),
             message_id=event.event.message.message_id,
             message=serialize_message(adapter, event.get_message()),
             plain_text=event.get_message().extract_plain_text(),

@@ -18,7 +18,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
-from ..utils import remove_timezone
+from ..utils import record_type, remove_timezone
 
 try:
     from nonebot.adapters.qq import Bot, GuildMessageEvent, Message, QQMessageEvent
@@ -52,7 +52,7 @@ try:
         record = MessageRecord(
             session_persist_id=session_persist_id,
             time=time,
-            type=event.get_type(),
+            type=record_type(event),
             message_id=event.id,
             message=serialize_message(adapter, event.get_message()),
             plain_text=event.get_plaintext(),
