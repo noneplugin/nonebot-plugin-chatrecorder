@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from nonebot.adapters import Bot as BaseBot
@@ -19,6 +19,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
+from ..utils import remove_timezone
 
 try:
     from nonebot.adapters.telegram import Bot, Message
@@ -34,7 +35,7 @@ try:
 
         record = MessageRecord(
             session_persist_id=session_persist_id,
-            time=datetime.utcfromtimestamp(event.date),
+            time=remove_timezone(datetime.fromtimestamp(event.date, timezone.utc)),
             type=event.get_type(),
             message_id=f"{event.chat.id}_{event.message_id}",
             message=serialize_message(adapter, event.message),
@@ -123,7 +124,9 @@ try:
 
             record = MessageRecord(
                 session_persist_id=session_persist_id,
-                time=datetime.utcfromtimestamp(tg_message.date),
+                time=remove_timezone(
+                    datetime.fromtimestamp(tg_message.date, timezone.utc)
+                ),
                 type="message_sent",
                 message_id=message_id,
                 message=serialize_message(adapter, message),

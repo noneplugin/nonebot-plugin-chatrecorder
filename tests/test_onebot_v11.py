@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal
 
 from nonebot import get_driver
@@ -99,7 +99,7 @@ async def test_record_recv_msg(app: App):
         str(user_id),
         str(group_id),
         None,
-        datetime.utcfromtimestamp(time),
+        datetime.fromtimestamp(time, timezone.utc),
         "message",
         str(message_id),
         serialize_message(bot, message),
@@ -120,7 +120,7 @@ async def test_record_recv_msg(app: App):
         str(user_id),
         None,
         None,
-        datetime.utcfromtimestamp(time),
+        datetime.fromtimestamp(time, timezone.utc),
         "message",
         str(message_id),
         serialize_message(bot, message),

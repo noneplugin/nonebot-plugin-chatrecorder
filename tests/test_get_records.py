@@ -94,7 +94,7 @@ async def test_get_message_records(app: App):
     records = [
         MessageRecord(
             session_persist_id=session_persist_ids[0],
-            time=datetime.utcfromtimestamp(1000000),
+            time=datetime.fromtimestamp(1000000, timezone.utc).replace(tzinfo=None),
             type="message",
             message_id="1",
             message=serialize_message(v11_bot, V11Msg("test message 1")),
@@ -102,7 +102,7 @@ async def test_get_message_records(app: App):
         ),
         MessageRecord(
             session_persist_id=session_persist_ids[1],
-            time=datetime.utcfromtimestamp(1000001),
+            time=datetime.fromtimestamp(1000001, timezone.utc).replace(tzinfo=None),
             type="message_sent",
             message_id="2",
             message=serialize_message(v11_bot, V11Msg("test message 2")),
@@ -110,7 +110,7 @@ async def test_get_message_records(app: App):
         ),
         MessageRecord(
             session_persist_id=session_persist_ids[2],
-            time=datetime.utcfromtimestamp(1000002),
+            time=datetime.fromtimestamp(1000002, timezone.utc).replace(tzinfo=None),
             type="message",
             message_id="3",
             message=serialize_message(v12_bot, V12Msg("test message 3")),
@@ -118,7 +118,7 @@ async def test_get_message_records(app: App):
         ),
         MessageRecord(
             session_persist_id=session_persist_ids[3],
-            time=datetime.utcfromtimestamp(1000003),
+            time=datetime.fromtimestamp(1000003, timezone.utc).replace(tzinfo=None),
             type="message",
             message_id="3",
             message=serialize_message(v12_bot, V12Msg("test message 4")),
@@ -126,7 +126,7 @@ async def test_get_message_records(app: App):
         ),
         MessageRecord(
             session_persist_id=session_persist_ids[4],
-            time=datetime.utcfromtimestamp(1000004),
+            time=datetime.fromtimestamp(1000004, timezone.utc).replace(tzinfo=None),
             type="message",
             message_id="3",
             message=serialize_message(v12_bot, V12Msg("test message 5")),
@@ -179,13 +179,21 @@ async def test_get_message_records(app: App):
     assert len(msgs) == 2
 
     msgs = await get_message_records(
-        time_start=datetime.utcfromtimestamp(1000000),
-        time_stop=datetime.utcfromtimestamp(1000004),
+        time_start=datetime.fromtimestamp(1000000, timezone.utc),
+        time_stop=datetime.fromtimestamp(1000004, timezone.utc),
     )
     assert len(msgs) == 5
-    msgs = await get_message_records(time_start=datetime.utcfromtimestamp(1000002))
+    msgs = await get_message_records(
+        time_start=datetime.fromtimestamp(1000002, timezone.utc)
+    )
     assert len(msgs) == 3
-    msgs = await get_message_records(time_stop=datetime.utcfromtimestamp(1000002))
+    msgs = await get_message_records(
+        time_stop=datetime.fromtimestamp(1000002, timezone.utc)
+    )
+    assert len(msgs) == 3
+    msgs = await get_message_records(
+        time_stop=datetime.fromtimestamp(1000002, timezone.utc).replace(tzinfo=None)
+    )
     assert len(msgs) == 3
 
     msgs = await get_message_records(types=["message"])
@@ -214,14 +222,6 @@ async def test_get_message_records(app: App):
     assert len(msgs) == 1
     msgs = await get_message_records(exclude_id3s=["100000"])
     assert len(msgs) == 4
-
-    # 测试 datetime with timezone
-    # postgresql 下如果用含有时区信息的 datetime 作为查询条件，会报错
-    # https://github.com/he0119/nonebot-plugin-wordcloud/issues/120
-    msgs = await get_message_records(
-        time_stop=datetime.utcfromtimestamp(1000002).replace(tzinfo=timezone.utc)
-    )
-    assert len(msgs) == 3
 
     msgs = await get_message_records(session=sessions[1], id_type=SessionIdType.GROUP)
     assert len(msgs) == 1

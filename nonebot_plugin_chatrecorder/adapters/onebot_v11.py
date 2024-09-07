@@ -1,6 +1,6 @@
 import base64
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -28,6 +28,7 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
+from ..utils import remove_timezone
 
 try:
     from nonebot.adapters.onebot.v11 import Bot, Message, MessageEvent, MessageSegment
@@ -41,7 +42,7 @@ try:
 
         record = MessageRecord(
             session_persist_id=session_persist_id,
-            time=datetime.utcfromtimestamp(event.time),
+            time=remove_timezone(datetime.fromtimestamp(event.time, timezone.utc)),
             type=event.post_type,
             message_id=str(event.message_id),
             message=serialize_message(adapter, event.message),
@@ -93,7 +94,7 @@ try:
             message = Message(data["message"])
             record = MessageRecord(
                 session_persist_id=session_persist_id,
-                time=datetime.utcnow(),
+                time=remove_timezone(datetime.now(timezone.utc)),
                 type="message_sent",
                 message_id=str(result["message_id"]),
                 message=serialize_message(adapter, message),

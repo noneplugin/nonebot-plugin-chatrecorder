@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.dodo import (
@@ -39,7 +39,7 @@ async def test_record_recv_msg(app: App):
     event = ChannelMessageEvent(
         event_id="abcdef",
         event_type=EventType.MESSAGE,
-        timestamp=datetime.utcfromtimestamp(12345678),
+        timestamp=datetime.fromtimestamp(12345678, timezone.utc),
         dodo_source_id="3344",
         channel_id="5566",
         island_source_id="7788",
@@ -51,7 +51,9 @@ async def test_record_recv_msg(app: App):
             avatar_url="https://static.imdodo.com/DoDoAvatar.png",
             sex=Sex.FEMALE,
         ),
-        member=Member(nick_name="user", join_time=datetime.fromtimestamp(11111111)),
+        member=Member(
+            nick_name="user", join_time=datetime.fromtimestamp(11111111, timezone.utc)
+        ),
     )
     await record_recv_msg(bot, event)
     await check_record(
@@ -62,7 +64,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         "5566",
         "7788",
-        datetime.utcfromtimestamp(12345678),
+        datetime.fromtimestamp(12345678, timezone.utc),
         "message",
         "123456",
         serialize_message(bot, Message("test channel message")),
@@ -72,7 +74,7 @@ async def test_record_recv_msg(app: App):
     event = PersonalMessageEvent(
         event_id="abcdef",
         event_type=EventType.PERSONAL_MESSAGE,
-        timestamp=datetime.utcfromtimestamp(12345678),
+        timestamp=datetime.fromtimestamp(12345678, timezone.utc),
         dodo_source_id="3344",
         island_source_id="7788",
         message_id="123457",
@@ -93,7 +95,7 @@ async def test_record_recv_msg(app: App):
         "3344",
         None,
         "7788",
-        datetime.utcfromtimestamp(12345678),
+        datetime.fromtimestamp(12345678, timezone.utc),
         "message",
         "123457",
         serialize_message(bot, Message("test personal message")),
