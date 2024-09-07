@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 
 async def check_record(
@@ -13,7 +13,7 @@ async def check_record(
     time: Optional[datetime],
     type: str,
     message_id: str,
-    message: List[Dict[str, Any]],
+    message: list[dict[str, Any]],
     plain_text: str,
 ):
     from nonebot_plugin_orm import get_session

@@ -2,7 +2,7 @@ import base64
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
@@ -58,8 +58,8 @@ try:
             bot: BaseBot,
             e: Optional[Exception],
             api: str,
-            data: Dict[str, Any],
-            result: Optional[Dict[str, Any]],
+            data: dict[str, Any],
+            result: Any,
         ):
             if not isinstance(bot, Bot):
                 return
@@ -142,7 +142,7 @@ try:
     class Deserializer(MessageDeserializer[Message]):
         @classmethod
         @override
-        def get_message_class(cls) -> Type[Message]:
+        def get_message_class(cls) -> type[Message]:
             return Message
 
     register_serializer(adapter, Serializer)

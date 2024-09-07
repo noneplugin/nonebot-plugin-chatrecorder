@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
@@ -42,9 +42,9 @@ try:
             db_session.add(record)
             await db_session.commit()
 
-    _chat_info_cache: Dict[str, Dict[str, Any]] = {}
+    _chat_info_cache: dict[str, dict[str, Any]] = {}
 
-    async def get_chat_info(bot: Bot, chat_id: str) -> Dict[str, Any]:
+    async def get_chat_info(bot: Bot, chat_id: str) -> dict[str, Any]:
         if chat_id in _chat_info_cache:
             return _chat_info_cache[chat_id]
         params = {"method": "GET", "query": {"user_id_type": "open_id"}}
@@ -59,8 +59,8 @@ try:
             bot: BaseBot,
             e: Optional[Exception],
             api: str,
-            data: Dict[str, Any],
-            result: Optional[Dict[str, Any]],
+            data: dict[str, Any],
+            result: Any,
         ):
             if not isinstance(bot, Bot):
                 return
@@ -121,7 +121,7 @@ try:
     class Deserializer(MessageDeserializer[Message]):
         @classmethod
         @override
-        def get_message_class(cls) -> Type[Message]:
+        def get_message_class(cls) -> type[Message]:
             return Message
 
     register_serializer(adapter, Serializer)

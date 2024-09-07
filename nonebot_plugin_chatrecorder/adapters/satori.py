@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Type, cast
+from typing import Any, Optional, cast
 
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
@@ -50,8 +50,8 @@ try:
             bot: BaseBot,
             e: Optional[Exception],
             api: str,
-            data: Dict[str, Any],
-            result: Optional[Any],
+            data: dict[str, Any],
+            result: Any,
         ):
             if not isinstance(bot, Bot):
                 return
@@ -62,7 +62,7 @@ try:
             for res in result:
                 if not isinstance(res, MessageObject):
                     return
-            result_messages = cast(List[MessageObject], result)
+            result_messages = cast(list[MessageObject], result)
 
             result_message = result_messages[0]
             level = SessionLevel.LEVEL0
@@ -123,7 +123,7 @@ try:
     class Deserializer(MessageDeserializer[Message]):
         @classmethod
         @override
-        def get_message_class(cls) -> Type[Message]:
+        def get_message_class(cls) -> type[Message]:
             return Message
 
     register_serializer(adapter, Serializer)

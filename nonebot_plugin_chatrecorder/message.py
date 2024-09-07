@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Dict, Generic, List, Type, TypeVar, Union
+from typing import Any, Generic, TypeVar, Union
 
 from nonebot.adapters import Bot, Message
 from nonebot.compat import type_validate_python
@@ -7,7 +7,7 @@ from nonebot.compat import type_validate_python
 from .consts import SupportedAdapter
 from .exception import AdapterNotInstalled, AdapterNotSupported
 
-JsonMsg = List[Dict[str, Any]]
+JsonMsg = list[dict[str, Any]]
 TM = TypeVar("TM", bound="Message")
 
 
@@ -20,7 +20,7 @@ class MessageSerializer(abc.ABC, Generic[TM]):
 class MessageDeserializer(abc.ABC, Generic[TM]):
     @classmethod
     @abc.abstractmethod
-    def get_message_class(cls) -> Type[TM]:
+    def get_message_class(cls) -> type[TM]:
         raise NotImplementedError
 
     @classmethod
@@ -28,8 +28,8 @@ class MessageDeserializer(abc.ABC, Generic[TM]):
         return type_validate_python(cls.get_message_class(), msg)
 
 
-_serializers: Dict[SupportedAdapter, Type[MessageSerializer]] = {}
-_deserializers: Dict[SupportedAdapter, Type[MessageDeserializer]] = {}
+_serializers: dict[SupportedAdapter, type[MessageSerializer]] = {}
+_deserializers: dict[SupportedAdapter, type[MessageDeserializer]] = {}
 
 
 def get_adapter_type(bot_type: str) -> SupportedAdapter:
@@ -40,24 +40,24 @@ def get_adapter_type(bot_type: str) -> SupportedAdapter:
     raise AdapterNotSupported(bot_type)
 
 
-def get_serializer(adapter: SupportedAdapter) -> Type[MessageSerializer]:
+def get_serializer(adapter: SupportedAdapter) -> type[MessageSerializer]:
     if adapter not in _serializers:
         raise AdapterNotInstalled(adapter.value)
     return _serializers[adapter]
 
 
-def get_deserializer(adapter: SupportedAdapter) -> Type[MessageDeserializer]:
+def get_deserializer(adapter: SupportedAdapter) -> type[MessageDeserializer]:
     if adapter not in _deserializers:
         raise AdapterNotInstalled(adapter.value)
     return _deserializers[adapter]
 
 
-def register_serializer(adapter: SupportedAdapter, serializer: Type[MessageSerializer]):
+def register_serializer(adapter: SupportedAdapter, serializer: type[MessageSerializer]):
     _serializers[adapter] = serializer
 
 
 def register_deserializer(
-    adapter: SupportedAdapter, deserializer: Type[MessageDeserializer]
+    adapter: SupportedAdapter, deserializer: type[MessageDeserializer]
 ):
     _deserializers[adapter] = deserializer
 
