@@ -43,3 +43,16 @@ async def check_record(
         assert record.time == remove_timezone(time)
     assert record.message == message
     assert record.plain_text == plain_text
+
+
+async def assert_no_record(message_id: str):
+    from nonebot_plugin_orm import get_session
+    from sqlalchemy import select
+
+    from nonebot_plugin_chatrecorder.model import MessageRecord
+
+    statement = select(MessageRecord).where(MessageRecord.message_id == message_id)
+    async with get_session() as db_session:
+        records = (await db_session.scalars(statement)).all()
+
+    assert len(records) == 0

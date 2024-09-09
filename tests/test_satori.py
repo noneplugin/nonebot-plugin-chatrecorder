@@ -6,6 +6,8 @@ from nonebot.adapters.satori.config import ClientInfo
 from nonebot.adapters.satori.event import (
     PrivateMessageCreatedEvent,
     PublicMessageCreatedEvent,
+    PublicMessageDeletedEvent,
+    PublicMessageUpdatedEvent,
 )
 from nonebot.adapters.satori.models import (
     Channel,
@@ -20,7 +22,7 @@ from nonebot.adapters.satori.models import (
 from nonebot.compat import type_validate_python
 from nonebug.app import App
 
-from .utils import check_record
+from .utils import assert_no_record, check_record
 
 
 def fake_public_message_created_event(
@@ -65,6 +67,54 @@ def fake_private_message_created_event(
     )
 
 
+def fake_public_message_deleted_event(
+    content: str, msg_id: str
+) -> PublicMessageDeletedEvent:
+    return type_validate_python(
+        PublicMessageDeletedEvent,
+        {
+            "id": 1,
+            "type": "message-deleted",
+            "platform": "kook",
+            "self_id": "2233",
+            "timestamp": 17000000000,
+            "channel": {"id": "6677", "type": 0, "name": "test"},
+            "guild": {"id": "5566", "name": "test"},
+            "user": {"id": "3344", "nick": "test"},
+            "member": {
+                "user": {"id": "3344", "nick": "test"},
+                "nick": "test",
+                "joined_at": None,
+            },
+            "message": {"id": msg_id, "content": content},
+        },
+    )
+
+
+def fake_public_message_updated_event(
+    content: str, msg_id: str
+) -> PublicMessageUpdatedEvent:
+    return type_validate_python(
+        PublicMessageUpdatedEvent,
+        {
+            "id": 1,
+            "type": "message-updated",
+            "platform": "kook",
+            "self_id": "2233",
+            "timestamp": 17000000000,
+            "channel": {"id": "6677", "type": 0, "name": "test"},
+            "guild": {"id": "5566", "name": "test"},
+            "user": {"id": "3344", "nick": "test"},
+            "member": {
+                "user": {"id": "3344", "nick": "test"},
+                "nick": "test",
+                "joined_at": None,
+            },
+            "message": {"id": msg_id, "content": content},
+        },
+    )
+
+
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
     from nonebot_plugin_chatrecorder.message import serialize_message
@@ -74,6 +124,9 @@ async def test_record_recv_msg(app: App):
 
     private_msg = "test private message created"
     private_msg_id = "56163f81-de30-4c39-b4c4-3a205d0be9db"
+
+    msg_deleted_id = "56163f81-de30-4c39-b4c4-3a205d0be9dc"
+    msg_updated_id = "56163f81-de30-4c39-b4c4-3a205d0be9dd"
 
     async with app.test_matcher() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
@@ -98,6 +151,12 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
         event = fake_private_message_created_event(private_msg, private_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_public_message_deleted_event("msg deleted", msg_deleted_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_public_message_updated_event("msg updated", msg_updated_id)
         ctx.receive_event(bot, event)
 
     await check_record(
@@ -129,6 +188,9 @@ async def test_record_recv_msg(app: App):
         serialize_message(bot, Message(private_msg)),
         private_msg,
     )
+
+    await assert_no_record(msg_deleted_id)
+    await assert_no_record(msg_updated_id)
 
 
 async def test_record_send_msg(app: App):

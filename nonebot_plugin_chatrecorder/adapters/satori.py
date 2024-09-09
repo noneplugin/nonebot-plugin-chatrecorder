@@ -21,13 +21,14 @@ from ..model import MessageRecord
 from ..utils import format_platform, record_type, remove_timezone
 
 try:
-    from nonebot.adapters.satori import Bot, Message, MessageEvent
+    from nonebot.adapters.satori import Bot, Message
+    from nonebot.adapters.satori.event import MessageCreatedEvent
     from nonebot.adapters.satori.models import MessageObject
 
     adapter = SupportedAdapter.satori
 
     @event_postprocessor
-    async def record_recv_msg(bot: Bot, event: MessageEvent):
+    async def record_recv_msg(bot: Bot, event: MessageCreatedEvent):
         session = extract_session(bot, event)
         session_persist_id = await get_session_persist_id(session)
 
