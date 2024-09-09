@@ -71,26 +71,35 @@ def fake_private_message_event(**field) -> PrivateMessageEvent:
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
-
-    async with app.test_api() as ctx:
-        adapter = get_driver()._adapters[Adapter.get_name()]
-        bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="11")
 
     time = 1000000
     user_id = 123456
     group_id = 654321
-    message_id = 11451411111
-    message = Message("test group message")
-    event = fake_group_message_event(
-        time=time,
-        user_id=user_id,
-        group_id=group_id,
-        message_id=message_id,
-        message=message,
-    )
-    await record_recv_msg(bot, event)
+    group_msg = Message("test group message")
+    group_msg_id = 11451411111
+
+    private_msg = Message("test private message")
+    private_msg_id = 11451422222
+
+    async with app.test_matcher() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="11")
+
+        event = fake_group_message_event(
+            time=time,
+            user_id=user_id,
+            group_id=group_id,
+            message_id=group_msg_id,
+            message=group_msg,
+        )
+        ctx.receive_event(bot, event)
+
+        event = fake_private_message_event(
+            time=time, user_id=user_id, message_id=private_msg_id, message=private_msg
+        )
+        ctx.receive_event(bot, event)
+
     await check_record(
         "11",
         "OneBot V11",
@@ -101,17 +110,11 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(time, timezone.utc),
         "message",
-        str(message_id),
-        serialize_message(bot, message),
-        message.extract_plain_text(),
+        str(group_msg_id),
+        serialize_message(bot, group_msg),
+        group_msg.extract_plain_text(),
     )
 
-    message_id = 11451422222
-    message = Message("test private message")
-    event = fake_private_message_event(
-        time=time, user_id=user_id, message_id=message_id, message=message
-    )
-    await record_recv_msg(bot, event)
     await check_record(
         "11",
         "OneBot V11",
@@ -122,9 +125,9 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(time, timezone.utc),
         "message",
-        str(message_id),
-        serialize_message(bot, message),
-        message.extract_plain_text(),
+        str(private_msg_id),
+        serialize_message(bot, private_msg),
+        private_msg.extract_plain_text(),
     )
 
 

@@ -95,19 +95,26 @@ def fake_direct_message_event(content: str, msg_id: int) -> DirectMessageCreateE
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.discord import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
-    async with app.test_api() as ctx:
+    guild_msg = "test guild message"
+    guild_msg_id = 11234
+
+    direct_msg = "test direct message"
+    direct_msg_id = 11235
+
+    async with app.test_matcher() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot, adapter=adapter, self_id="2233", bot_info=BotInfo(token="1234")
         )
 
-    content = "test guild message"
-    msg_id = 11234
-    event = fake_guild_message_event(content, msg_id)
-    await record_recv_msg(bot, event)
+        event = fake_guild_message_event(guild_msg, guild_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_direct_message_event(direct_msg, direct_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "Discord",
@@ -118,15 +125,11 @@ async def test_record_recv_msg(app: App):
         "6677",
         datetime.fromtimestamp(123456, timezone.utc),
         "message",
-        "11234",
-        serialize_message(bot, Message(content)),
-        Message(content).extract_plain_text(),
+        str(guild_msg_id),
+        serialize_message(bot, Message(guild_msg)),
+        guild_msg,
     )
 
-    content = "test direct message"
-    msg_id = 11235
-    event = fake_direct_message_event(content, msg_id)
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "Discord",
@@ -137,9 +140,9 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(123456, timezone.utc),
         "message",
-        "11235",
-        serialize_message(bot, Message(content)),
-        Message(content).extract_plain_text(),
+        str(direct_msg_id),
+        serialize_message(bot, Message(direct_msg)),
+        direct_msg,
     )
 
 

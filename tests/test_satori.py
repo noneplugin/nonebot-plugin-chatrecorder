@@ -67,10 +67,15 @@ def fake_private_message_created_event(
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.satori import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
-    async with app.test_api() as ctx:
+    public_msg = "test public message created"
+    public_msg_id = "56163f81-de30-4c39-b4c4-3a205d0be9da"
+
+    private_msg = "test private message created"
+    private_msg_id = "56163f81-de30-4c39-b4c4-3a205d0be9db"
+
+    async with app.test_matcher() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -89,10 +94,12 @@ async def test_record_recv_msg(app: App):
             info=ClientInfo(port=5140),
         )
 
-    content = "test public message created"
-    msg_id = "56163f81-de30-4c39-b4c4-3a205d0be9da"
-    event = fake_public_message_created_event(content, msg_id)
-    await record_recv_msg(bot, event)
+        event = fake_public_message_created_event(public_msg, public_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_private_message_created_event(private_msg, private_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "Satori",
@@ -103,15 +110,11 @@ async def test_record_recv_msg(app: App):
         "5566",
         datetime.fromtimestamp(17000000000 / 1000, timezone.utc),
         "message",
-        msg_id,
-        serialize_message(bot, Message(content)),
-        content,
+        public_msg_id,
+        serialize_message(bot, Message(public_msg)),
+        public_msg,
     )
 
-    content = "test private message created"
-    msg_id = "56163f81-de30-4c39-b4c4-3a205d0be9db"
-    event = fake_private_message_created_event(content, msg_id)
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "Satori",
@@ -122,9 +125,9 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(17000000000 / 1000, timezone.utc),
         "message",
-        msg_id,
-        serialize_message(bot, Message(content)),
-        content,
+        private_msg_id,
+        serialize_message(bot, Message(private_msg)),
+        private_msg,
     )
 
 

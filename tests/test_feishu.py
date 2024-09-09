@@ -112,10 +112,15 @@ def fake_group_message_event(
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.feishu import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
-    async with app.test_api() as ctx:
+    msg_type = "text"
+    content = '{"text": "test"}'
+    private_msg_id = "om_1"
+    group_msg_id = "om_2"
+    message = Message.deserialize(content, None, msg_type)
+
+    async with app.test_matcher() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -125,12 +130,12 @@ async def test_record_recv_msg(app: App):
             bot_info=BOT_INFO,
         )
 
-    msg_type = "text"
-    content = '{"text": "test"}'
-    message_id = "om_1"
-    message = Message.deserialize(content, None, msg_type)
-    event = fake_private_message_event(msg_type, content, message_id)
-    await record_recv_msg(bot, event)
+        event = fake_private_message_event(msg_type, content, private_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_group_message_event(msg_type, content, group_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "Feishu",
@@ -141,14 +146,11 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(123456000 / 1000, timezone.utc),
         "message",
-        message_id,
+        private_msg_id,
         serialize_message(bot, message),
         message.extract_plain_text(),
     )
 
-    message_id = "om_2"
-    event = fake_group_message_event(msg_type, content, message_id)
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "Feishu",
@@ -159,7 +161,7 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(123456000 / 1000, timezone.utc),
         "message",
-        "om_2",
+        group_msg_id,
         serialize_message(bot, message),
         message.extract_plain_text(),
     )

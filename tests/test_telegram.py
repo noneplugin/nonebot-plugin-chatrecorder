@@ -72,10 +72,18 @@ def fake_forum_topic_message_event(
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.telegram import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
-    async with app.test_api() as ctx:
+    private_msg = "test private message"
+    private_msg_id = "1234"
+
+    group_msg = "test group message"
+    group_msg_id = "1235"
+
+    forum_msg = "test forum topic message"
+    forum_msg_id = "1236"
+
+    async with app.test_matcher() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -84,10 +92,15 @@ async def test_record_recv_msg(app: App):
             config=BotConfig(token="2233:xxx"),
         )
 
-    text = "test private message"
-    message_id = "1234"
-    event = fake_private_message_event(text, message_id)
-    await record_recv_msg(bot, event)
+        event = fake_private_message_event(private_msg, private_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_group_message_event(group_msg, group_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_forum_topic_message_event(forum_msg, forum_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "Telegram",
@@ -99,14 +112,10 @@ async def test_record_recv_msg(app: App):
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "3344_1234",
-        serialize_message(bot, Message(text)),
-        text,
+        serialize_message(bot, Message(private_msg)),
+        private_msg,
     )
 
-    text = "test group message"
-    message_id = "1235"
-    event = fake_group_message_event(text, message_id)
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "Telegram",
@@ -118,14 +127,10 @@ async def test_record_recv_msg(app: App):
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1235",
-        serialize_message(bot, Message(text)),
-        text,
+        serialize_message(bot, Message(group_msg)),
+        group_msg,
     )
 
-    text = "test forum topic message"
-    message_id = "1236"
-    event = fake_forum_topic_message_event(text, message_id)
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "Telegram",
@@ -137,8 +142,8 @@ async def test_record_recv_msg(app: App):
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1236",
-        serialize_message(bot, Message(text)),
-        text,
+        serialize_message(bot, Message(forum_msg)),
+        forum_msg,
     )
 
 

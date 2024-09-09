@@ -63,10 +63,15 @@ def fake_personal_message_event(content: str, message_id: str) -> PersonalMessag
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.dodo import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
-    async with app.test_api() as ctx:
+    channel_msg = "test channel message"
+    channel_msg_id = "123456"
+
+    personal_msg = "test personal message"
+    personal_msg_id = "123457"
+
+    async with app.test_matcher() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -75,10 +80,12 @@ async def test_record_recv_msg(app: App):
             bot_config=BotConfig(client_id="1234", token="xxxx"),
         )
 
-    content = "test channel message"
-    message_id = "123456"
-    event = fake_channel_message_event(content, message_id)
-    await record_recv_msg(bot, event)
+        event = fake_channel_message_event(channel_msg, channel_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_personal_message_event(personal_msg, personal_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "DoDo",
@@ -89,15 +96,11 @@ async def test_record_recv_msg(app: App):
         "7788",
         datetime.fromtimestamp(12345678, timezone.utc),
         "message",
-        message_id,
-        serialize_message(bot, Message(content)),
-        content,
+        channel_msg_id,
+        serialize_message(bot, Message(channel_msg)),
+        channel_msg,
     )
 
-    content = "test personal message"
-    message_id = "123457"
-    event = fake_personal_message_event(content, message_id)
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "DoDo",
@@ -108,9 +111,9 @@ async def test_record_recv_msg(app: App):
         "7788",
         datetime.fromtimestamp(12345678, timezone.utc),
         "message",
-        message_id,
-        serialize_message(bot, Message(content)),
-        content,
+        personal_msg_id,
+        serialize_message(bot, Message(personal_msg)),
+        personal_msg,
     )
 
 

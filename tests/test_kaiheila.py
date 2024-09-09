@@ -88,19 +88,26 @@ def fake_channel_message_event(content: str, msg_id: str) -> ChannelMessageEvent
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.kaiheila import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
-    async with app.test_api() as ctx:
+    private_msg = "test private message"
+    private_msg_id = "4455"
+
+    channel_msg = "test channel message"
+    channel_msg_id = "4456"
+
+    async with app.test_matcher() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot, adapter=adapter, self_id="2233", name="Bot", token=""
         )
 
-    content = "test private message"
-    msg_id = "4455"
-    event = fake_private_message_event(content, msg_id)
-    await record_recv_msg(bot, event)
+        event = fake_private_message_event(private_msg, private_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_channel_message_event(channel_msg, channel_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "Kaiheila",
@@ -111,15 +118,11 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
-        msg_id,
-        serialize_message(bot, Message(content)),
-        content,
+        private_msg_id,
+        serialize_message(bot, Message(private_msg)),
+        private_msg,
     )
 
-    content = "test channel message"
-    msg_id = "4456"
-    event = fake_channel_message_event(content, msg_id)
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "Kaiheila",
@@ -130,9 +133,9 @@ async def test_record_recv_msg(app: App):
         "5566",
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
-        msg_id,
-        serialize_message(bot, Message(content)),
-        content,
+        channel_msg_id,
+        serialize_message(bot, Message(channel_msg)),
+        channel_msg,
     )
 
 

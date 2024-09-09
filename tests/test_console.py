@@ -28,22 +28,23 @@ def fake_message_event(**field) -> MessageEvent:
 
 async def test_record_recv_msg(app: App):
     # 测试记录收到的消息
-    from nonebot_plugin_chatrecorder.adapters.console import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
-
-    async with app.test_api() as ctx:
-        adapter = get_driver()._adapters[Adapter.get_name()]
-        bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="Bot")
 
     time = 1000000
     user_id = "User"
     message = Message("test_record_recv_msg")
-    event = fake_message_event(
-        time=datetime.fromtimestamp(time, timezone.utc),
-        user=User(id=user_id),
-        message=message,
-    )
-    await record_recv_msg(bot, event)
+
+    async with app.test_matcher() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="Bot")
+
+        event = fake_message_event(
+            time=datetime.fromtimestamp(time, timezone.utc),
+            user=User(id=user_id),
+            message=message,
+        )
+        ctx.receive_event(bot, event)
+
     await check_record(
         "Bot",
         "Console",

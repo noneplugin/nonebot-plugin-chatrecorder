@@ -135,10 +135,15 @@ async def fake_group_message_event(
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.red import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
-    async with app.test_api() as ctx:
+    private_msg = "test private message"
+    private_msg_id = "7272944767457625851"
+
+    group_msg = "test group message"
+    group_msg_id = "7272944513098472702"
+
+    async with app.test_matcher() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -147,10 +152,12 @@ async def test_record_recv_msg(app: App):
             info=BotInfo(port=1234, token="1234"),
         )
 
-    content = "test private message"
-    msg_id = "7272944767457625851"
-    event = await fake_private_message_event(bot, content, msg_id)
-    await record_recv_msg(bot, event)
+        event = await fake_private_message_event(bot, private_msg, private_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = await fake_group_message_event(bot, group_msg, group_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "RedProtocol",
@@ -161,15 +168,11 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(1693364414, timezone.utc),
         "message",
-        msg_id,
-        serialize_message(bot, Message(content)),
-        content,
+        private_msg_id,
+        serialize_message(bot, Message(private_msg)),
+        private_msg,
     )
 
-    content = "test group message"
-    msg_id = "7272944513098472702"
-    event = await fake_group_message_event(bot, content, msg_id)
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "RedProtocol",
@@ -180,9 +183,9 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(1693364354, timezone.utc),
         "message",
-        msg_id,
-        serialize_message(bot, Message(content)),
-        content,
+        group_msg_id,
+        serialize_message(bot, Message(group_msg)),
+        group_msg,
     )
 
 
