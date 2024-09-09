@@ -15,7 +15,7 @@ def fake_message_event(**field) -> MessageEvent:
 
     class FakeEvent(_Fake):
         time: datetime = datetime.fromtimestamp(1000000, timezone.utc)
-        self_id: str = "console"
+        self_id: str = "Bot"
         post_type: str = "message"
         user: User = User(id="User")
         message: Message = Message("test")
@@ -32,8 +32,8 @@ async def test_record_recv_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), self_id="console")
-    assert isinstance(bot, Bot)
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="Bot")
 
     time = 1000000
     user_id = "User"
@@ -45,7 +45,7 @@ async def test_record_recv_msg(app: App):
     )
     await record_recv_msg(bot, event)
     await check_record(
-        "console",
+        "Bot",
         "Console",
         "console",
         1,
@@ -66,8 +66,8 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), self_id="console")
-    assert isinstance(bot, Bot)
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="Bot")
 
     user_id = "User"
     elements = ConsoleMessage([Text("test_record_send_msg")])
@@ -76,7 +76,7 @@ async def test_record_send_msg(app: App):
         bot, None, "send_msg", {"user_id": user_id, "message": elements}, None
     )
     await check_record(
-        "console",
+        "Bot",
         "Console",
         "console",
         1,

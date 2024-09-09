@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.feishu import (
+    Adapter,
     Bot,
     EventHeader,
     GroupMessageEvent,
@@ -36,22 +37,8 @@ BOT_INFO = type_validate_python(
 )
 
 
-async def test_record_recv_msg(app: App):
-    """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.feishu import record_recv_msg
-    from nonebot_plugin_chatrecorder.message import serialize_message
-
-    async with app.test_api() as ctx:
-        bot = ctx.create_bot(
-            base=Bot,
-            adapter=get_driver()._adapters["Feishu"],
-            self_id="2233",
-            bot_config=BOT_CONFIG,
-            bot_info=BOT_INFO,
-        )
-    assert isinstance(bot, Bot)
-
-    header = EventHeader(
+def fake_header() -> EventHeader:
+    return EventHeader(
         event_id="114514",
         event_type="im.message.receive_v1",
         create_time="123456000",
@@ -61,7 +48,10 @@ async def test_record_recv_msg(app: App):
         resource_id=None,
         user_list=None,
     )
-    sender = Sender(
+
+
+def fake_sender() -> Sender:
+    return Sender(
         sender_id=UserId(
             open_id="3344",
             user_id="on_111",
@@ -70,18 +60,19 @@ async def test_record_recv_msg(app: App):
         tenant_key="tenant_key",
         sender_type="user",
     )
-    msg_type = "text"
-    content = '{"text": "test"}'
-    message = Message.deserialize(content, None, msg_type)
 
-    event = PrivateMessageEvent(
+
+def fake_private_message_event(
+    msg_type: str, content: str, message_id: str
+) -> PrivateMessageEvent:
+    return PrivateMessageEvent(
         schema="2.0",
-        header=header,
+        header=fake_header(),
         event=PrivateMessageEventDetail(
-            sender=sender,
+            sender=fake_sender(),
             message=PrivateEventMessage(
                 chat_type="p2p",
-                message_id="om_1",
+                message_id=message_id,
                 root_id="om_222",
                 parent_id="om_333",
                 create_time="123456000",
@@ -93,30 +84,19 @@ async def test_record_recv_msg(app: App):
         ),
         reply=None,
     )  # type: ignore
-    await record_recv_msg(bot, event)
-    await check_record(
-        "2233",
-        "Feishu",
-        "feishu",
-        1,
-        "3344",
-        None,
-        None,
-        datetime.fromtimestamp(123456000 / 1000, timezone.utc),
-        "message",
-        "om_1",
-        serialize_message(bot, message),
-        message.extract_plain_text(),
-    )
 
-    event = GroupMessageEvent(
+
+def fake_group_message_event(
+    msg_type: str, content: str, message_id: str
+) -> GroupMessageEvent:
+    return GroupMessageEvent(
         schema="2.0",
-        header=header,
+        header=fake_header(),
         event=GroupMessageEventDetail(
-            sender=sender,
+            sender=fake_sender(),
             message=GroupEventMessage(
                 chat_type="group",
-                message_id="om_2",
+                message_id=message_id,
                 root_id="om_222",
                 parent_id="om_333",
                 create_time="123456000",
@@ -128,6 +108,46 @@ async def test_record_recv_msg(app: App):
         ),
         reply=None,
     )  # type: ignore
+
+
+async def test_record_recv_msg(app: App):
+    """测试记录收到的消息"""
+    from nonebot_plugin_chatrecorder.adapters.feishu import record_recv_msg
+    from nonebot_plugin_chatrecorder.message import serialize_message
+
+    async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(
+            base=Bot,
+            adapter=adapter,
+            self_id="2233",
+            bot_config=BOT_CONFIG,
+            bot_info=BOT_INFO,
+        )
+
+    msg_type = "text"
+    content = '{"text": "test"}'
+    message_id = "om_1"
+    message = Message.deserialize(content, None, msg_type)
+    event = fake_private_message_event(msg_type, content, message_id)
+    await record_recv_msg(bot, event)
+    await check_record(
+        "2233",
+        "Feishu",
+        "feishu",
+        1,
+        "3344",
+        None,
+        None,
+        datetime.fromtimestamp(123456000 / 1000, timezone.utc),
+        "message",
+        message_id,
+        serialize_message(bot, message),
+        message.extract_plain_text(),
+    )
+
+    message_id = "om_2"
+    event = fake_group_message_event(msg_type, content, message_id)
     await record_recv_msg(bot, event)
     await check_record(
         "2233",
@@ -151,14 +171,14 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
-            adapter=get_driver()._adapters["Feishu"],
+            adapter=adapter,
             self_id="2233",
             bot_config=BOT_CONFIG,
             bot_info=BOT_INFO,
         )
-        assert isinstance(bot, Bot)
 
         msg_type = "text"
         content = '{"text": "test"}'

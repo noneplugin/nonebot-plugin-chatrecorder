@@ -43,8 +43,8 @@ async def test_record_recv_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), self_id="11")
-    assert isinstance(bot, Bot)
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="11")
 
     time = 1000000
     user_id = 123456

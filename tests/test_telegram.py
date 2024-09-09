@@ -15,34 +15,78 @@ from nonebug import App
 from .utils import check_record
 
 
+def fake_private_message_event(text: str, message_id: str) -> PrivateMessageEvent:
+    event = Event.parse_event(
+        {
+            "update_id": 10000,
+            "message": {
+                "message_id": message_id,
+                "date": 1122,
+                "chat": {"id": 3344, "type": "private"},
+                "from": {"id": 3344, "is_bot": False, "first_name": "test"},
+                "text": text,
+            },
+        }
+    )
+    assert isinstance(event, PrivateMessageEvent)
+    return event
+
+
+def fake_group_message_event(text: str, message_id: str) -> GroupMessageEvent:
+    event = Event.parse_event(
+        {
+            "update_id": 10000,
+            "message": {
+                "message_id": message_id,
+                "date": 1122,
+                "chat": {"id": 5566, "type": "group"},
+                "from": {"id": 3344, "is_bot": False, "first_name": "test"},
+                "text": text,
+            },
+        }
+    )
+    assert isinstance(event, GroupMessageEvent)
+    return event
+
+
+def fake_forum_topic_message_event(
+    text: str, message_id: str
+) -> ForumTopicMessageEvent:
+    event = Event.parse_event(
+        {
+            "update_id": 10000,
+            "message": {
+                "message_id": message_id,
+                "date": 1122,
+                "chat": {"id": 5566, "type": "group"},
+                "from": {"id": 3344, "is_bot": False, "first_name": "test"},
+                "message_thread_id": 6677,
+                "is_topic_message": True,
+                "text": text,
+            },
+        }
+    )
+    assert isinstance(event, ForumTopicMessageEvent)
+    return event
+
+
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
     from nonebot_plugin_chatrecorder.adapters.telegram import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
-            adapter=Adapter(get_driver()),
+            adapter=adapter,
             self_id="2233",
             config=BotConfig(token="2233:xxx"),
         )
-    assert isinstance(bot, Bot)
 
-    event = Event.parse_event(
-        {
-            "update_id": 10000,
-            "message": {
-                "message_id": 1234,
-                "date": 1122,
-                "chat": {"id": 3344, "type": "private"},
-                "from": {"id": 3344, "is_bot": False, "first_name": "test"},
-                "text": "test private message",
-            },
-        }
-    )
-    assert isinstance(event, PrivateMessageEvent)
-
+    text = "test private message"
+    message_id = "1234"
+    event = fake_private_message_event(text, message_id)
     await record_recv_msg(bot, event)
     await check_record(
         "2233",
@@ -55,24 +99,13 @@ async def test_record_recv_msg(app: App):
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "3344_1234",
-        serialize_message(bot, Message("test private message")),
-        "test private message",
+        serialize_message(bot, Message(text)),
+        text,
     )
 
-    event = Event.parse_event(
-        {
-            "update_id": 10000,
-            "message": {
-                "message_id": 1235,
-                "date": 1122,
-                "chat": {"id": 5566, "type": "group"},
-                "from": {"id": 3344, "is_bot": False, "first_name": "test"},
-                "text": "test group message",
-            },
-        }
-    )
-    assert isinstance(event, GroupMessageEvent)
-
+    text = "test group message"
+    message_id = "1235"
+    event = fake_group_message_event(text, message_id)
     await record_recv_msg(bot, event)
     await check_record(
         "2233",
@@ -85,26 +118,13 @@ async def test_record_recv_msg(app: App):
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1235",
-        serialize_message(bot, Message("test group message")),
-        "test group message",
+        serialize_message(bot, Message(text)),
+        text,
     )
 
-    event = Event.parse_event(
-        {
-            "update_id": 10000,
-            "message": {
-                "message_id": 1236,
-                "date": 1122,
-                "chat": {"id": 5566, "type": "group"},
-                "from": {"id": 3344, "first_name": "test", "is_bot": False},
-                "message_thread_id": 6677,
-                "is_topic_message": True,
-                "text": "test forum topic message",
-            },
-        }
-    )
-    assert isinstance(event, ForumTopicMessageEvent)
-
+    text = "test forum topic message"
+    message_id = "1236"
+    event = fake_forum_topic_message_event(text, message_id)
     await record_recv_msg(bot, event)
     await check_record(
         "2233",
@@ -117,8 +137,8 @@ async def test_record_recv_msg(app: App):
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1236",
-        serialize_message(bot, Message("test forum topic message")),
-        "test forum topic message",
+        serialize_message(bot, Message(text)),
+        text,
     )
 
 
@@ -128,13 +148,13 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
-            adapter=Adapter(get_driver()),
+            adapter=adapter,
             self_id="2233",
             config=BotConfig(token="2233:xxx"),
         )
-    assert isinstance(bot, Bot)
 
     await record_send_msg(
         bot,

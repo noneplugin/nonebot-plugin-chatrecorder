@@ -95,14 +95,10 @@ async def test_record_recv_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
-            base=Bot,
-            adapter=Adapter(get_driver()),
-            self_id="12",
-            platform="qq",
-            impl="walle-q",
+            base=Bot, adapter=adapter, self_id="12", platform="qq", impl="walle-q"
         )
-    assert isinstance(bot, Bot)
 
     time = datetime.fromtimestamp(1000000, timezone.utc)
     user_id = "111111"
@@ -189,14 +185,10 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
-            base=Bot,
-            adapter=Adapter(get_driver()),
-            self_id="12",
-            platform="qq",
-            impl="walle-q",
+            base=Bot, adapter=adapter, self_id="12", platform="qq", impl="walle-q"
         )
-    assert isinstance(bot, Bot)
 
     time = 1000000
     user_id = "111111"

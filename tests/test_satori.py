@@ -3,7 +3,10 @@ from datetime import datetime, timezone
 from nonebot import get_driver
 from nonebot.adapters.satori import Adapter, Bot, Message
 from nonebot.adapters.satori.config import ClientInfo
-from nonebot.adapters.satori.event import PublicMessageCreatedEvent
+from nonebot.adapters.satori.event import (
+    PrivateMessageCreatedEvent,
+    PublicMessageCreatedEvent,
+)
 from nonebot.adapters.satori.models import (
     Channel,
     ChannelType,
@@ -20,15 +23,58 @@ from nonebug.app import App
 from .utils import check_record
 
 
+def fake_public_message_created_event(
+    content: str, msg_id: str
+) -> PublicMessageCreatedEvent:
+    return type_validate_python(
+        PublicMessageCreatedEvent,
+        {
+            "id": 1,
+            "type": "message-created",
+            "platform": "kook",
+            "self_id": "2233",
+            "timestamp": 17000000000,
+            "channel": {"id": "6677", "type": 0, "name": "test"},
+            "guild": {"id": "5566", "name": "test"},
+            "user": {"id": "3344", "nick": "test"},
+            "member": {
+                "user": {"id": "3344", "nick": "test"},
+                "nick": "test",
+                "joined_at": None,
+            },
+            "message": {"id": msg_id, "content": content},
+        },
+    )
+
+
+def fake_private_message_created_event(
+    content: str, msg_id: str
+) -> PrivateMessageCreatedEvent:
+    return type_validate_python(
+        PrivateMessageCreatedEvent,
+        {
+            "id": 1,
+            "type": "message-created",
+            "platform": "kook",
+            "self_id": "2233",
+            "timestamp": 17000000000,
+            "channel": {"id": "6677", "type": 0, "name": "test"},
+            "user": {"id": "3344", "nick": "test"},
+            "message": {"id": msg_id, "content": content},
+        },
+    )
+
+
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
     from nonebot_plugin_chatrecorder.adapters.satori import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
-            adapter=Adapter(get_driver()),
+            adapter=adapter,
             self_id="2233",
             login=Login(
                 user=User(
@@ -42,86 +88,10 @@ async def test_record_recv_msg(app: App):
             ),
             info=ClientInfo(port=5140),
         )
-    assert isinstance(bot, Bot)
 
-    event = type_validate_python(
-        PublicMessageCreatedEvent,
-        {
-            "id": 4,
-            "type": "message-created",
-            "platform": "kook",
-            "self_id": "2233",
-            "timestamp": 17000000000,
-            "argv": None,
-            "button": None,
-            "channel": {
-                "id": "6677",
-                "type": 0,
-                "name": "文字频道",
-                "parent_id": None,
-            },
-            "guild": {"id": "5566", "name": None, "avatar": None},
-            "login": None,
-            "member": {
-                "user": None,
-                "name": None,
-                "nick": "Aislinn",
-                "avatar": None,
-                "joined_at": None,
-            },
-            "message": {
-                "id": "56163f81-de30-4c39-b4c4-3a205d0be9da",
-                "content": "test",
-                "channel": None,
-                "guild": None,
-                "member": {
-                    "user": {
-                        "id": "3344",
-                        "name": "Aislinn",
-                        "nick": None,
-                        "avatar": "https://img.kookapp.cn/avatars/2021-08/GjdUSjtmtD06j06j.png?x-oss-process=style/icon",
-                        "is_bot": None,
-                        "username": "Aislinn",
-                        "user_id": "3344",
-                        "discriminator": "4261",
-                    },
-                    "nick": "Aislinn",
-                    "avatar": None,
-                    "joined_at": None,
-                },
-                "user": {
-                    "id": "3344",
-                    "name": "Aislinn",
-                    "nick": None,
-                    "avatar": "https://img.kookapp.cn/avatars/2021-08/GjdUSjtmtD06j06j.png?x-oss-process=style/icon",
-                    "is_bot": None,
-                    "username": "Aislinn",
-                    "user_id": "3344",
-                    "discriminator": "4261",
-                },
-                "created_at": None,
-                "updated_at": None,
-                "message_id": "56163f81-de30-4c39-b4c4-3a205d0be9da",
-                "elements": [
-                    {"type": "text", "attrs": {"content": "test"}, "children": []}
-                ],
-                "timestamp": 1700474858446,
-            },
-            "operator": None,
-            "role": None,
-            "user": {
-                "id": "3344",
-                "name": "Aislinn",
-                "nick": None,
-                "avatar": "https://img.kookapp.cn/avatars/2021-08/GjdUSjtmtD06j06j.png?x-oss-process=style/icon",
-                "is_bot": None,
-                "username": "Aislinn",
-                "user_id": "3344",
-                "discriminator": "4261",
-            },
-            "_type": "kook",
-        },
-    )
+    content = "test public message created"
+    msg_id = "56163f81-de30-4c39-b4c4-3a205d0be9da"
+    event = fake_public_message_created_event(content, msg_id)
     await record_recv_msg(bot, event)
     await check_record(
         "2233",
@@ -133,9 +103,28 @@ async def test_record_recv_msg(app: App):
         "5566",
         datetime.fromtimestamp(17000000000 / 1000, timezone.utc),
         "message",
-        "56163f81-de30-4c39-b4c4-3a205d0be9da",
-        serialize_message(bot, Message("test")),
-        "test",
+        msg_id,
+        serialize_message(bot, Message(content)),
+        content,
+    )
+
+    content = "test private message created"
+    msg_id = "56163f81-de30-4c39-b4c4-3a205d0be9db"
+    event = fake_private_message_created_event(content, msg_id)
+    await record_recv_msg(bot, event)
+    await check_record(
+        "2233",
+        "Satori",
+        "kaiheila",
+        1,
+        "3344",
+        "6677",
+        None,
+        datetime.fromtimestamp(17000000000 / 1000, timezone.utc),
+        "message",
+        msg_id,
+        serialize_message(bot, Message(content)),
+        content,
     )
 
 
@@ -145,9 +134,10 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
-            adapter=Adapter(get_driver()),
+            adapter=adapter,
             self_id="2233",
             login=Login(
                 user=User(
@@ -161,7 +151,6 @@ async def test_record_send_msg(app: App):
             ),
             info=ClientInfo(port=5140),
         )
-    assert isinstance(bot, Bot)
 
     await record_send_msg(
         bot,
