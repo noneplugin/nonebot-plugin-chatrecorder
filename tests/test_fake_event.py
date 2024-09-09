@@ -39,22 +39,22 @@ def fake_private_message_event(**field) -> PrivateMessageEvent:
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
-
-    async with app.test_api() as ctx:
-        bot = ctx.create_bot(base=Bot, adapter=Adapter(get_driver()), self_id="11")
-    assert isinstance(bot, Bot)
 
     time = 1000000
     user_id = 123456
-
     message_id = 1145141919810
     message = Message("test private message")
-    event = fake_private_message_event(
-        time=time, user_id=user_id, message_id=message_id, message=message
-    )
-    await record_recv_msg(bot, event)
+
+    async with app.test_matcher() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="11")
+
+        event = fake_private_message_event(
+            time=time, user_id=user_id, message_id=message_id, message=message
+        )
+        ctx.receive_event(bot, event)
+
     await check_record(
         "11",
         "OneBot V11",

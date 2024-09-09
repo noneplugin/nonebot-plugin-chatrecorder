@@ -26,9 +26,9 @@ async def test_get_message_records(app: App):
     )
 
     async with app.test_api() as ctx:
-        v11_adapter = V11Adapter(get_driver())
+        v11_adapter = get_driver()._adapters[V11Adapter.get_name()]
         v11_bot = ctx.create_bot(base=V11Bot, adapter=v11_adapter, self_id="11")
-        v12_adapter = V12Adapter(get_driver())
+        v12_adapter = get_driver()._adapters[V12Adapter.get_name()]
         v12_bot = ctx.create_bot(
             base=V12Bot,
             adapter=v12_adapter,
@@ -36,8 +36,6 @@ async def test_get_message_records(app: App):
             platform="qq",
             impl="walle-q",
         )
-    assert isinstance(v11_bot, V11Bot)
-    assert isinstance(v12_bot, V12Bot)
 
     sessions = [
         Session(

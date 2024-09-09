@@ -91,18 +91,7 @@ def fake_channel_message_event_v12(**field) -> ChannelMessageEvent:
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.onebot_v12 import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
-
-    async with app.test_api() as ctx:
-        bot = ctx.create_bot(
-            base=Bot,
-            adapter=Adapter(get_driver()),
-            self_id="12",
-            platform="qq",
-            impl="walle-q",
-        )
-    assert isinstance(bot, Bot)
 
     time = datetime.fromtimestamp(1000000, timezone.utc)
     user_id = "111111"
@@ -110,16 +99,45 @@ async def test_record_recv_msg(app: App):
     guild_id = "333333"
     channel_id = "444444"
 
-    message_id = "11451411111"
-    message = Message("test group message")
-    event = fake_group_message_event(
-        time=time,
-        user_id=user_id,
-        group_id=group_id,
-        message_id=message_id,
-        message=message,
-    )
-    await record_recv_msg(bot, event)
+    group_msg = Message("test group message")
+    group_msg_id = "11451411111"
+
+    private_msg = Message("test private message")
+    private_msg_id = "11451422222"
+
+    channel_msg = Message("test channel message")
+    channel_msg_id = "11451433333"
+
+    async with app.test_matcher() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(
+            base=Bot, adapter=adapter, self_id="12", platform="qq", impl="walle-q"
+        )
+
+        event = fake_group_message_event(
+            time=time,
+            user_id=user_id,
+            group_id=group_id,
+            message_id=group_msg_id,
+            message=group_msg,
+        )
+        ctx.receive_event(bot, event)
+
+        event = fake_private_message_event(
+            time=time, user_id=user_id, message_id=private_msg_id, message=private_msg
+        )
+        ctx.receive_event(bot, event)
+
+        event = fake_channel_message_event_v12(
+            time=time,
+            user_id=user_id,
+            guild_id=guild_id,
+            channel_id=channel_id,
+            message_id=channel_msg_id,
+            message=channel_msg,
+        )
+        ctx.receive_event(bot, event)
+
     await check_record(
         "12",
         "OneBot V12",
@@ -130,17 +148,11 @@ async def test_record_recv_msg(app: App):
         None,
         time,
         "message",
-        str(message_id),
-        serialize_message(bot, message),
-        message.extract_plain_text(),
+        str(group_msg_id),
+        serialize_message(bot, group_msg),
+        group_msg.extract_plain_text(),
     )
 
-    message_id = "11451422222"
-    message = Message("test private message")
-    event = fake_private_message_event(
-        time=time, user_id=user_id, message_id=message_id, message=message
-    )
-    await record_recv_msg(bot, event)
     await check_record(
         "12",
         "OneBot V12",
@@ -151,22 +163,11 @@ async def test_record_recv_msg(app: App):
         None,
         time,
         "message",
-        str(message_id),
-        serialize_message(bot, message),
-        message.extract_plain_text(),
+        str(private_msg_id),
+        serialize_message(bot, private_msg),
+        private_msg.extract_plain_text(),
     )
 
-    message_id = "11451433333"
-    message = Message("test channel message")
-    event = fake_channel_message_event_v12(
-        time=time,
-        user_id=user_id,
-        guild_id=guild_id,
-        channel_id=channel_id,
-        message_id=message_id,
-        message=message,
-    )
-    await record_recv_msg(bot, event)
     await check_record(
         "12",
         "OneBot V12",
@@ -177,9 +178,9 @@ async def test_record_recv_msg(app: App):
         str(guild_id),
         time,
         "message",
-        str(message_id),
-        serialize_message(bot, message),
-        message.extract_plain_text(),
+        str(channel_msg_id),
+        serialize_message(bot, channel_msg),
+        channel_msg.extract_plain_text(),
     )
 
 
@@ -189,14 +190,10 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
-            base=Bot,
-            adapter=Adapter(get_driver()),
-            self_id="12",
-            platform="qq",
-            impl="walle-q",
+            base=Bot, adapter=adapter, self_id="12", platform="qq", impl="walle-q"
         )
-    assert isinstance(bot, Bot)
 
     time = 1000000
     user_id = "111111"

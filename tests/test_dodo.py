@@ -23,39 +23,69 @@ from nonebug.app import App
 from .utils import check_record
 
 
-async def test_record_recv_msg(app: App):
-    """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.dodo import record_recv_msg
-    from nonebot_plugin_chatrecorder.message import serialize_message
-
-    async with app.test_api() as ctx:
-        bot = ctx.create_bot(
-            base=Bot,
-            adapter=Adapter(get_driver()),
-            self_id="2233",
-            bot_config=BotConfig(client_id="1234", token="xxxx"),
-        )
-
-    event = ChannelMessageEvent(
+def fake_channel_message_event(content: str, message_id: str) -> ChannelMessageEvent:
+    return ChannelMessageEvent(
         event_id="abcdef",
         event_type=EventType.MESSAGE,
         timestamp=datetime.fromtimestamp(12345678, timezone.utc),
         dodo_source_id="3344",
         channel_id="5566",
         island_source_id="7788",
-        message_id="123456",
+        message_id=message_id,
         message_type=MessageType.TEXT,
-        message_body=TextMessage(content="test channel message"),
+        message_body=TextMessage(content=content),
         personal=Personal(
             nick_name="user",
             avatar_url="https://static.imdodo.com/DoDoAvatar.png",
             sex=Sex.FEMALE,
         ),
-        member=Member(
-            nick_name="user", join_time=datetime.fromtimestamp(11111111, timezone.utc)
+        member=Member(nick_name="user", join_time=datetime.now()),
+    )
+
+
+def fake_personal_message_event(content: str, message_id: str) -> PersonalMessageEvent:
+    return PersonalMessageEvent(
+        event_id="abcdef",
+        event_type=EventType.PERSONAL_MESSAGE,
+        timestamp=datetime.fromtimestamp(12345678, timezone.utc),
+        dodo_source_id="3344",
+        island_source_id="7788",
+        message_id=message_id,
+        message_type=MessageType.TEXT,
+        message_body=TextMessage(content=content),
+        personal=Personal(
+            nick_name="user",
+            avatar_url="https://static.imdodo.com/DoDoAvatar.png",
+            sex=Sex.FEMALE,
         ),
     )
-    await record_recv_msg(bot, event)
+
+
+async def test_record_recv_msg(app: App):
+    """测试记录收到的消息"""
+    from nonebot_plugin_chatrecorder.message import serialize_message
+
+    channel_msg = "test channel message"
+    channel_msg_id = "123456"
+
+    personal_msg = "test personal message"
+    personal_msg_id = "123457"
+
+    async with app.test_matcher() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(
+            base=Bot,
+            adapter=adapter,
+            self_id="2233",
+            bot_config=BotConfig(client_id="1234", token="xxxx"),
+        )
+
+        event = fake_channel_message_event(channel_msg, channel_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_personal_message_event(personal_msg, personal_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "DoDo",
@@ -66,27 +96,11 @@ async def test_record_recv_msg(app: App):
         "7788",
         datetime.fromtimestamp(12345678, timezone.utc),
         "message",
-        "123456",
-        serialize_message(bot, Message("test channel message")),
-        "test channel message",
+        channel_msg_id,
+        serialize_message(bot, Message(channel_msg)),
+        channel_msg,
     )
 
-    event = PersonalMessageEvent(
-        event_id="abcdef",
-        event_type=EventType.PERSONAL_MESSAGE,
-        timestamp=datetime.fromtimestamp(12345678, timezone.utc),
-        dodo_source_id="3344",
-        island_source_id="7788",
-        message_id="123457",
-        message_type=MessageType.TEXT,
-        message_body=TextMessage(content="test personal message"),
-        personal=Personal(
-            nick_name="user",
-            avatar_url="https://static.imdodo.com/DoDoAvatar.png",
-            sex=Sex.FEMALE,
-        ),
-    )
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "DoDo",
@@ -97,9 +111,9 @@ async def test_record_recv_msg(app: App):
         "7788",
         datetime.fromtimestamp(12345678, timezone.utc),
         "message",
-        "123457",
-        serialize_message(bot, Message("test personal message")),
-        "test personal message",
+        personal_msg_id,
+        serialize_message(bot, Message(personal_msg)),
+        personal_msg,
     )
 
 
@@ -109,9 +123,10 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
-            adapter=Adapter(get_driver()),
+            adapter=adapter,
             self_id="2233",
             bot_config=BotConfig(client_id="1234", token="xxxx"),
         )

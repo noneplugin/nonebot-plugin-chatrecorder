@@ -23,31 +23,96 @@ from nonebug import App
 from .utils import check_record
 
 
-async def test_record_recv_msg(app: App):
-    """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.qq import record_recv_msg
-    from nonebot_plugin_chatrecorder.message import serialize_message
-
-    async with app.test_api() as ctx:
-        bot = ctx.create_bot(
-            base=Bot,
-            adapter=Adapter(get_driver()),
-            self_id="2233",
-            bot_info=BotInfo(id="2233", token="", secret=""),
-        )
-
-    event = MessageCreateEvent(
+def fake_message_create_event(content: str, id: str) -> MessageCreateEvent:
+    return MessageCreateEvent(
         __type__=EventType.MESSAGE_CREATE,
-        id="1234",
+        id=id,
         timestamp=datetime(
             2023, 7, 30, 8, 0, 0, 0, tzinfo=timezone(timedelta(hours=8))
         ),
         channel_id="6677",
         guild_id="5566",
         author=User(id="3344"),
-        content="test message create event",
+        content=content,
     )
-    await record_recv_msg(bot, event)
+
+
+def fake_direct_message_create_event(content: str, id: str) -> DirectMessageCreateEvent:
+    return DirectMessageCreateEvent(
+        __type__=EventType.DIRECT_MESSAGE_CREATE,
+        id=id,
+        timestamp=datetime(
+            2023, 7, 30, 8, 0, 0, 0, tzinfo=timezone(timedelta(hours=8))
+        ),
+        channel_id="6677",
+        guild_id="5566",
+        author=User(id="3344"),
+        content=content,
+    )
+
+
+def fake_group_at_message_create_event(
+    content: str, id: str
+) -> GroupAtMessageCreateEvent:
+    return GroupAtMessageCreateEvent(
+        __type__=EventType.GROUP_AT_MESSAGE_CREATE,
+        id=id,
+        timestamp="2023-11-06T13:37:18+08:00",
+        group_openid="195747FDF0D845E98CF3886C5C7ED328",
+        author=GroupMemberAuthor(
+            id="3344", member_openid="8BE608110EAA4328A1883DEF239F5580"
+        ),
+        content=content,
+    )
+
+
+def fake_c2c_message_create_event(content: str, id: str) -> C2CMessageCreateEvent:
+    return C2CMessageCreateEvent(
+        __type__=EventType.C2C_MESSAGE_CREATE,
+        id=id,
+        timestamp="2023-11-06T13:37:18+08:00",
+        author=FriendAuthor(id="3344", user_openid="451368C569A1401D87172E9435EE8663"),
+        content=content,
+    )
+
+
+async def test_record_recv_msg(app: App):
+    """测试记录收到的消息"""
+    from nonebot_plugin_chatrecorder.message import serialize_message
+
+    msg = "test message create event"
+    msg_id = "1234"
+
+    direct_msg = "test direct message create event"
+    direct_msg_id = "1235"
+
+    group_at_msg = "test group at message create event"
+    group_at_msg_id = "1236"
+
+    c2c_msg = "test c2c message create event"
+    c2c_msg_id = "1237"
+
+    async with app.test_matcher() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(
+            base=Bot,
+            adapter=adapter,
+            self_id="2233",
+            bot_info=BotInfo(id="2233", token="", secret=""),
+        )
+
+        event = fake_message_create_event(msg, msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_direct_message_create_event(direct_msg, direct_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_group_at_message_create_event(group_at_msg, group_at_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_c2c_message_create_event(c2c_msg, c2c_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "QQ",
@@ -58,23 +123,11 @@ async def test_record_recv_msg(app: App):
         "5566",
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message",
-        "1234",
-        serialize_message(bot, Message("test message create event")),
-        "test message create event",
+        msg_id,
+        serialize_message(bot, Message(msg)),
+        msg,
     )
 
-    event = DirectMessageCreateEvent(
-        __type__=EventType.DIRECT_MESSAGE_CREATE,
-        id="1235",
-        timestamp=datetime(
-            2023, 7, 30, 8, 0, 0, 0, tzinfo=timezone(timedelta(hours=8))
-        ),
-        channel_id="6677",
-        guild_id="5566",
-        author=User(id="3344"),
-        content="test direct message create event",
-    )
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "QQ",
@@ -85,22 +138,11 @@ async def test_record_recv_msg(app: App):
         "5566",
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message",
-        "1235",
-        serialize_message(bot, Message("test direct message create event")),
-        "test direct message create event",
+        direct_msg_id,
+        serialize_message(bot, Message(direct_msg)),
+        direct_msg,
     )
 
-    event = GroupAtMessageCreateEvent(
-        __type__=EventType.GROUP_AT_MESSAGE_CREATE,
-        id="1236",
-        timestamp="2023-11-06T13:37:18+08:00",
-        group_openid="195747FDF0D845E98CF3886C5C7ED328",
-        author=GroupMemberAuthor(
-            id="3344", member_openid="8BE608110EAA4328A1883DEF239F5580"
-        ),
-        content="test group at message create event",
-    )
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "QQ",
@@ -111,19 +153,11 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromisoformat("2023-11-06T13:37:18+08:00"),
         "message",
-        "1236",
-        serialize_message(bot, Message("test group at message create event")),
-        "test group at message create event",
+        group_at_msg_id,
+        serialize_message(bot, Message(group_at_msg)),
+        group_at_msg,
     )
 
-    event = C2CMessageCreateEvent(
-        __type__=EventType.C2C_MESSAGE_CREATE,
-        id="1237",
-        timestamp="2023-11-06T13:37:18+08:00",
-        author=FriendAuthor(id="3344", user_openid="451368C569A1401D87172E9435EE8663"),
-        content="test c2c message create event",
-    )
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "QQ",
@@ -134,9 +168,9 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromisoformat("2023-11-06T13:37:18+08:00"),
         "message",
-        "1237",
-        serialize_message(bot, Message("test c2c message create event")),
-        "test c2c message create event",
+        c2c_msg_id,
+        serialize_message(bot, Message(c2c_msg)),
+        c2c_msg,
     )
 
 
@@ -147,9 +181,10 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
-            adapter=Adapter(get_driver()),
+            adapter=adapter,
             self_id="2233",
             bot_info=BotInfo(id="2233", token="", secret=""),
         )

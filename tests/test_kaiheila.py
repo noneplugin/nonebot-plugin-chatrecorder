@@ -11,69 +11,103 @@ from nonebot.adapters.kaiheila.event import (
     PrivateMessageEvent,
     User,
 )
+from nonebot.compat import type_validate_python
 from nonebug.app import App
 
 from .utils import check_record
 
 
+def fake_private_message_event(content: str, msg_id: str) -> PrivateMessageEvent:
+    return type_validate_python(
+        PrivateMessageEvent,
+        {
+            "post_type": "message",
+            "channel_type": "PERSON",
+            "type": 1,
+            "target_id": "6677",
+            "author_id": "3344",
+            "content": content,
+            "msg_id": msg_id,
+            "msg_timestamp": 1234000,
+            "nonce": "",
+            "extra": Extra(type=1),  # type: ignore
+            "user_id": "3344",
+            "self_id": "2233",
+            "message_type": "private",
+            "sub_type": "",
+            "event": EventMessage(
+                type=1,
+                content="test private message",  # type: ignore
+                author=User(id="3344"),
+                kmarkdown={
+                    "raw_content": content,
+                    "mention_part": [],
+                    "mention_role_part": [],
+                },  # type: ignore
+            ),
+        },
+    )
+
+
+def fake_channel_message_event(content: str, msg_id: str) -> ChannelMessageEvent:
+    return type_validate_python(
+        ChannelMessageEvent,
+        {
+            "post_type": "message",
+            "channel_type": "GROUP",
+            "type": 1,
+            "target_id": "6677",
+            "author_id": "3344",
+            "content": content,
+            "msg_id": msg_id,
+            "msg_timestamp": 1234000,
+            "nonce": "",
+            "extra": Extra(
+                type=1,
+                guild_id="5566",
+            ),  # type: ignore
+            "user_id": "3344",
+            "self_id": "2233",
+            "group_id": "6677",
+            "message_type": "group",
+            "sub_type": "",
+            "event": EventMessage(
+                type=1,
+                guild_id="5566",
+                content="test channel message",  # type: ignore
+                author=User(id="3344"),
+                kmarkdown={
+                    "raw_content": content,
+                    "mention_part": [],
+                    "mention_role_part": [],
+                },  # type: ignore
+            ),
+        },
+    )
+
+
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
-    from nonebot_plugin_chatrecorder.adapters.kaiheila import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
-    async with app.test_api() as ctx:
+    private_msg = "test private message"
+    private_msg_id = "4455"
+
+    channel_msg = "test channel message"
+    channel_msg_id = "4456"
+
+    async with app.test_matcher() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
-            base=Bot,
-            adapter=Adapter(get_driver()),
-            self_id="2233",
-            name="Bot",
-            token="",
+            base=Bot, adapter=adapter, self_id="2233", name="Bot", token=""
         )
 
-    event = PrivateMessageEvent(
-        post_type="message",
-        channel_type="PERSON",
-        type=1,
-        target_id="6677",
-        author_id="3344",
-        content="123",
-        msg_id="4455",
-        msg_timestamp=1234000,
-        nonce="",
-        extra=Extra(
-            type=1,
-            guild_id=None,
-            channel_name=None,
-            mention=[],
-            mention_all=False,
-            mention_roles=[],
-            mention_here=False,
-            author=None,
-            body=None,
-            attachments=None,
-            code=None,
-        ),
-        user_id="3344",
-        self_id="2233",
-        message_type="private",
-        sub_type="",
-        event=EventMessage(
-            type=1,
-            guild_id=None,
-            channel_name=None,
-            content="test private message",  # type: ignore
-            mention=[],
-            mention_all=False,
-            mention_roles=[],
-            mention_here=False,
-            nav_channels=[],
-            author=User(id="3344"),
-            kmarkdown=None,
-            attachments=None,
-            code=None,
-        ),
-    )
-    await record_recv_msg(bot, event)
+        event = fake_private_message_event(private_msg, private_msg_id)
+        ctx.receive_event(bot, event)
+
+        event = fake_channel_message_event(channel_msg, channel_msg_id)
+        ctx.receive_event(bot, event)
+
     await check_record(
         "2233",
         "Kaiheila",
@@ -84,56 +118,11 @@ async def test_record_recv_msg(app: App):
         None,
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
-        "4455",
-        serialize_message(bot, Message("test private message")),
-        "test private message",
+        private_msg_id,
+        serialize_message(bot, Message(private_msg)),
+        private_msg,
     )
 
-    event = ChannelMessageEvent(
-        post_type="message",
-        channel_type="GROUP",
-        type=9,
-        target_id="6677",
-        author_id="3344",
-        content="123",
-        msg_id="4456",
-        msg_timestamp=1234000,
-        nonce="",
-        extra=Extra(
-            type=1,
-            guild_id="5566",
-            channel_name="test",
-            mention=[],
-            mention_all=False,
-            mention_roles=[],
-            mention_here=False,
-            author=None,
-            body=None,
-            attachments=None,
-            code=None,
-        ),
-        user_id="3344",
-        self_id="2233",
-        group_id="6677",
-        message_type="group",
-        sub_type="",
-        event=EventMessage(
-            type=1,
-            guild_id="5566",
-            channel_name="test",
-            content="test channel message",  # type: ignore
-            mention=[],
-            mention_all=False,
-            mention_roles=[],
-            mention_here=False,
-            nav_channels=[],
-            author=User(id="3344"),
-            kmarkdown=None,
-            attachments=None,
-            code=None,
-        ),
-    )
-    await record_recv_msg(bot, event)
     await check_record(
         "2233",
         "Kaiheila",
@@ -144,9 +133,9 @@ async def test_record_recv_msg(app: App):
         "5566",
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
-        "4456",
-        serialize_message(bot, Message("test channel message")),
-        "test channel message",
+        channel_msg_id,
+        serialize_message(bot, Message(channel_msg)),
+        channel_msg,
     )
 
 
@@ -156,12 +145,9 @@ async def test_record_send_msg(app: App):
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
-            base=Bot,
-            adapter=Adapter(get_driver()),
-            self_id="2233",
-            name="Bot",
-            token="",
+            base=Bot, adapter=adapter, self_id="2233", name="Bot", token=""
         )
 
     await record_send_msg(
