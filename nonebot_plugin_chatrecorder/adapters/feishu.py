@@ -41,7 +41,7 @@ try:
             type=record_type(event),
             message_id=event.event.message.message_id,
             message=serialize_message(adapter, event.get_message()),
-            plain_text=event.get_message().extract_plain_text(),
+            plain_text=event.get_plaintext(),
         )
         async with get_session() as db_session:
             db_session.add(record)

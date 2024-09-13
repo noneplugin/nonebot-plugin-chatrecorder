@@ -38,8 +38,8 @@ try:
             time=remove_timezone(datetime.fromtimestamp(event.date, timezone.utc)),
             type=record_type(event),
             message_id=f"{event.chat.id}_{event.message_id}",
-            message=serialize_message(adapter, event.message),
-            plain_text=event.message.extract_plain_text(),
+            message=serialize_message(adapter, event.get_message()),
+            plain_text=event.get_plaintext(),
         )
         async with get_session() as db_session:
             db_session.add(record)
