@@ -5,7 +5,6 @@ require("nonebot_plugin_session_orm")
 require("nonebot_plugin_localstore")
 
 from . import adapters as adapters
-from . import migrations
 from .message import deserialize_message as deserialize_message
 from .message import serialize_message as serialize_message
 from .model import MessageRecord as MessageRecord
@@ -32,5 +31,4 @@ __plugin_meta__ = PluginMetadata(
         "~satori",
         "~qq",
     },
-    extra={"orm_version_location": migrations},
 )
