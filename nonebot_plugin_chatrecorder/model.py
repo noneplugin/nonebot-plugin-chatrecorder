@@ -19,7 +19,7 @@ class MessageRecord(Model):
     """ 消息时间\n\n存放 UTC 时间 """
     type: Mapped[str] = mapped_column(String(32))
     """ 消息类型\n\n此处主要包含 `message` 和 `message_sent` 两种\n\n`message_sent` 是 bot 发出的消息"""
-    message_id: Mapped[str] = mapped_column(String(64))
+    message_id: Mapped[str] = mapped_column(String(255))
     """ 消息id """
     message: Mapped[JsonMsg] = mapped_column(JSON)
     """ 消息内容
