@@ -22,11 +22,11 @@ nonebot-plugin-orm = { version = ">=0.7.0,<1.0.0", extras = ["default"] }
 nonebot-plugin-datastore = "^1.0.0"
 
 [tool.poetry.group.test.dependencies]
-nonebug = "^0.3.0"
-pytest-cov = "^4.0.0"
+nonebug = "^0.4.2"
+pytest-cov = "^5.0.0"
 pytest-xdist = "^3.0.2"
 pytest-asyncio = "^0.24.0"
-asyncpg = "^0.29.0"
+asyncpg = "^0.30.0"
 aiomysql = "^0.2.0"
 
 [tool.poetry.group.adapters]
