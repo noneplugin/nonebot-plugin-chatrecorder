@@ -311,3 +311,46 @@ async def test_record_send_msg(app: App):
             serialize_message(bot, Message(content)),
             Message(content).extract_plain_text(),
         )
+
+
+def test_message_serialize():
+    """测试消息序列化"""
+    from nonebot.adapters.discord import Message, MessageSegment
+
+    from nonebot_plugin_chatrecorder.adapters.discord import Serializer
+
+    assert Serializer.serialize(Message("test")) == [
+        {"type": "text", "data": {"text": "test"}}
+    ]
+    assert Serializer.serialize(
+        Message(MessageSegment.attachment("test.png", "test", b"\x89PNG\r"))
+    ) == [
+        {
+            "type": "attachment",
+            "data": {
+                "attachment": {"filename": "test.png", "description": "test"},
+                "file": {"filename": "test.png", "content": b"\x89PNG\r"},
+            },
+        }
+    ]
+
+
+def test_message_deserialize():
+    """测试消息反序列化"""
+    from nonebot.adapters.discord import Message, MessageSegment
+
+    from nonebot_plugin_chatrecorder.adapters.discord import Deserializer
+
+    Deserializer.deserialize([{"type": "text", "data": {"text": "test"}}])
+
+    assert Deserializer.deserialize(
+        [
+            {
+                "type": "attachment",
+                "data": {
+                    "attachment": {"filename": "test.png", "description": "test"},
+                    "file": {"filename": "test.png", "content": b"\x89PNG\r"},
+                },
+            }
+        ]
+    ) == Message(MessageSegment.attachment("test.png", "test", b"\x89PNG\r"))

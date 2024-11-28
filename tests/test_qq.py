@@ -328,3 +328,32 @@ async def test_record_send_msg(app: App):
         serialize_message(bot, Message("test post_group_messages")),
         "test post_group_messages",
     )
+
+
+def test_message_deserialize():
+    """测试消息反序列化"""
+    from nonebot.adapters.qq import Message, MessageSegment
+    from nonebot.adapters.qq.message import Embed
+    from nonebot.adapters.qq.models import MessageArk, MessageEmbed
+    from nonebot.compat import type_validate_python
+
+    msg = type_validate_python(Message, [{"type": "text", "data": {"text": "test"}}])
+    assert msg == Message(MessageSegment.text("test"))
+
+    msg = type_validate_python(Message, [{"type": "image", "data": {"url": "test"}}])
+    assert msg == Message(MessageSegment.image("test"))
+
+    msg = type_validate_python(
+        Message, [{"type": "file_image", "data": {"content": b"\x89PNG\r"}}]
+    )
+    assert msg == Message(MessageSegment.file_image(b"\x89PNG\r"))
+
+    msg = type_validate_python(
+        Message, [{"type": "ark", "data": {"ark": {"template_id": 1, "kv": []}}}]
+    )
+    assert msg == Message(MessageSegment.ark(MessageArk(template_id=1, kv=[])))
+
+    seg = type_validate_python(
+        Embed, {"type": "embed", "data": {"embed": {"prompt": "test"}}}
+    )
+    assert seg == MessageSegment.embed(MessageEmbed(prompt="test"))
