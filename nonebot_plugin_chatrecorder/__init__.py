@@ -25,7 +25,6 @@ __plugin_meta__ = PluginMetadata(
         "~kaiheila",
         "~telegram",
         "~feishu",
-        "~red",
         "~discord",
         "~dodo",
         "~satori",
