@@ -20,7 +20,6 @@ from nonebot.adapters.feishu.models import (
     Sender,
 )
 from nonebot.compat import type_validate_python
-from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 from nonebug.app import App
 
 from .utils import check_record
@@ -113,6 +112,8 @@ def fake_group_message_event(
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     msg_type = "text"
@@ -170,6 +171,8 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
     from nonebot_plugin_chatrecorder.adapters.feishu import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 

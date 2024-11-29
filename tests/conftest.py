@@ -45,7 +45,7 @@ async def app():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def load_adapters(nonebug_init: None):
+def after_nonebot_init(after_nonebot_init: None):
     driver = nonebot.get_driver()
     driver.register_adapter(ConsoleAdapter)
     driver.register_adapter(DiscordAdapter)

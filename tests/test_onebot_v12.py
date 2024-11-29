@@ -11,7 +11,6 @@ from nonebot.adapters.onebot.v12 import (
     PrivateMessageEvent,
 )
 from nonebot.adapters.onebot.v12.event import BotSelf
-from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 from nonebug.app import App
 from pydantic import create_model
 
@@ -92,6 +91,8 @@ def fake_channel_message_event_v12(**field) -> ChannelMessageEvent:
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     time = datetime.fromtimestamp(1000000, timezone.utc)
@@ -191,6 +192,8 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
     from nonebot_plugin_chatrecorder.adapters.onebot_v12 import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 

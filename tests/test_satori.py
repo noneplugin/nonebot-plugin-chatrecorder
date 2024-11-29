@@ -20,8 +20,6 @@ from nonebot.adapters.satori.models import (
     User,
 )
 from nonebot.compat import type_validate_python
-from nonebot_plugin_uninfo import Scene, SceneType, Session
-from nonebot_plugin_uninfo import User as UninfoUser
 from nonebug.app import App
 
 from .utils import assert_no_record, check_record
@@ -119,6 +117,9 @@ def fake_public_message_updated_event(
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     public_msg = "test public message created"
@@ -201,6 +202,9 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
     from nonebot_plugin_chatrecorder.adapters.satori import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 

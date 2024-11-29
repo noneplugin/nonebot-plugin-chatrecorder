@@ -18,8 +18,6 @@ from nonebot.adapters.qq.models import (
     User,
 )
 from nonebot.adapters.qq.models import Message as GuildMessage
-from nonebot_plugin_uninfo import Scene, SceneType, Session
-from nonebot_plugin_uninfo import User as UninfoUser
 from nonebug import App
 
 from .utils import check_record
@@ -80,6 +78,9 @@ def fake_c2c_message_create_event(content: str, id: str) -> C2CMessageCreateEven
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     msg = "test message create event"
@@ -186,6 +187,8 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
 
     from nonebot_plugin_chatrecorder.adapters.qq import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message

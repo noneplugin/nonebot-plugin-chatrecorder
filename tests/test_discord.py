@@ -17,8 +17,6 @@ from nonebot.adapters.discord.api.model import (
 )
 from nonebot.adapters.discord.config import BotInfo
 from nonebot.compat import type_validate_python
-from nonebot_plugin_uninfo import Scene, SceneType, Session
-from nonebot_plugin_uninfo import User as UninfoUser
 from nonebug.app import App
 
 from .utils import check_record
@@ -97,6 +95,9 @@ def fake_direct_message_event(content: str, msg_id: int) -> DirectMessageCreateE
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     guild_msg = "test guild message"
@@ -154,6 +155,9 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
     from nonebot_plugin_chatrecorder.adapters.discord import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 

@@ -12,8 +12,6 @@ from nonebot.adapters.kaiheila.event import (
     User,
 )
 from nonebot.compat import type_validate_python
-from nonebot_plugin_uninfo import Scene, SceneType, Session
-from nonebot_plugin_uninfo import User as UninfoUser
 from nonebug.app import App
 
 from .utils import check_record
@@ -90,6 +88,9 @@ def fake_channel_message_event(content: str, msg_id: str) -> ChannelMessageEvent
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     private_msg = "test private message"
@@ -147,6 +148,9 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
     from nonebot_plugin_chatrecorder.adapters.kaiheila import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 

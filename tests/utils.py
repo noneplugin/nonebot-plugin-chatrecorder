@@ -1,15 +1,16 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
-from nonebot_plugin_uninfo import Session
+if TYPE_CHECKING:
+    from nonebot_plugin_uninfo import Session
 
 
-def session_id(session: Session) -> str:
+def session_id(session: "Session") -> str:
     return f"{session.self_id}_{session.adapter}_{session.scope}_{session.id}"
 
 
 async def check_record(
-    session: Session,
+    session: "Session",
     time: Optional[datetime],
     type: str,
     message_id: str,

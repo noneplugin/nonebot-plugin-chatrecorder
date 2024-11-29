@@ -10,7 +10,6 @@ from nonebot.adapters.telegram.event import (
     PrivateMessageEvent,
 )
 from nonebot.adapters.telegram.model import InputMediaPhoto
-from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 from nonebug import App
 
 from .utils import check_record
@@ -73,6 +72,8 @@ def fake_forum_topic_message_event(
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     private_msg = "test private message"
@@ -154,6 +155,8 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
     from nonebot_plugin_chatrecorder.adapters.telegram import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
