@@ -46,19 +46,19 @@ def upgrade(name: str = "") -> None:
     logger.warning("chatrecorder: 正在迁移数据，请不要关闭程序...")
 
     with Session(conn) as db_session:
-        session_ids = list(
-            db_session.scalars(sa.select(MessageRecord.session_persist_id)).all()
-        )
+        results = db_session.execute(
+            sa.select(MessageRecord.id, MessageRecord.session_persist_id)
+        ).all()
 
+    session_ids = [result[1] for result in results]
     id_map = get_id_map(session_ids)
 
+    bulk_update_ids = [
+        {"id": record_id, "uninfo_persist_id": id_map[session_id]}
+        for record_id, session_id in results
+    ]
     with Session(conn) as db_session:
-        for session_id, uninfo_id in id_map.items():
-            db_session.execute(
-                sa.update(MessageRecord)
-                .where(MessageRecord.session_persist_id == session_id)
-                .values(uninfo_persist_id=uninfo_id)
-            )
+        db_session.execute(sa.update(MessageRecord), bulk_update_ids)
         db_session.commit()
 
     logger.warning("chatrecorder: 数据迁移完成！")
