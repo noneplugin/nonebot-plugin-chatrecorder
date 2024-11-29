@@ -93,6 +93,7 @@ async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
     from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 
+    from nonebot_plugin_chatrecorder.adapters.onebot_v12 import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     time = datetime.fromtimestamp(1000000, timezone.utc)
@@ -110,44 +111,29 @@ async def test_record_recv_msg(app: App):
     channel_msg = Message("test channel message")
     channel_msg_id = "11451433333"
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot, adapter=adapter, self_id="12", platform="qq", impl="walle-q"
         )
 
-        event = fake_group_message_event(
-            time=time,
-            user_id=user_id,
-            group_id=group_id,
-            message_id=group_msg_id,
-            message=group_msg,
-        )
-        ctx.receive_event(bot, event)
-
-        event = fake_private_message_event(
-            time=time, user_id=user_id, message_id=private_msg_id, message=private_msg
-        )
-        ctx.receive_event(bot, event)
-
-        event = fake_channel_message_event_v12(
-            time=time,
-            user_id=user_id,
-            guild_id=guild_id,
-            channel_id=channel_id,
-            message_id=channel_msg_id,
-            message=channel_msg,
-        )
-        ctx.receive_event(bot, event)
-
+    event = fake_group_message_event(
+        time=time,
+        user_id=user_id,
+        group_id=group_id,
+        message_id=group_msg_id,
+        message=group_msg,
+    )
+    session = Session(
+        self_id="12",
+        adapter="OneBot V12",
+        scope="QQClient",
+        scene=Scene(id=str(group_id), type=SceneType.GROUP),
+        user=User(id=str(user_id)),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="12",
-            adapter="OneBot V12",
-            scope="QQClient",
-            scene=Scene(id=str(group_id), type=SceneType.GROUP),
-            user=User(id=str(user_id)),
-        ),
+        session,
         time,
         "message",
         str(group_msg_id),
@@ -155,14 +141,19 @@ async def test_record_recv_msg(app: App):
         group_msg.extract_plain_text(),
     )
 
+    event = fake_private_message_event(
+        time=time, user_id=user_id, message_id=private_msg_id, message=private_msg
+    )
+    session = Session(
+        self_id="12",
+        adapter="OneBot V12",
+        scope="QQClient",
+        scene=Scene(id=str(user_id), type=SceneType.PRIVATE),
+        user=User(id=str(user_id)),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="12",
-            adapter="OneBot V12",
-            scope="QQClient",
-            scene=Scene(id=str(user_id), type=SceneType.PRIVATE),
-            user=User(id=str(user_id)),
-        ),
+        session,
         time,
         "message",
         str(private_msg_id),
@@ -170,18 +161,28 @@ async def test_record_recv_msg(app: App):
         private_msg.extract_plain_text(),
     )
 
-    await check_record(
-        Session(
-            self_id="12",
-            adapter="OneBot V12",
-            scope="QQClient",
-            scene=Scene(
-                id=str(channel_id),
-                type=SceneType.CHANNEL_TEXT,
-                parent=Scene(id=str(guild_id), type=SceneType.GUILD),
-            ),
-            user=User(id=str(user_id)),
+    event = fake_channel_message_event_v12(
+        time=time,
+        user_id=user_id,
+        guild_id=guild_id,
+        channel_id=channel_id,
+        message_id=channel_msg_id,
+        message=channel_msg,
+    )
+    session = Session(
+        self_id="12",
+        adapter="OneBot V12",
+        scope="QQClient",
+        scene=Scene(
+            id=str(channel_id),
+            type=SceneType.CHANNEL_TEXT,
+            parent=Scene(id=str(guild_id), type=SceneType.GUILD),
         ),
+        user=User(id=str(user_id)),
+    )
+    await record_recv_msg(event, session)
+    await check_record(
+        session,
         time,
         "message",
         str(channel_msg_id),

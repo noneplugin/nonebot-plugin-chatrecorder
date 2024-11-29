@@ -74,6 +74,7 @@ async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
     from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 
+    from nonebot_plugin_chatrecorder.adapters.telegram import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     private_msg = "test private message"
@@ -85,7 +86,7 @@ async def test_record_recv_msg(app: App):
     forum_msg = "test forum topic message"
     forum_msg_id = "1236"
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -94,23 +95,17 @@ async def test_record_recv_msg(app: App):
             config=BotConfig(token="2233:xxx"),
         )
 
-        event = fake_private_message_event(private_msg, private_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_group_message_event(group_msg, group_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_forum_topic_message_event(forum_msg, forum_msg_id)
-        ctx.receive_event(bot, event)
-
+    event = fake_private_message_event(private_msg, private_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Telegram",
+        scope="Telegram",
+        scene=Scene(id="3344", type=SceneType.PRIVATE),
+        user=User(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="2233",
-            adapter="Telegram",
-            scope="Telegram",
-            scene=Scene(id="3344", type=SceneType.PRIVATE),
-            user=User(id="3344"),
-        ),
+        session,
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "3344_1234",
@@ -118,14 +113,17 @@ async def test_record_recv_msg(app: App):
         private_msg,
     )
 
+    event = fake_group_message_event(group_msg, group_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Telegram",
+        scope="Telegram",
+        scene=Scene(id="5566", type=SceneType.GROUP),
+        user=User(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="2233",
-            adapter="Telegram",
-            scope="Telegram",
-            scene=Scene(id="5566", type=SceneType.GROUP),
-            user=User(id="3344"),
-        ),
+        session,
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1235",
@@ -133,18 +131,21 @@ async def test_record_recv_msg(app: App):
         group_msg,
     )
 
-    await check_record(
-        Session(
-            self_id="2233",
-            adapter="Telegram",
-            scope="Telegram",
-            scene=Scene(
-                id="6677",
-                type=SceneType.CHANNEL_TEXT,
-                parent=Scene(id="5566", type=SceneType.GUILD),
-            ),
-            user=User(id="3344"),
+    event = fake_forum_topic_message_event(forum_msg, forum_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Telegram",
+        scope="Telegram",
+        scene=Scene(
+            id="6677",
+            type=SceneType.CHANNEL_TEXT,
+            parent=Scene(id="5566", type=SceneType.GUILD),
         ),
+        user=User(id="3344"),
+    )
+    await record_recv_msg(event, session)
+    await check_record(
+        session,
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1236",

@@ -91,6 +91,7 @@ async def test_record_recv_msg(app: App):
     from nonebot_plugin_uninfo import Scene, SceneType, Session
     from nonebot_plugin_uninfo import User as UninfoUser
 
+    from nonebot_plugin_chatrecorder.adapters.kaiheila import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     private_msg = "test private message"
@@ -99,26 +100,23 @@ async def test_record_recv_msg(app: App):
     channel_msg = "test channel message"
     channel_msg_id = "4456"
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot, adapter=adapter, self_id="2233", name="Bot", token=""
         )
 
-        event = fake_private_message_event(private_msg, private_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_channel_message_event(channel_msg, channel_msg_id)
-        ctx.receive_event(bot, event)
-
+    event = fake_private_message_event(private_msg, private_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Kaiheila",
+        scope="Kaiheila",
+        scene=Scene(id="3344", type=SceneType.PRIVATE),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="2233",
-            adapter="Kaiheila",
-            scope="Kaiheila",
-            scene=Scene(id="3344", type=SceneType.PRIVATE),
-            user=UninfoUser(id="3344"),
-        ),
+        session,
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
         private_msg_id,
@@ -126,18 +124,21 @@ async def test_record_recv_msg(app: App):
         private_msg,
     )
 
-    await check_record(
-        Session(
-            self_id="2233",
-            adapter="Kaiheila",
-            scope="Kaiheila",
-            scene=Scene(
-                id="6677",
-                type=SceneType.CHANNEL_TEXT,
-                parent=Scene(id="5566", type=SceneType.GUILD),
-            ),
-            user=UninfoUser(id="3344"),
+    event = fake_channel_message_event(channel_msg, channel_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Kaiheila",
+        scope="Kaiheila",
+        scene=Scene(
+            id="6677",
+            type=SceneType.CHANNEL_TEXT,
+            parent=Scene(id="5566", type=SceneType.GUILD),
         ),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
+    await check_record(
+        session,
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
         channel_msg_id,

@@ -41,6 +41,7 @@ async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
     from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 
+    from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     time = 1000000
@@ -48,23 +49,23 @@ async def test_record_recv_msg(app: App):
     message_id = 1145141919810
     message = Message("test private message")
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="11")
 
-        event = fake_private_message_event(
-            time=time, user_id=user_id, message_id=message_id, message=message
-        )
-        ctx.receive_event(bot, event)
-
+    event = fake_private_message_event(
+        time=time, user_id=user_id, message_id=message_id, message=message
+    )
+    session = Session(
+        self_id="11",
+        adapter="OneBot V11",
+        scope="QQClient",
+        scene=Scene(id=str(user_id), type=SceneType.PRIVATE),
+        user=User(id=str(user_id)),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="11",
-            adapter="OneBot V11",
-            scope="QQClient",
-            scene=Scene(id=str(user_id), type=SceneType.PRIVATE),
-            user=User(id=str(user_id)),
-        ),
+        session,
         datetime.fromtimestamp(time, timezone.utc),
         "fake",
         str(message_id),

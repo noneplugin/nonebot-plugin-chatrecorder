@@ -81,6 +81,7 @@ async def test_record_recv_msg(app: App):
     from nonebot_plugin_uninfo import Scene, SceneType, Session
     from nonebot_plugin_uninfo import User as UninfoUser
 
+    from nonebot_plugin_chatrecorder.adapters.qq import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     msg = "test message create event"
@@ -95,7 +96,7 @@ async def test_record_recv_msg(app: App):
     c2c_msg = "test c2c message create event"
     c2c_msg_id = "1237"
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -104,30 +105,21 @@ async def test_record_recv_msg(app: App):
             bot_info=BotInfo(id="2233", token="", secret=""),
         )
 
-        event = fake_message_create_event(msg, msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_direct_message_create_event(direct_msg, direct_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_group_at_message_create_event(group_at_msg, group_at_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_c2c_message_create_event(c2c_msg, c2c_msg_id)
-        ctx.receive_event(bot, event)
-
-    await check_record(
-        Session(
-            self_id="2233",
-            adapter="QQ",
-            scope="QQAPI",
-            scene=Scene(
-                id="6677",
-                type=SceneType.CHANNEL_TEXT,
-                parent=Scene(id="5566", type=SceneType.GUILD),
-            ),
-            user=UninfoUser(id="3344"),
+    event = fake_message_create_event(msg, msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="QQ",
+        scope="QQAPI",
+        scene=Scene(
+            id="6677",
+            type=SceneType.CHANNEL_TEXT,
+            parent=Scene(id="5566", type=SceneType.GUILD),
         ),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
+    await check_record(
+        session,
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message",
         msg_id,
@@ -135,18 +127,21 @@ async def test_record_recv_msg(app: App):
         msg,
     )
 
-    await check_record(
-        Session(
-            self_id="2233",
-            adapter="QQ",
-            scope="QQAPI",
-            scene=Scene(
-                id="3344",
-                type=SceneType.PRIVATE,
-                parent=Scene(id="5566", type=SceneType.GUILD),
-            ),
-            user=UninfoUser(id="3344"),
+    event = fake_direct_message_create_event(direct_msg, direct_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="QQ",
+        scope="QQAPI",
+        scene=Scene(
+            id="3344",
+            type=SceneType.PRIVATE,
+            parent=Scene(id="5566", type=SceneType.GUILD),
         ),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
+    await check_record(
+        session,
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message",
         direct_msg_id,
@@ -154,14 +149,17 @@ async def test_record_recv_msg(app: App):
         direct_msg,
     )
 
+    event = fake_group_at_message_create_event(group_at_msg, group_at_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="QQ",
+        scope="QQAPI",
+        scene=Scene(id="195747FDF0D845E98CF3886C5C7ED328", type=SceneType.GROUP),
+        user=UninfoUser(id="8BE608110EAA4328A1883DEF239F5580"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="2233",
-            adapter="QQ",
-            scope="QQAPI",
-            scene=Scene(id="195747FDF0D845E98CF3886C5C7ED328", type=SceneType.GROUP),
-            user=UninfoUser(id="8BE608110EAA4328A1883DEF239F5580"),
-        ),
+        session,
         datetime.fromisoformat("2023-11-06T13:37:18+08:00"),
         "message",
         group_at_msg_id,
@@ -169,14 +167,17 @@ async def test_record_recv_msg(app: App):
         group_at_msg,
     )
 
+    event = fake_c2c_message_create_event(c2c_msg, c2c_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="QQ",
+        scope="QQAPI",
+        scene=Scene(id="451368C569A1401D87172E9435EE8663", type=SceneType.PRIVATE),
+        user=UninfoUser(id="451368C569A1401D87172E9435EE8663"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="2233",
-            adapter="QQ",
-            scope="QQAPI",
-            scene=Scene(id="451368C569A1401D87172E9435EE8663", type=SceneType.PRIVATE),
-            user=UninfoUser(id="451368C569A1401D87172E9435EE8663"),
-        ),
+        session,
         datetime.fromisoformat("2023-11-06T13:37:18+08:00"),
         "message",
         c2c_msg_id,

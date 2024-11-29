@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Optional
 
+from nonebot.log import logger
+
 if TYPE_CHECKING:
     from nonebot_plugin_uninfo import Session
 
@@ -10,7 +12,7 @@ def session_id(session: "Session") -> str:
 
 
 async def check_record(
-    session: "Session",
+    session: Optional["Session"],
     time: Optional[datetime],
     type: str,
     message_id: str,
@@ -28,13 +30,14 @@ async def check_record(
     async with get_session() as db_session:
         records = (await db_session.scalars(statement)).all()
 
+    logger.warning(f"len records: {len(records)}")
     assert len(records) == 1
     record = records[0]
     session_persist_id = record.session_persist_id
     session_model = await get_session_model(session_persist_id)
     record_session = await session_model.to_session()
-
-    assert session_id(record_session) == session_id(session)
+    if session:
+        assert session_id(record_session) == session_id(session)
     assert record.type == type
     if time:
         assert record.time == remove_timezone(time)

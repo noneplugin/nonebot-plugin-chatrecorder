@@ -98,6 +98,7 @@ async def test_record_recv_msg(app: App):
     from nonebot_plugin_uninfo import Scene, SceneType, Session
     from nonebot_plugin_uninfo import User as UninfoUser
 
+    from nonebot_plugin_chatrecorder.adapters.discord import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     guild_msg = "test guild message"
@@ -106,30 +107,27 @@ async def test_record_recv_msg(app: App):
     direct_msg = "test direct message"
     direct_msg_id = 11235
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot, adapter=adapter, self_id="2233", bot_info=BotInfo(token="1234")
         )
 
-        event = fake_guild_message_event(guild_msg, guild_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_direct_message_event(direct_msg, direct_msg_id)
-        ctx.receive_event(bot, event)
-
-    await check_record(
-        Session(
-            self_id="2233",
-            adapter="Discord",
-            scope="Discord",
-            scene=Scene(
-                id="5566",
-                type=SceneType.CHANNEL_TEXT,
-                parent=Scene(id="6677", type=SceneType.GUILD),
-            ),
-            user=UninfoUser(id="3344"),
+    event = fake_guild_message_event(guild_msg, guild_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Discord",
+        scope="Discord",
+        scene=Scene(
+            id="5566",
+            type=SceneType.CHANNEL_TEXT,
+            parent=Scene(id="6677", type=SceneType.GUILD),
         ),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
+    await check_record(
+        session,
         datetime.fromtimestamp(123456, timezone.utc),
         "message",
         str(guild_msg_id),
@@ -137,14 +135,17 @@ async def test_record_recv_msg(app: App):
         guild_msg,
     )
 
+    event = fake_direct_message_event(direct_msg, direct_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Discord",
+        scope="Discord",
+        scene=Scene(id="5566", type=SceneType.PRIVATE),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="2233",
-            adapter="Discord",
-            scope="Discord",
-            scene=Scene(id="5566", type=SceneType.PRIVATE),
-            user=UninfoUser(id="3344"),
-        ),
+        session,
         datetime.fromtimestamp(123456, timezone.utc),
         "message",
         str(direct_msg_id),

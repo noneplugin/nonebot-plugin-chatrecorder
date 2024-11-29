@@ -114,6 +114,7 @@ async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
     from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 
+    from nonebot_plugin_chatrecorder.adapters.feishu import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     msg_type = "text"
@@ -122,7 +123,7 @@ async def test_record_recv_msg(app: App):
     group_msg_id = "om_2"
     message = Message.deserialize(content, None, msg_type)
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -132,20 +133,17 @@ async def test_record_recv_msg(app: App):
             bot_info=BOT_INFO,
         )
 
-        event = fake_private_message_event(msg_type, content, private_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_group_message_event(msg_type, content, group_msg_id)
-        ctx.receive_event(bot, event)
-
+    event = fake_private_message_event(msg_type, content, private_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Feishu",
+        scope="Feishu",
+        scene=Scene(id="3344", type=SceneType.PRIVATE),
+        user=User(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="2233",
-            adapter="Feishu",
-            scope="Feishu",
-            scene=Scene(id="3344", type=SceneType.PRIVATE),
-            user=User(id="3344"),
-        ),
+        session,
         datetime.fromtimestamp(123456000 / 1000, timezone.utc),
         "message",
         private_msg_id,
@@ -153,14 +151,17 @@ async def test_record_recv_msg(app: App):
         message.extract_plain_text(),
     )
 
+    event = fake_group_message_event(msg_type, content, group_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Feishu",
+        scope="Feishu",
+        scene=Scene(id="1122", type=SceneType.GROUP),
+        user=User(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        Session(
-            self_id="2233",
-            adapter="Feishu",
-            scope="Feishu",
-            scene=Scene(id="1122", type=SceneType.GROUP),
-            user=User(id="3344"),
-        ),
+        session,
         datetime.fromtimestamp(123456000 / 1000, timezone.utc),
         "message",
         group_msg_id,
