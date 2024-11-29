@@ -6,12 +6,19 @@ from typing import Any, Optional
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session_orm import SessionModel, get_session_persist_id
+from nonebot_plugin_uninfo import (
+    Scene,
+    SceneType,
+    Session,
+    SupportAdapter,
+    SupportScope,
+    Uninfo,
+    User,
+)
+from nonebot_plugin_uninfo.orm import BotModel, SessionModel, get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -27,7 +34,7 @@ try:
     from nonechat import ConsoleMessage, Emoji, Text
     from sqlalchemy import select
 
-    adapter = SupportedAdapter.console
+    adapter = SupportAdapter.console
 
     id = None
 
@@ -36,9 +43,10 @@ try:
         if not id:
             statement = (
                 select(MessageRecord.message_id)
-                .where(SessionModel.bot_type == adapter)
+                .where(BotModel.adapter == adapter)
                 .order_by(MessageRecord.message_id.desc())
                 .join(SessionModel, SessionModel.id == MessageRecord.session_persist_id)
+                .join(BotModel, BotModel.self_id == SessionModel.bot_persist_id)
             )
             async with get_session() as db_session:
                 message_id = await db_session.scalar(statement)
@@ -46,8 +54,7 @@ try:
         return str(next(id))
 
     @event_postprocessor
-    async def record_recv_msg(bot: Bot, event: MessageEvent):
-        session = extract_session(bot, event)
+    async def record_recv_msg(event: MessageEvent, session: Uninfo):
         session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
@@ -78,13 +85,11 @@ try:
                 return
 
             session = Session(
-                bot_id=bot.self_id,
-                bot_type=bot.type,
-                platform=SupportedPlatform.console,
-                level=SessionLevel.LEVEL1,
-                id1=data.get("user_id"),
-                id2=None,
-                id3=None,
+                self_id=bot.self_id,
+                adapter=adapter,
+                scope=SupportScope.console,
+                scene=Scene(id=data["user_id"], type=SceneType.PRIVATE),
+                user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)
 

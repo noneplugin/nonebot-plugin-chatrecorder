@@ -4,12 +4,19 @@ from typing import Any, Optional
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session_orm import get_session_persist_id
+from nonebot_plugin_uninfo import (
+    Scene,
+    SceneType,
+    Session,
+    SupportAdapter,
+    SupportScope,
+    Uninfo,
+    User,
+)
+from nonebot_plugin_uninfo.orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -25,11 +32,10 @@ try:
     from nonebot.adapters.kaiheila.api.model import MessageCreateReturn
     from nonebot.adapters.kaiheila.event import MessageEvent
 
-    adapter = SupportedAdapter.kaiheila
+    adapter = SupportAdapter.kook
 
     @event_postprocessor
-    async def record_recv_msg(bot: Bot, event: MessageEvent):
-        session = extract_session(bot, event)
+    async def record_recv_msg(event: MessageEvent, session: Uninfo):
         session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
@@ -67,14 +73,11 @@ try:
             ):
                 return
 
+            scene_id = data["target_id"]
             if api == "message_create":
-                level = SessionLevel.LEVEL3
-                channel_id = data["target_id"]
-                user_id = data.get("temp_target_id")
+                scene_type = SceneType.CHANNEL_TEXT
             elif api == "directMessage_create":
-                level = SessionLevel.LEVEL1
-                channel_id = None
-                user_id = data["target_id"]
+                scene_type = SceneType.PRIVATE
             else:
                 return
 
@@ -99,13 +102,11 @@ try:
             message = Message(message)
 
             session = Session(
-                bot_id=bot.self_id,
-                bot_type=bot.type,
-                platform=SupportedPlatform.kaiheila,
-                level=level,
-                id1=user_id,
-                id2=None,
-                id3=channel_id,
+                self_id=bot.self_id,
+                adapter=adapter,
+                scope=SupportScope.kook,
+                scene=Scene(id=scene_id, type=scene_type),
+                user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)
 

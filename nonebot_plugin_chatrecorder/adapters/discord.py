@@ -3,12 +3,19 @@ from typing import Any, Optional
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session_orm import get_session_persist_id
+from nonebot_plugin_uninfo import (
+    Scene,
+    SceneType,
+    Session,
+    SupportAdapter,
+    SupportScope,
+    Uninfo,
+    User,
+)
+from nonebot_plugin_uninfo.orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -23,11 +30,10 @@ try:
     from nonebot.adapters.discord import Bot, Message, MessageEvent
     from nonebot.adapters.discord.api import UNSET, Channel, ChannelType, MessageGet
 
-    adapter = SupportedAdapter.discord
+    adapter = SupportAdapter.discord
 
     @event_postprocessor
-    async def record_recv_msg(bot: Bot, event: MessageEvent):
-        session = extract_session(bot, event)
+    async def record_recv_msg(event: MessageEvent, session: Uninfo):
         session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
@@ -72,29 +78,23 @@ try:
 
             channel = await get_channel(bot, result.channel_id)
 
-            level = SessionLevel.LEVEL0
-            id1 = None
-            id2 = str(result.channel_id)
-            id3 = None
             if channel.type in [ChannelType.DM]:
-                level = SessionLevel.LEVEL1
-                id1 = (
+                scene_type = SceneType.PRIVATE
+                scene_id = (
                     str(channel.recipients[0].id)
                     if channel.recipients != UNSET and channel.recipients
-                    else None
+                    else ""
                 )
             else:
-                level = SessionLevel.LEVEL3
-                id3 = str(channel.guild_id) if channel.guild_id != UNSET else None
+                scene_type = SceneType.CHANNEL_TEXT
+                scene_id = str(channel.guild_id) if channel.guild_id != UNSET else ""
 
             session = Session(
-                bot_id=bot.self_id,
-                bot_type=bot.type,
-                platform=SupportedPlatform.discord,
-                level=level,
-                id1=id1,
-                id2=id2,
-                id3=id3,
+                self_id=bot.self_id,
+                adapter=adapter,
+                scope=SupportScope.discord,
+                scene=Scene(id=scene_id, type=scene_type),
+                user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)
 

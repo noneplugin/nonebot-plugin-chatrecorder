@@ -4,8 +4,8 @@ from typing import Literal, Optional, Union
 
 from nonebot.adapters import Message
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionIdType, SessionLevel
-from nonebot_plugin_session_orm import SessionModel
+from nonebot_plugin_uninfo import SceneType, Session
+from nonebot_plugin_uninfo.orm import BotModel, SceneModel, SessionModel, UserModel
 from sqlalchemy import or_, select
 from sqlalchemy.sql import ColumnElement
 
@@ -17,20 +17,23 @@ from .utils import remove_timezone
 def filter_statement(
     *,
     session: Optional[Session] = None,
-    id_type: SessionIdType = SessionIdType.GROUP_USER,
-    include_platform: bool = True,
-    include_bot_type: bool = True,
-    include_bot_id: bool = True,
-    bot_ids: Optional[Iterable[str]] = None,
-    bot_types: Optional[Iterable[str]] = None,
-    platforms: Optional[Iterable[str]] = None,
-    levels: Optional[Iterable[Union[int, SessionLevel]]] = None,
-    id1s: Optional[Iterable[str]] = None,
-    id2s: Optional[Iterable[str]] = None,
-    id3s: Optional[Iterable[str]] = None,
-    exclude_id1s: Optional[Iterable[str]] = None,
-    exclude_id2s: Optional[Iterable[str]] = None,
-    exclude_id3s: Optional[Iterable[str]] = None,
+    filter_self_id: bool = True,
+    filter_adapter: bool = True,
+    filter_scope: bool = True,
+    filter_scene: bool = True,
+    filter_user: bool = True,
+    self_ids: Optional[Iterable[str]] = None,
+    adapters: Optional[Iterable[str]] = None,
+    scopes: Optional[Iterable[str]] = None,
+    scene_types: Optional[Iterable[Union[int, SceneType]]] = None,
+    scene_ids: Optional[Iterable[str]] = None,
+    user_ids: Optional[Iterable[str]] = None,
+    exclude_self_ids: Optional[Iterable[str]] = None,
+    exclude_adapters: Optional[Iterable[str]] = None,
+    exclude_scopes: Optional[Iterable[str]] = None,
+    exclude_scene_types: Optional[Iterable[str]] = None,
+    exclude_scene_ids: Optional[Iterable[str]] = None,
+    exclude_user_ids: Optional[Iterable[str]] = None,
     time_start: Optional[datetime] = None,
     time_stop: Optional[datetime] = None,
     types: Optional[Iterable[Literal["message", "message_sent"]]] = None,
@@ -40,19 +43,23 @@ def filter_statement(
     参数:
       * ``session: Optional[Session]``: 会话模型，传入时会根据 `session` 中的字段筛选
       * ``id_type: SessionIdType``: 会话 id 类型，仅在传入 `session` 时有效
-      * ``include_platform: bool``: 是否限制平台类型，仅在传入 `session` 时有效
-      * ``include_bot_type: bool``: 是否限制适配器类型，仅在传入 `session` 时有效
-      * ``include_bot_id: bool``: 是否限制 bot id，仅在传入 `session` 时有效
-      * ``bot_ids: Optional[Iterable[str]]``: bot id 列表，为空表示所有 bot id
-      * ``bot_types: Optional[Iterable[str]]``: 协议适配器类型列表，为空表示所有适配器
-      * ``platforms: Optional[Iterable[str]]``: 平台类型列表，为空表示所有平台
-      * ``levels: Optional[Iterable[Union[str, SessionLevel]]]``: 会话级别列表，为空表示所有级别
-      * ``id1s: Optional[Iterable[str]]``: 会话 id1（用户级 id）列表，为空表示所有 id
-      * ``id2s: Optional[Iterable[str]]``: 会话 id2（群组级 id）列表，为空表示所有 id
-      * ``id3s: Optional[Iterable[str]]``: 会话 id3（两级群组级 id）列表，为空表示所有 id
-      * ``exclude_id1s: Optional[Iterable[str]]``: 不包含的会话 id1（用户级 id）列表，为空表示不限制
-      * ``exclude_id2s: Optional[Iterable[str]]``: 不包含的会话 id2（群组级 id）列表，为空表示不限制
-      * ``exclude_id3s: Optional[Iterable[str]]``: 不包含的会话 id3（两级群组级 id）列表，为空表示不限制
+      * ``filter_self_id: bool``: 是否筛选 bot id，仅在传入 `session` 时有效
+      * ``filter_adapter: bool``: 是否筛选适配器类型，仅在传入 `session` 时有效
+      * ``filter_scope: bool``: 是否筛选平台类型，仅在传入 `session` 时有效
+      * ``filter_scene: bool``: 是否筛选事件场景，仅在传入 `session` 时有效
+      * ``filter_user: bool``: 是否筛选用户，仅在传入 `session` 时有效
+      * ``self_ids: Optional[Iterable[str]]``: bot id 列表，为空表示所有 bot id
+      * ``adapters: Optional[Iterable[str]]``: 适配器类型列表，为空表示所有适配器
+      * ``scopes: Optional[Iterable[str]]``: 平台类型列表，为空表示所有平台
+      * ``scene_types: Optional[Iterable[Union[str, SceneType]]]``: 事件场景类型列表，为空表示所有类型
+      * ``scene_ids: Optional[Iterable[str]]``: 事件场景 id 列表，为空表示所有 id
+      * ``user_ids: Optional[Iterable[str]]``: 用户 id 列表，为空表示所有 id
+      * ``exclude_self_ids: Optional[Iterable[str]]``: 不包含的 bot id 列表，为空表示不限制
+      * ``exclude_adapters: Optional[Iterable[str]]``: 不包含的适配器类型列表，为空表示不限制
+      * ``exclude_scopes: Optional[Iterable[str]]``: 不包含的平台类型列表，为空表示不限制
+      * ``exclude_scene_types: Optional[Iterable[Union[str, SceneType]]]``: 不包含的事件场景类型列表，为空表示不限制
+      * ``exclude_scene_ids: Optional[Iterable[str]]``: 不包含的事件场景 id 列表，为空表示不限制
+      * ``exclude_user_ids: Optional[Iterable[str]]``: 不包含的用户 id 列表，为空表示不限制
       * ``time_start: Optional[datetime]``: 起始时间，为空表示不限制起始时间（传入带时区的时间或 UTC 时间）
       * ``time_stop: Optional[datetime]``: 结束时间，为空表示不限制结束时间（传入带时区的时间或 UTC 时间）
       * ``types: Optional[Iterable[Literal["message", "message_sent"]]]``: 消息事件类型列表，为空表示所有类型
@@ -63,41 +70,53 @@ def filter_statement(
 
     whereclause: list[ColumnElement[bool]] = []
     if session:
-        whereclause = SessionModel.filter_statement(
-            session,
-            id_type,
-            include_platform=include_platform,
-            include_bot_type=include_bot_type,
-            include_bot_id=include_bot_id,
-        )
+        whereclause: list[ColumnElement[bool]] = []
+        if filter_self_id:
+            whereclause.append(BotModel.self_id == session.self_id)
+        if filter_adapter:
+            whereclause.append(BotModel.adapter == session.adapter)
+        if filter_scope:
+            whereclause.append(BotModel.scope == session.scope)
+        if filter_scene:
+            whereclause.append(SceneModel.scene_id == session.scene.id)
+            whereclause.append(SceneModel.scene_type == session.scene.type.value)
+        if filter_user:
+            whereclause.append(UserModel.user_id == session.user.id)
 
-    if bot_types:
+    if self_ids:
+        whereclause.append(or_(*[BotModel.self_id == self_id for self_id in self_ids]))
+    if adapters:
+        whereclause.append(or_(*[BotModel.adapter == adapter for adapter in adapters]))
+    if scopes:
+        whereclause.append(or_(*[BotModel.scope == scope for scope in scopes]))
+    if scene_types:
         whereclause.append(
-            or_(*[SessionModel.bot_type == bot_type for bot_type in bot_types])
+            or_(*[SceneModel.scene_type == scene_type for scene_type in scene_types])
         )
-    if bot_ids:
-        whereclause.append(or_(*[SessionModel.bot_id == bot_id for bot_id in bot_ids]))
-    if platforms:
+    if scene_ids:
         whereclause.append(
-            or_(*[SessionModel.platform == platform for platform in platforms])
+            or_(*[SceneModel.scene_id == scene_id for scene_id in scene_ids])
         )
-    if levels:
-        whereclause.append(or_(*[SessionModel.level == level for level in levels]))
-    if id1s:
-        whereclause.append(or_(*[SessionModel.id1 == id1 for id1 in id1s]))
-    if id2s:
-        whereclause.append(or_(*[SessionModel.id2 == id2 for id2 in id2s]))
-    if id3s:
-        whereclause.append(or_(*[SessionModel.id3 == id3 for id3 in id3s]))
-    if exclude_id1s:
-        for id1 in exclude_id1s:
-            whereclause.append(SessionModel.id1 != id1)
-    if exclude_id2s:
-        for id2 in exclude_id2s:
-            whereclause.append(SessionModel.id2 != id2)
-    if exclude_id3s:
-        for id3 in exclude_id3s:
-            whereclause.append(SessionModel.id3 != id3)
+    if user_ids:
+        whereclause.append(or_(*[UserModel.user_id == user_id for user_id in user_ids]))
+    if exclude_self_ids:
+        for self_id in exclude_self_ids:
+            whereclause.append(BotModel.self_id != self_id)
+    if exclude_adapters:
+        for adapter in exclude_adapters:
+            whereclause.append(BotModel.adapter != adapter)
+    if exclude_scopes:
+        for scope in exclude_scopes:
+            whereclause.append(BotModel.scope != scope)
+    if exclude_scene_types:
+        for scene_type in exclude_scene_types:
+            whereclause.append(SceneModel.scene_type != scene_type)
+    if exclude_scene_ids:
+        for scene_id in exclude_scene_ids:
+            whereclause.append(SceneModel.scene_id != scene_id)
+    if exclude_user_ids:
+        for user_id in exclude_user_ids:
+            whereclause.append(UserModel.user_id != user_id)
     if time_start:
         whereclause.append(MessageRecord.time >= remove_timezone(time_start))
     if time_stop:
@@ -121,6 +140,9 @@ async def get_message_records(**kwargs) -> Sequence[MessageRecord]:
         select(MessageRecord)
         .where(*whereclause)
         .join(SessionModel, SessionModel.id == MessageRecord.session_persist_id)
+        .join(BotModel, BotModel.id == SessionModel.bot_persist_id)
+        .join(SceneModel, SceneModel.id == SessionModel.scene_persist_id)
+        .join(UserModel, UserModel.id == SessionModel.user_persist_id)
     )
     async with get_session() as db_session:
         records = (await db_session.scalars(statement)).all()
@@ -138,9 +160,12 @@ async def get_messages(**kwargs) -> list[Message]:
     """
     whereclause = filter_statement(**kwargs)
     statement = (
-        select(MessageRecord.message, SessionModel.bot_type)
+        select(MessageRecord.message, BotModel.adapter)
         .where(*whereclause)
         .join(SessionModel, SessionModel.id == MessageRecord.session_persist_id)
+        .join(BotModel, BotModel.id == SessionModel.bot_persist_id)
+        .join(SceneModel, SceneModel.id == SessionModel.scene_persist_id)
+        .join(UserModel, UserModel.id == SessionModel.user_persist_id)
     )
     async with get_session() as db_session:
         results = (await db_session.execute(statement)).all()
@@ -161,6 +186,9 @@ async def get_messages_plain_text(**kwargs) -> Sequence[str]:
         select(MessageRecord.plain_text)
         .where(*whereclause)
         .join(SessionModel, SessionModel.id == MessageRecord.session_persist_id)
+        .join(BotModel, BotModel.id == SessionModel.bot_persist_id)
+        .join(SceneModel, SceneModel.id == SessionModel.scene_persist_id)
+        .join(UserModel, UserModel.id == SessionModel.user_persist_id)
     )
     async with get_session() as db_session:
         records = (await db_session.scalars(statement)).all()

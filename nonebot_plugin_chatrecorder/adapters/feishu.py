@@ -5,12 +5,19 @@ from typing import Any, Optional
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session_orm import get_session_persist_id
+from nonebot_plugin_uninfo import (
+    Scene,
+    SceneType,
+    Session,
+    SupportAdapter,
+    SupportScope,
+    Uninfo,
+    User,
+)
+from nonebot_plugin_uninfo.orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -24,11 +31,10 @@ from ..utils import record_type, remove_timezone
 try:
     from nonebot.adapters.feishu import Bot, Message, MessageEvent
 
-    adapter = SupportedAdapter.feishu
+    adapter = SupportAdapter.feishu
 
     @event_postprocessor
-    async def record_recv_msg(bot: Bot, event: MessageEvent):
-        session = extract_session(bot, event)
+    async def record_recv_msg(event: MessageEvent, session: Uninfo):
         session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
@@ -82,24 +88,17 @@ try:
             resp = await get_chat_info(bot, chat_id)
             chat_mode = resp["data"]["chat_mode"]
 
-            level = SessionLevel.LEVEL0
-            id1 = None
-            id2 = None
             if chat_mode == "p2p":
-                level = SessionLevel.LEVEL1
-                id1 = resp["data"]["owner_id"]
+                scene_type = SceneType.PRIVATE
             elif chat_mode == "group":
-                level = SessionLevel.LEVEL2
-                id2 = chat_id
+                scene_type = SceneType.GROUP
 
             session = Session(
-                bot_id=bot.self_id,
-                bot_type=bot.type,
-                platform=SupportedPlatform.feishu,
-                level=level,
-                id1=id1,
-                id2=id2,
-                id3=None,
+                self_id=bot.self_id,
+                adapter=adapter,
+                scope=SupportScope.feishu,
+                scene=Scene(id=chat_id, type=scene_type),
+                user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)
 
