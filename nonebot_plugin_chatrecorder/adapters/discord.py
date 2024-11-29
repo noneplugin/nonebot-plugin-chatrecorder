@@ -77,7 +77,7 @@ try:
                 return
 
             channel = await get_channel(bot, result.channel_id)
-
+            parent = None
             if channel.type in [ChannelType.DM]:
                 scene_type = SceneType.PRIVATE
                 scene_id = (
@@ -87,13 +87,15 @@ try:
                 )
             else:
                 scene_type = SceneType.CHANNEL_TEXT
-                scene_id = str(channel.guild_id) if channel.guild_id != UNSET else ""
+                scene_id = str(result.channel_id)
+                if channel.guild_id != UNSET:
+                    parent = Scene(id=str(channel.guild_id), type=SceneType.GUILD)
 
             session = Session(
                 self_id=bot.self_id,
                 adapter=adapter,
                 scope=SupportScope.discord,
-                scene=Scene(id=scene_id, type=scene_type),
+                scene=Scene(id=scene_id, type=scene_type, parent=parent),
                 user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)

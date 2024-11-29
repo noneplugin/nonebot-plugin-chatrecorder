@@ -101,19 +101,19 @@ try:
             else:
                 return
 
-            message_thread_id = str(tg_message.message_thread_id)
-            chat_id = str(tg_message.chat.id)
+            message_thread_id = tg_message.message_thread_id
+            chat_id = tg_message.chat.id
             parent = None
             if message_thread_id:
                 scene_type = SceneType.CHANNEL_TEXT
-                scene_id = message_thread_id
-                parent = Scene(id=chat_id, type=SceneType.GUILD)
+                scene_id = str(message_thread_id)
+                parent = Scene(id=str(chat_id), type=SceneType.GUILD)
             elif chat.type == "private":
                 scene_type = SceneType.PRIVATE
-                scene_id = chat_id
+                scene_id = str(chat_id)
             else:
                 scene_type = SceneType.GROUP
-                scene_id = chat_id
+                scene_id = str(chat_id)
 
             session = Session(
                 self_id=bot.self_id,

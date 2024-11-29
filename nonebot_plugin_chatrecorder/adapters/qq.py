@@ -96,31 +96,27 @@ try:
                 scene_type = SceneType.CHANNEL_TEXT
                 scene_id = result.channel_id
                 parent = Scene(id=result.guild_id, type=SceneType.GUILD)
-                scope = SupportScope.qq_guild
 
             elif api == "post_dms_messages":
                 assert isinstance(result, GuildMessage)
                 scene_type = SceneType.PRIVATE
                 scene_id = result.channel_id
                 parent = Scene(id=result.guild_id, type=SceneType.GUILD)
-                scope = SupportScope.qq_guild
 
             elif api == "post_c2c_messages":
                 assert isinstance(result, PostC2CMessagesReturn)
                 scene_type = SceneType.PRIVATE
                 scene_id = data["openid"]
-                scope = SupportScope.qq_api
 
             elif api == "post_group_messages":
                 assert isinstance(result, PostGroupMessagesReturn)
                 scene_type = SceneType.GROUP
                 scene_id = data["group_openid"]
-                scope = SupportScope.qq_api
 
             session = Session(
                 self_id=bot.self_id,
                 adapter=adapter,
-                scope=scope,
+                scope=SupportScope.qq_api,
                 scene=Scene(id=scene_id, type=scene_type, parent=parent),
                 user=User(id=bot.self_id),
             )
