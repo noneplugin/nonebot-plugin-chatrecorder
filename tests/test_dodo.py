@@ -18,6 +18,7 @@ from nonebot.adapters.dodo.models import (
     Sex,
     TextMessage,
 )
+from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 from nonebug.app import App
 
 from .utils import check_record
@@ -87,13 +88,17 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "2233",
-        "DoDo",
-        "dodo",
-        3,
-        "3344",
-        "5566",
-        "7788",
+        Session(
+            self_id="2233",
+            adapter="DoDo",
+            scope="DoDo",
+            scene=Scene(
+                id="5566",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="7788", type=SceneType.GUILD),
+            ),
+            user=User(id="3344"),
+        ),
         datetime.fromtimestamp(12345678, timezone.utc),
         "message",
         channel_msg_id,
@@ -102,13 +107,17 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "DoDo",
-        "dodo",
-        1,
-        "3344",
-        None,
-        "7788",
+        Session(
+            self_id="2233",
+            adapter="DoDo",
+            scope="DoDo",
+            scene=Scene(
+                id="3344",
+                type=SceneType.PRIVATE,
+                parent=Scene(id="7788", type=SceneType.GUILD),
+            ),
+            user=User(id="3344"),
+        ),
         datetime.fromtimestamp(12345678, timezone.utc),
         "message",
         personal_msg_id,
@@ -144,13 +153,13 @@ async def test_record_send_msg(app: App):
         MessageReturn(message_id="123458"),
     )
     await check_record(
-        "2233",
-        "DoDo",
-        "dodo",
-        3,
-        None,
-        "5566",
-        None,
+        Session(
+            self_id="2233",
+            adapter="DoDo",
+            scope="DoDo",
+            scene=Scene(id="5566", type=SceneType.CHANNEL_TEXT),
+            user=User(id="2233"),
+        ),
         None,
         "message_sent",
         "123458",
@@ -171,13 +180,17 @@ async def test_record_send_msg(app: App):
         MessageReturn(message_id="123459"),
     )
     await check_record(
-        "2233",
-        "DoDo",
-        "dodo",
-        1,
-        "3344",
-        None,
-        "7788",
+        Session(
+            self_id="2233",
+            adapter="DoDo",
+            scope="DoDo",
+            scene=Scene(
+                id="3344",
+                type=SceneType.PRIVATE,
+                parent=Scene(id="7788", type=SceneType.GUILD),
+            ),
+            user=User(id="2233"),
+        ),
         None,
         "message_sent",
         "123459",

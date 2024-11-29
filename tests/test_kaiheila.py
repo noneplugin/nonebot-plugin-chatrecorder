@@ -12,6 +12,8 @@ from nonebot.adapters.kaiheila.event import (
     User,
 )
 from nonebot.compat import type_validate_python
+from nonebot_plugin_uninfo import Scene, SceneType, Session
+from nonebot_plugin_uninfo import User as UninfoUser
 from nonebug.app import App
 
 from .utils import check_record
@@ -109,13 +111,13 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        1,
-        "3344",
-        None,
-        None,
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(id="3344", type=SceneType.PRIVATE),
+            user=UninfoUser(id="3344"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
         private_msg_id,
@@ -124,13 +126,17 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        3,
-        "3344",
-        "6677",
-        "5566",
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(
+                id="6677",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="5566", type=SceneType.GUILD),
+            ),
+            user=UninfoUser(id="3344"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
         channel_msg_id,
@@ -158,13 +164,13 @@ async def test_record_send_msg(app: App):
         MessageCreateReturn(msg_id="4457", msg_timestamp=1234000, nonce="xxx"),
     )
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        3,
-        None,
-        None,
-        "6677",
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(id="6677", type=SceneType.CHANNEL_TEXT),
+            user=UninfoUser(id="2233"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4457",
@@ -180,13 +186,13 @@ async def test_record_send_msg(app: App):
         MessageCreateReturn(msg_id="4458", msg_timestamp=1234000, nonce="xxx"),
     )
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        1,
-        "3344",
-        None,
-        None,
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(id="3344", type=SceneType.PRIVATE),
+            user=UninfoUser(id="2233"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4458",
@@ -202,13 +208,13 @@ async def test_record_send_msg(app: App):
         MessageCreateReturn(msg_id="4459", msg_timestamp=1234000, nonce="xxx"),
     )
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        3,
-        None,
-        None,
-        "6677",
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(id="6677", type=SceneType.CHANNEL_TEXT),
+            user=UninfoUser(id="2233"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4459",
@@ -251,13 +257,13 @@ async def test_record_send_msg(app: App):
         MessageCreateReturn(msg_id="4460", msg_timestamp=1234000, nonce="xxx"),
     )
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        3,
-        None,
-        None,
-        "6677",
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(id="6677", type=SceneType.CHANNEL_TEXT),
+            user=UninfoUser(id="2233"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4460",

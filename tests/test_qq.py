@@ -18,6 +18,8 @@ from nonebot.adapters.qq.models import (
     User,
 )
 from nonebot.adapters.qq.models import Message as GuildMessage
+from nonebot_plugin_uninfo import Scene, SceneType, Session
+from nonebot_plugin_uninfo import User as UninfoUser
 from nonebug import App
 
 from .utils import check_record
@@ -114,13 +116,17 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "2233",
-        "QQ",
-        "qqguild",
-        3,
-        "3344",
-        "6677",
-        "5566",
+        Session(
+            self_id="2233",
+            adapter="QQ",
+            scope="QQAPI",
+            scene=Scene(
+                id="6677",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="5566", type=SceneType.GUILD),
+            ),
+            user=UninfoUser(id="3344"),
+        ),
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message",
         msg_id,
@@ -129,13 +135,17 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "QQ",
-        "qqguild",
-        1,
-        "3344",
-        "6677",
-        "5566",
+        Session(
+            self_id="2233",
+            adapter="QQ",
+            scope="QQAPI",
+            scene=Scene(
+                id="3344",
+                type=SceneType.PRIVATE,
+                parent=Scene(id="5566", type=SceneType.GUILD),
+            ),
+            user=UninfoUser(id="3344"),
+        ),
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message",
         direct_msg_id,
@@ -144,13 +154,13 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "QQ",
-        "qq",
-        2,
-        "8BE608110EAA4328A1883DEF239F5580",
-        "195747FDF0D845E98CF3886C5C7ED328",
-        None,
+        Session(
+            self_id="2233",
+            adapter="QQ",
+            scope="QQAPI",
+            scene=Scene(id="195747FDF0D845E98CF3886C5C7ED328", type=SceneType.GROUP),
+            user=UninfoUser(id="8BE608110EAA4328A1883DEF239F5580"),
+        ),
         datetime.fromisoformat("2023-11-06T13:37:18+08:00"),
         "message",
         group_at_msg_id,
@@ -159,13 +169,13 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "QQ",
-        "qq",
-        1,
-        "451368C569A1401D87172E9435EE8663",
-        None,
-        None,
+        Session(
+            self_id="2233",
+            adapter="QQ",
+            scope="QQAPI",
+            scene=Scene(id="451368C569A1401D87172E9435EE8663", type=SceneType.PRIVATE),
+            user=UninfoUser(id="451368C569A1401D87172E9435EE8663"),
+        ),
         datetime.fromisoformat("2023-11-06T13:37:18+08:00"),
         "message",
         c2c_msg_id,
@@ -211,13 +221,17 @@ async def test_record_send_msg(app: App):
         ),
     )
     await check_record(
-        "2233",
-        "QQ",
-        "qqguild",
-        3,
-        None,
-        "6677",
-        "5566",
+        Session(
+            self_id="2233",
+            adapter="QQ",
+            scope="QQAPI",
+            scene=Scene(
+                id="6677",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="5566", type=SceneType.GUILD),
+            ),
+            user=UninfoUser(id="2233"),
+        ),
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message_sent",
         "1238",
@@ -247,13 +261,17 @@ async def test_record_send_msg(app: App):
         ),
     )
     await check_record(
-        "2233",
-        "QQ",
-        "qqguild",
-        1,
-        None,
-        None,
-        "5566",
+        Session(
+            self_id="2233",
+            adapter="QQ",
+            scope="QQAPI",
+            scene=Scene(
+                id="3344",
+                type=SceneType.PRIVATE,
+                parent=Scene(id="5566", type=SceneType.GUILD),
+            ),
+            user=UninfoUser(id="2233"),
+        ),
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message_sent",
         "1239",
@@ -281,13 +299,13 @@ async def test_record_send_msg(app: App):
         ),
     )
     await check_record(
-        "2233",
-        "QQ",
-        "qq",
-        1,
-        "87E469B751CD4520B0B18D826CC94B71",
-        None,
-        None,
+        Session(
+            self_id="2233",
+            adapter="QQ",
+            scope="QQAPI",
+            scene=Scene(id="87E469B751CD4520B0B18D826CC94B71", type=SceneType.PRIVATE),
+            user=UninfoUser(id="2233"),
+        ),
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message_sent",
         "1241",
@@ -315,13 +333,13 @@ async def test_record_send_msg(app: App):
         ),
     )
     await check_record(
-        "2233",
-        "QQ",
-        "qq",
-        2,
-        None,
-        "1CC5DF4814E54834B0A7F5D553BB25CC",
-        None,
+        Session(
+            self_id="2233",
+            adapter="QQ",
+            scope="QQAPI",
+            scene=Scene(id="1CC5DF4814E54834B0A7F5D553BB25CC", type=SceneType.GROUP),
+            user=UninfoUser(id="2233"),
+        ),
         datetime(2023, 7, 30, 0, 0, 0, 0, tzinfo=timezone.utc),
         "message_sent",
         "1243",

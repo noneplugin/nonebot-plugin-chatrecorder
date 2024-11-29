@@ -17,6 +17,8 @@ from nonebot.adapters.discord.api.model import (
 )
 from nonebot.adapters.discord.config import BotInfo
 from nonebot.compat import type_validate_python
+from nonebot_plugin_uninfo import Scene, SceneType, Session
+from nonebot_plugin_uninfo import User as UninfoUser
 from nonebug.app import App
 
 from .utils import check_record
@@ -116,13 +118,17 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "2233",
-        "Discord",
-        "discord",
-        3,
-        "3344",
-        "5566",
-        "6677",
+        Session(
+            self_id="2233",
+            adapter="Discord",
+            scope="Discord",
+            scene=Scene(
+                id="5566",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="6677", type=SceneType.GUILD),
+            ),
+            user=UninfoUser(id="3344"),
+        ),
         datetime.fromtimestamp(123456, timezone.utc),
         "message",
         str(guild_msg_id),
@@ -131,13 +137,13 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "Discord",
-        "discord",
-        1,
-        "3344",
-        "5566",
-        None,
+        Session(
+            self_id="2233",
+            adapter="Discord",
+            scope="Discord",
+            scene=Scene(id="5566", type=SceneType.PRIVATE),
+            user=UninfoUser(id="3344"),
+        ),
         datetime.fromtimestamp(123456, timezone.utc),
         "message",
         str(direct_msg_id),
@@ -216,13 +222,17 @@ async def test_record_send_msg(app: App):
             ),
         )
         await check_record(
-            "2233",
-            "Discord",
-            "discord",
-            3,
-            None,
-            "5566",
-            "6677",
+            Session(
+                self_id="2233",
+                adapter="Discord",
+                scope="Discord",
+                scene=Scene(
+                    id="5566",
+                    type=SceneType.CHANNEL_TEXT,
+                    parent=Scene(id="6677", type=SceneType.GUILD),
+                ),
+                user=UninfoUser(id="2233"),
+            ),
             datetime.fromtimestamp(123456, timezone.utc),
             "message_sent",
             "11236",
@@ -298,13 +308,13 @@ async def test_record_send_msg(app: App):
             ),
         )
         await check_record(
-            "2233",
-            "Discord",
-            "discord",
-            1,
-            "3344",
-            "5555",
-            None,
+            Session(
+                self_id="2233",
+                adapter="Discord",
+                scope="Discord",
+                scene=Scene(id="5555", type=SceneType.PRIVATE),
+                user=UninfoUser(id="2233"),
+            ),
             datetime.fromtimestamp(123456, timezone.utc),
             "message_sent",
             "11237",

@@ -11,6 +11,7 @@ from nonebot.adapters.onebot.v12 import (
     PrivateMessageEvent,
 )
 from nonebot.adapters.onebot.v12.event import BotSelf
+from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 from nonebug.app import App
 from pydantic import create_model
 
@@ -139,13 +140,13 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "12",
-        "OneBot V12",
-        "qq",
-        2,
-        str(user_id),
-        str(group_id),
-        None,
+        Session(
+            self_id="12",
+            adapter="OneBot V12",
+            scope="QQClient",
+            scene=Scene(id=str(group_id), type=SceneType.GROUP),
+            user=User(id=str(user_id)),
+        ),
         time,
         "message",
         str(group_msg_id),
@@ -154,13 +155,13 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "12",
-        "OneBot V12",
-        "qq",
-        1,
-        str(user_id),
-        None,
-        None,
+        Session(
+            self_id="12",
+            adapter="OneBot V12",
+            scope="QQClient",
+            scene=Scene(id=str(user_id), type=SceneType.PRIVATE),
+            user=User(id=str(user_id)),
+        ),
         time,
         "message",
         str(private_msg_id),
@@ -169,13 +170,17 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "12",
-        "OneBot V12",
-        "qq",
-        3,
-        str(user_id),
-        str(channel_id),
-        str(guild_id),
+        Session(
+            self_id="12",
+            adapter="OneBot V12",
+            scope="QQClient",
+            scene=Scene(
+                id=str(channel_id),
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id=str(guild_id), type=SceneType.GUILD),
+            ),
+            user=User(id=str(user_id)),
+        ),
         time,
         "message",
         str(channel_msg_id),
@@ -215,13 +220,13 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id, "time": time},
     )
     await check_record(
-        "12",
-        "OneBot V12",
-        "qq",
-        2,
-        None,
-        str(group_id),
-        None,
+        Session(
+            self_id="12",
+            adapter="OneBot V12",
+            scope="QQClient",
+            scene=Scene(id=str(group_id), type=SceneType.GROUP),
+            user=User(id="12"),
+        ),
         datetime.fromtimestamp(time, timezone.utc),
         "message_sent",
         str(message_id),
@@ -243,13 +248,13 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id, "time": time},
     )
     await check_record(
-        "12",
-        "OneBot V12",
-        "qq",
-        1,
-        str(user_id),
-        None,
-        None,
+        Session(
+            self_id="12",
+            adapter="OneBot V12",
+            scope="QQClient",
+            scene=Scene(id=str(user_id), type=SceneType.PRIVATE),
+            user=User(id="12"),
+        ),
         datetime.fromtimestamp(time, timezone.utc),
         "message_sent",
         str(message_id),
@@ -272,13 +277,17 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id, "time": time},
     )
     await check_record(
-        "12",
-        "OneBot V12",
-        "qq",
-        3,
-        None,
-        str(channel_id),
-        str(guild_id),
+        Session(
+            self_id="12",
+            adapter="OneBot V12",
+            scope="QQClient",
+            scene=Scene(
+                id=str(channel_id),
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id=str(guild_id), type=SceneType.GUILD),
+            ),
+            user=User(id="12"),
+        ),
         datetime.fromtimestamp(time, timezone.utc),
         "message_sent",
         str(message_id),

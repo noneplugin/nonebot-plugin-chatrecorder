@@ -4,6 +4,7 @@ from typing import Literal
 from nonebot import get_driver
 from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, PrivateMessageEvent
 from nonebot.adapters.onebot.v11.event import Sender
+from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 from nonebug.app import App
 from pydantic import create_model
 
@@ -56,13 +57,13 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "11",
-        "OneBot V11",
-        "qq",
-        1,
-        str(user_id),
-        None,
-        None,
+        Session(
+            self_id="11",
+            adapter="OneBot V11",
+            scope="QQClient",
+            scene=Scene(id=str(user_id), type=SceneType.PRIVATE),
+            user=User(id=str(user_id)),
+        ),
         datetime.fromtimestamp(time, timezone.utc),
         "fake",
         str(message_id),

@@ -20,6 +20,7 @@ from nonebot.adapters.feishu.models import (
     Sender,
 )
 from nonebot.compat import type_validate_python
+from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 from nonebug.app import App
 
 from .utils import check_record
@@ -137,13 +138,13 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "2233",
-        "Feishu",
-        "feishu",
-        1,
-        "3344",
-        None,
-        None,
+        Session(
+            self_id="2233",
+            adapter="Feishu",
+            scope="Feishu",
+            scene=Scene(id="3344", type=SceneType.PRIVATE),
+            user=User(id="3344"),
+        ),
         datetime.fromtimestamp(123456000 / 1000, timezone.utc),
         "message",
         private_msg_id,
@@ -152,13 +153,13 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "Feishu",
-        "feishu",
-        2,
-        "3344",
-        "1122",
-        None,
+        Session(
+            self_id="2233",
+            adapter="Feishu",
+            scope="Feishu",
+            scene=Scene(id="1122", type=SceneType.GROUP),
+            user=User(id="3344"),
+        ),
         datetime.fromtimestamp(123456000 / 1000, timezone.utc),
         "message",
         group_msg_id,
@@ -233,13 +234,13 @@ async def test_record_send_msg(app: App):
             },
         )
         await check_record(
-            "2233",
-            "Feishu",
-            "feishu",
-            2,
-            None,
-            "oc_123",
-            None,
+            Session(
+                self_id="2233",
+                adapter="Feishu",
+                scope="Feishu",
+                scene=Scene(id="oc_123", type=SceneType.GROUP),
+                user=User(id="2233"),
+            ),
             datetime.fromtimestamp(123456000 / 1000, timezone.utc),
             "message_sent",
             "om_3",
@@ -294,13 +295,13 @@ async def test_record_send_msg(app: App):
             },
         )
         await check_record(
-            "2233",
-            "Feishu",
-            "feishu",
-            1,
-            "3344",
-            None,
-            None,
+            Session(
+                self_id="2233",
+                adapter="Feishu",
+                scope="Feishu",
+                scene=Scene(id="3344", type=SceneType.PRIVATE),
+                user=User(id="2233"),
+            ),
             datetime.fromtimestamp(123456000 / 1000, timezone.utc),
             "message_sent",
             "om_4",
@@ -339,13 +340,13 @@ async def test_record_send_msg(app: App):
             },
         )
         await check_record(
-            "2233",
-            "Feishu",
-            "feishu",
-            2,
-            None,
-            "oc_123",
-            None,
+            Session(
+                self_id="2233",
+                adapter="Feishu",
+                scope="Feishu",
+                scene=Scene(id="oc_123", type=SceneType.GROUP),
+                user=User(id="2233"),
+            ),
             datetime.fromtimestamp(123456000 / 1000, timezone.utc),
             "message_sent",
             "om_5",
@@ -384,13 +385,13 @@ async def test_record_send_msg(app: App):
             },
         )
         await check_record(
-            "2233",
-            "Feishu",
-            "feishu",
-            1,
-            "3344",
-            None,
-            None,
+            Session(
+                self_id="2233",
+                adapter="Feishu",
+                scope="Feishu",
+                scene=Scene(id="3344", type=SceneType.PRIVATE),
+                user=User(id="2233"),
+            ),
             datetime.fromtimestamp(123456000 / 1000, timezone.utc),
             "message_sent",
             "om_6",

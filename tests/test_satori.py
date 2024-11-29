@@ -20,6 +20,8 @@ from nonebot.adapters.satori.models import (
     User,
 )
 from nonebot.compat import type_validate_python
+from nonebot_plugin_uninfo import Scene, SceneType, Session
+from nonebot_plugin_uninfo import User as UninfoUser
 from nonebug.app import App
 
 from .utils import assert_no_record, check_record
@@ -160,13 +162,17 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "2233",
-        "Satori",
-        "kaiheila",
-        3,
-        "3344",
-        "6677",
-        "5566",
+        Session(
+            self_id="2233",
+            adapter="Satori",
+            scope="Kaiheila",
+            scene=Scene(
+                id="6677",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="5566", type=SceneType.GUILD),
+            ),
+            user=UninfoUser(id="3344"),
+        ),
         datetime.fromtimestamp(17000000000 / 1000, timezone.utc),
         "message",
         public_msg_id,
@@ -175,13 +181,13 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "Satori",
-        "kaiheila",
-        1,
-        "3344",
-        "6677",
-        None,
+        Session(
+            self_id="2233",
+            adapter="Satori",
+            scope="Kaiheila",
+            scene=Scene(id="3344", type=SceneType.PRIVATE),
+            user=UninfoUser(id="3344"),
+        ),
         datetime.fromtimestamp(17000000000 / 1000, timezone.utc),
         "message",
         private_msg_id,
@@ -249,13 +255,17 @@ async def test_record_send_msg(app: App):
         ],
     )
     await check_record(
-        "2233",
-        "Satori",
-        "kaiheila",
-        3,
-        None,
-        "6677",
-        "5566",
+        Session(
+            self_id="2233",
+            adapter="Satori",
+            scope="Kaiheila",
+            scene=Scene(
+                id="6677",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="5566", type=SceneType.GUILD),
+            ),
+            user=UninfoUser(id="2233"),
+        ),
         None,
         "message_sent",
         "6b701984-c185-4da9-9808-549dc9947b85",

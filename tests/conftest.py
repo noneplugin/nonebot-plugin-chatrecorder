@@ -27,7 +27,7 @@ async def app():
     nonebot.require("nonebot_plugin_chatrecorder")
 
     from nonebot_plugin_orm import get_session, init_orm
-    from nonebot_plugin_session_orm import SessionModel
+    from nonebot_plugin_uninfo.orm import BotModel, SceneModel, SessionModel, UserModel
 
     from nonebot_plugin_chatrecorder.model import MessageRecord
 
@@ -38,6 +38,9 @@ async def app():
     async with get_session() as db_session:
         await db_session.execute(delete(MessageRecord))
         await db_session.execute(delete(SessionModel))
+        await db_session.execute(delete(UserModel))
+        await db_session.execute(delete(SceneModel))
+        await db_session.execute(delete(BotModel))
         await db_session.commit()
 
 

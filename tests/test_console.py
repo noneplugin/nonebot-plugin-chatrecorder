@@ -2,6 +2,8 @@ from datetime import datetime, timezone
 
 from nonebot import get_driver
 from nonebot.adapters.console import Adapter, Bot, Message, MessageEvent
+from nonebot_plugin_uninfo import Scene, SceneType, Session
+from nonebot_plugin_uninfo import User as UninfoUser
 from nonebug.app import App
 from nonechat import ConsoleMessage, Text
 from nonechat.info import User
@@ -46,13 +48,13 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "Bot",
-        "Console",
-        "console",
-        1,
-        user_id,
-        None,
-        None,
+        Session(
+            self_id="Bot",
+            adapter="Console",
+            scope="Console",
+            scene=Scene(id=user_id, type=SceneType.PRIVATE),
+            user=UninfoUser(id=user_id),
+        ),
         datetime.fromtimestamp(time, timezone.utc),
         "message",
         "0",
@@ -77,13 +79,13 @@ async def test_record_send_msg(app: App):
         bot, None, "send_msg", {"user_id": user_id, "message": elements}, None
     )
     await check_record(
-        "Bot",
-        "Console",
-        "console",
-        1,
-        user_id,
-        None,
-        None,
+        Session(
+            self_id="Bot",
+            adapter="Console",
+            scope="Console",
+            scene=Scene(id=user_id, type=SceneType.PRIVATE),
+            user=UninfoUser(id="Bot"),
+        ),
         None,
         "message_sent",
         "1",

@@ -10,6 +10,7 @@ from nonebot.adapters.telegram.event import (
     PrivateMessageEvent,
 )
 from nonebot.adapters.telegram.model import InputMediaPhoto
+from nonebot_plugin_uninfo import Scene, SceneType, Session, User
 from nonebug import App
 
 from .utils import check_record
@@ -102,13 +103,13 @@ async def test_record_recv_msg(app: App):
         ctx.receive_event(bot, event)
 
     await check_record(
-        "2233",
-        "Telegram",
-        "telegram",
-        1,
-        "3344",
-        None,
-        None,
+        Session(
+            self_id="2233",
+            adapter="Telegram",
+            scope="Telegram",
+            scene=Scene(id="3344", type=SceneType.PRIVATE),
+            user=User(id="3344"),
+        ),
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "3344_1234",
@@ -117,13 +118,13 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "Telegram",
-        "telegram",
-        2,
-        "3344",
-        "5566",
-        None,
+        Session(
+            self_id="2233",
+            adapter="Telegram",
+            scope="Telegram",
+            scene=Scene(id="5566", type=SceneType.GROUP),
+            user=User(id="3344"),
+        ),
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1235",
@@ -132,13 +133,17 @@ async def test_record_recv_msg(app: App):
     )
 
     await check_record(
-        "2233",
-        "Telegram",
-        "telegram",
-        3,
-        "3344",
-        "6677",
-        "5566",
+        Session(
+            self_id="2233",
+            adapter="Telegram",
+            scope="Telegram",
+            scene=Scene(
+                id="6677",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="5566", type=SceneType.GUILD),
+            ),
+            user=User(id="3344"),
+        ),
         datetime.fromtimestamp(1122, timezone.utc),
         "message",
         "5566_1236",
@@ -197,13 +202,13 @@ async def test_record_send_msg(app: App):
         },
     )
     await check_record(
-        "2233",
-        "Telegram",
-        "telegram",
-        1,
-        "3344",
-        None,
-        None,
+        Session(
+            self_id="2233",
+            adapter="Telegram",
+            scope="Telegram",
+            scene=Scene(id="3344", type=SceneType.PRIVATE),
+            user=User(id="2233"),
+        ),
         datetime.fromtimestamp(1122, timezone.utc),
         "message_sent",
         "3344_1237",
@@ -295,13 +300,13 @@ async def test_record_send_msg(app: App):
         ],
     )
     await check_record(
-        "2233",
-        "Telegram",
-        "telegram",
-        1,
-        "3344",
-        None,
-        None,
+        Session(
+            self_id="2233",
+            adapter="Telegram",
+            scope="Telegram",
+            scene=Scene(id="3344", type=SceneType.PRIVATE),
+            user=User(id="2233"),
+        ),
         datetime.fromtimestamp(1122, timezone.utc),
         "message_sent",
         "3344_1238_1239",
