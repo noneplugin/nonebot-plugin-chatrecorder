@@ -4,14 +4,14 @@ from typing import Literal, Optional, Union
 
 from nonebot.adapters import Message
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_uninfo import SceneType, Session
+from nonebot_plugin_uninfo import SceneType, Session, SupportAdapter, SupportScope
 from nonebot_plugin_uninfo.orm import BotModel, SceneModel, SessionModel, UserModel
 from sqlalchemy import or_, select
 from sqlalchemy.sql import ColumnElement
 
 from .message import deserialize_message
 from .model import MessageRecord
-from .utils import remove_timezone
+from .utils import adapter_value, remove_timezone, scene_type_value, scope_value
 
 
 def filter_statement(
@@ -23,15 +23,15 @@ def filter_statement(
     filter_scene: bool = True,
     filter_user: bool = True,
     self_ids: Optional[Iterable[str]] = None,
-    adapters: Optional[Iterable[str]] = None,
-    scopes: Optional[Iterable[str]] = None,
+    adapters: Optional[Iterable[Union[str, SupportAdapter]]] = None,
+    scopes: Optional[Iterable[Union[str, SupportScope]]] = None,
     scene_types: Optional[Iterable[Union[int, SceneType]]] = None,
     scene_ids: Optional[Iterable[str]] = None,
     user_ids: Optional[Iterable[str]] = None,
     exclude_self_ids: Optional[Iterable[str]] = None,
-    exclude_adapters: Optional[Iterable[str]] = None,
-    exclude_scopes: Optional[Iterable[str]] = None,
-    exclude_scene_types: Optional[Iterable[str]] = None,
+    exclude_adapters: Optional[Iterable[Union[str, SupportAdapter]]] = None,
+    exclude_scopes: Optional[Iterable[Union[str, SupportScope]]] = None,
+    exclude_scene_types: Optional[Iterable[Union[int, SceneType]]] = None,
     exclude_scene_ids: Optional[Iterable[str]] = None,
     exclude_user_ids: Optional[Iterable[str]] = None,
     time_start: Optional[datetime] = None,
@@ -49,14 +49,14 @@ def filter_statement(
       * ``filter_scene: bool``: 是否筛选事件场景，仅在传入 `session` 时有效
       * ``filter_user: bool``: 是否筛选用户，仅在传入 `session` 时有效
       * ``self_ids: Optional[Iterable[str]]``: bot id 列表，为空表示所有 bot id
-      * ``adapters: Optional[Iterable[str]]``: 适配器类型列表，为空表示所有适配器
-      * ``scopes: Optional[Iterable[str]]``: 平台类型列表，为空表示所有平台
+      * ``adapters: Optional[Iterable[Union[str, SupportAdapter]]]``: 适配器类型列表，为空表示所有适配器
+      * ``scopes: Optional[Iterable[Union[str, SupportScope]]]``: 平台类型列表，为空表示所有平台
       * ``scene_types: Optional[Iterable[Union[str, SceneType]]]``: 事件场景类型列表，为空表示所有类型
       * ``scene_ids: Optional[Iterable[str]]``: 事件场景 id 列表，为空表示所有 id
       * ``user_ids: Optional[Iterable[str]]``: 用户 id 列表，为空表示所有 id
       * ``exclude_self_ids: Optional[Iterable[str]]``: 不包含的 bot id 列表，为空表示不限制
-      * ``exclude_adapters: Optional[Iterable[str]]``: 不包含的适配器类型列表，为空表示不限制
-      * ``exclude_scopes: Optional[Iterable[str]]``: 不包含的平台类型列表，为空表示不限制
+      * ``exclude_adapters: Optional[Iterable[Union[str, SupportAdapter]]]``: 不包含的适配器类型列表，为空表示不限制
+      * ``exclude_scopes: Optional[Iterable[Union[str, SupportScope]]]``: 不包含的平台类型列表，为空表示不限制
       * ``exclude_scene_types: Optional[Iterable[Union[str, SceneType]]]``: 不包含的事件场景类型列表，为空表示不限制
       * ``exclude_scene_ids: Optional[Iterable[str]]``: 不包含的事件场景 id 列表，为空表示不限制
       * ``exclude_user_ids: Optional[Iterable[str]]``: 不包含的用户 id 列表，为空表示不限制
@@ -74,9 +74,9 @@ def filter_statement(
         if filter_self_id:
             whereclause.append(BotModel.self_id == session.self_id)
         if filter_adapter:
-            whereclause.append(BotModel.adapter == session.adapter)
+            whereclause.append(BotModel.adapter == adapter_value(session.adapter))
         if filter_scope:
-            whereclause.append(BotModel.scope == session.scope)
+            whereclause.append(BotModel.scope == scope_value(session.scope))
         if filter_scene:
             whereclause.append(SceneModel.scene_id == session.scene.id)
             whereclause.append(SceneModel.scene_type == session.scene.type.value)
@@ -86,12 +86,21 @@ def filter_statement(
     if self_ids:
         whereclause.append(or_(*[BotModel.self_id == self_id for self_id in self_ids]))
     if adapters:
-        whereclause.append(or_(*[BotModel.adapter == adapter for adapter in adapters]))
+        whereclause.append(
+            or_(*[BotModel.adapter == adapter_value(adapter) for adapter in adapters])
+        )
     if scopes:
-        whereclause.append(or_(*[BotModel.scope == scope for scope in scopes]))
+        whereclause.append(
+            or_(*[BotModel.scope == scope_value(scope) for scope in scopes])
+        )
     if scene_types:
         whereclause.append(
-            or_(*[SceneModel.scene_type == scene_type for scene_type in scene_types])
+            or_(
+                *[
+                    SceneModel.scene_type == scene_type_value(scene_type)
+                    for scene_type in scene_types
+                ]
+            )
         )
     if scene_ids:
         whereclause.append(
@@ -104,13 +113,13 @@ def filter_statement(
             whereclause.append(BotModel.self_id != self_id)
     if exclude_adapters:
         for adapter in exclude_adapters:
-            whereclause.append(BotModel.adapter != adapter)
+            whereclause.append(BotModel.adapter != adapter_value(adapter))
     if exclude_scopes:
         for scope in exclude_scopes:
-            whereclause.append(BotModel.scope != scope)
+            whereclause.append(BotModel.scope != scope_value(scope))
     if exclude_scene_types:
         for scene_type in exclude_scene_types:
-            whereclause.append(SceneModel.scene_type != scene_type)
+            whereclause.append(SceneModel.scene_type != scene_type_value(scene_type))
     if exclude_scene_ids:
         for scene_id in exclude_scene_ids:
             whereclause.append(SceneModel.scene_id != scene_id)
