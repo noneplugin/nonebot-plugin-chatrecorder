@@ -11,12 +11,13 @@ from nonebot.adapters.qq import Adapter as QQAdapter
 from nonebot.adapters.satori import Adapter as SatoriAdapter
 from nonebot.adapters.telegram import Adapter as TelegramAdapter
 from nonebug import NONEBOT_INIT_KWARGS, App
-from sqlalchemy import delete
+from sqlalchemy import StaticPool, delete
 
 
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
         "sqlalchemy_database_url": "sqlite+aiosqlite:///:memory:",
+        "sqlalchemy_engine_options": {"poolclass": StaticPool},
         "alembic_startup_check": False,
         "driver": "~fastapi+~websockets+~httpx",
     }
