@@ -43,7 +43,7 @@ try:
         if not id:
             statement = (
                 select(MessageRecord.message_id)
-                .where(BotModel.adapter == adapter)
+                .where(BotModel.adapter == adapter.value)
                 .order_by(MessageRecord.message_id.desc())
                 .join(SessionModel, SessionModel.id == MessageRecord.session_persist_id)
                 .join(BotModel, BotModel.self_id == SessionModel.bot_persist_id)
