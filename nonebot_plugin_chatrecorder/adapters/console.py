@@ -1,6 +1,6 @@
+import uuid
 from dataclasses import asdict
 from datetime import datetime, timezone
-from itertools import count
 from typing import Any, Optional
 
 from nonebot.adapters import Bot as BaseBot
@@ -15,7 +15,7 @@ from nonebot_plugin_uninfo import (
     Uninfo,
     User,
 )
-from nonebot_plugin_uninfo.orm import BotModel, SessionModel, get_session_persist_id
+from nonebot_plugin_uninfo.orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
@@ -32,26 +32,11 @@ from ..utils import record_type, remove_timezone
 try:
     from nonebot.adapters.console import Bot, Message, MessageEvent, MessageSegment
     from nonechat import ConsoleMessage, Emoji, Text
-    from sqlalchemy import select
 
     adapter = SupportAdapter.console
 
-    id = None
-
-    async def get_id() -> str:
-        global id
-        if not id:
-            statement = (
-                select(MessageRecord.message_id)
-                .where(BotModel.adapter == adapter.value)
-                .order_by(MessageRecord.message_id.desc())
-                .join(SessionModel, SessionModel.id == MessageRecord.session_persist_id)
-                .join(BotModel, BotModel.self_id == SessionModel.bot_persist_id)
-            )
-            async with get_session() as db_session:
-                message_id = await db_session.scalar(statement)
-            id = count(int(message_id) + 1) if message_id else count(0)
-        return str(next(id))
+    def get_id() -> str:
+        return uuid.uuid4().hex
 
     @event_postprocessor
     async def record_recv_msg(event: MessageEvent, session: Uninfo):
@@ -61,7 +46,7 @@ try:
             session_persist_id=session_persist_id,
             time=remove_timezone(event.time.astimezone(timezone.utc)),
             type=record_type(event),
-            message_id=await get_id(),
+            message_id=get_id(),
             message=serialize_message(adapter, event.get_message()),
             plain_text=event.get_plaintext(),
         )
@@ -110,7 +95,7 @@ try:
                 session_persist_id=session_persist_id,
                 time=remove_timezone(datetime.now(timezone.utc)),
                 type="message_sent",
-                message_id=await get_id(),
+                message_id=get_id(),
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )

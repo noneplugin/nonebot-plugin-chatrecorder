@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 from nonebot import get_driver
 from nonebot.adapters.console import Adapter, Bot, Message, MessageEvent
@@ -54,7 +55,9 @@ async def test_record_recv_msg(app: App):
         scene=Scene(id=user_id, type=SceneType.PRIVATE),
         user=UninfoUser(id=user_id),
     )
-    await record_recv_msg(event, session)
+
+    with patch("nonebot_plugin_chatrecorder.adapters.console.get_id", return_value="0"):
+        await record_recv_msg(event, session)
     await check_record(
         session,
         datetime.fromtimestamp(time, timezone.utc),
@@ -80,9 +83,11 @@ async def test_record_send_msg(app: App):
     user_id = "User"
     elements = ConsoleMessage([Text("test_record_send_msg")])
     message = Message("test_record_send_msg")
-    await record_send_msg(
-        bot, None, "send_msg", {"user_id": user_id, "message": elements}, None
-    )
+
+    with patch("nonebot_plugin_chatrecorder.adapters.console.get_id", return_value="1"):
+        await record_send_msg(
+            bot, None, "send_msg", {"user_id": user_id, "message": elements}, None
+        )
     await check_record(
         Session(
             self_id="Bot",
