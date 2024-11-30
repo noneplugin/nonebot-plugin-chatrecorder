@@ -35,7 +35,7 @@ def upgrade(name: str = "") -> None:
         sa.PrimaryKeyConstraint(
             "id", name=op.f("pk_nonebot_plugin_chatrecorder_messagerecord_v2")
         ),
-        info={"bind_key": "nonebot_plugin_chatrecorder_v2"},
+        info={"bind_key": "nonebot_plugin_chatrecorder"},
     )
     # ### end Alembic commands ###
 

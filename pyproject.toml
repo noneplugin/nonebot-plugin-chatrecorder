@@ -12,7 +12,7 @@ repository = "https://github.com/noneplugin/nonebot-plugin-chatrecorder"
 python = "^3.9"
 nonebot2 = "^2.3.0"
 nonebot-plugin-orm = ">=0.7.0,<1.0.0"
-nonebot-plugin-uninfo = ">=0.6.0,<1.0.0"
+nonebot-plugin-uninfo = ">=0.6.1,<1.0.0"
 nonebot-plugin-localstore = ">=0.6.0,<1.0.0"
 
 [tool.poetry.group.dev.dependencies]
