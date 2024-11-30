@@ -77,10 +77,10 @@ try:
                     or (data.get("message_type") == None and data.get("group_id"))
                 )
             ):
-                scene_id = data["group_id"]
+                scene_id = str(data["group_id"])
                 scene_type = SceneType.GROUP
             else:
-                scene_id = data["user_id"]
+                scene_id = str(data["user_id"])
                 scene_type = SceneType.PRIVATE
 
             session = Session(
