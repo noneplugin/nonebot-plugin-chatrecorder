@@ -70,7 +70,6 @@ def filter_statement(
 
     whereclause: list[ColumnElement[bool]] = []
     if session:
-        whereclause: list[ColumnElement[bool]] = []
         if filter_self_id:
             whereclause.append(BotModel.self_id == session.self_id)
         if filter_adapter:
