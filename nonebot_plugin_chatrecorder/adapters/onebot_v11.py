@@ -7,18 +7,20 @@ from typing import Any, Optional
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session_orm import get_session_persist_id
+from nonebot_plugin_uninfo import (
+    Scene,
+    SceneType,
+    Session,
+    SupportAdapter,
+    SupportScope,
+    Uninfo,
+    User,
+)
+from nonebot_plugin_uninfo.orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import (
-    IMAGE_CACHE_DIR,
-    RECORD_CACHE_DIR,
-    VIDEO_CACHE_DIR,
-    SupportedAdapter,
-    SupportedPlatform,
-)
+from ..consts import IMAGE_CACHE_DIR, RECORD_CACHE_DIR, VIDEO_CACHE_DIR
 from ..message import (
     JsonMsg,
     MessageDeserializer,
@@ -33,11 +35,10 @@ from ..utils import record_type, remove_timezone
 try:
     from nonebot.adapters.onebot.v11 import Bot, Message, MessageEvent, MessageSegment
 
-    adapter = SupportedAdapter.onebot_v11
+    adapter = SupportAdapter.onebot11
 
     @event_postprocessor
-    async def record_recv_msg(bot: Bot, event: MessageEvent):
-        session = extract_session(bot, event)
+    async def record_recv_msg(event: MessageEvent, session: Uninfo):
         session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
@@ -76,18 +77,18 @@ try:
                     or (data.get("message_type") == None and data.get("group_id"))
                 )
             ):
-                level = SessionLevel.LEVEL2
+                scene_id = str(data["group_id"])
+                scene_type = SceneType.GROUP
             else:
-                level = SessionLevel.LEVEL1
+                scene_id = str(data["user_id"])
+                scene_type = SceneType.PRIVATE
 
             session = Session(
-                bot_id=bot.self_id,
-                bot_type=bot.type,
-                platform=SupportedPlatform.qq,
-                level=level,
-                id1=str(data.get("user_id", "")) or None,
-                id2=str(data.get("group_id", "")) or None,
-                id3=None,
+                self_id=bot.self_id,
+                adapter=adapter,
+                scope=SupportScope.qq_client,
+                scene=Scene(id=scene_id, type=scene_type),
+                user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)
 

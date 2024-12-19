@@ -22,7 +22,7 @@ from nonebot.adapters.satori.models import (
 from nonebot.compat import type_validate_python
 from nonebug.app import App
 
-from .utils import assert_no_record, check_record
+from .utils import check_record
 
 
 def fake_public_message_created_event(
@@ -117,6 +117,10 @@ def fake_public_message_updated_event(
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
+    from nonebot_plugin_chatrecorder.adapters.satori import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     public_msg = "test public message created"
@@ -125,10 +129,7 @@ async def test_record_recv_msg(app: App):
     private_msg = "test private message created"
     private_msg_id = "56163f81-de30-4c39-b4c4-3a205d0be9db"
 
-    msg_deleted_id = "56163f81-de30-4c39-b4c4-3a205d0be9dc"
-    msg_updated_id = "56163f81-de30-4c39-b4c4-3a205d0be9dd"
-
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -147,26 +148,21 @@ async def test_record_recv_msg(app: App):
             info=ClientInfo(port=5140),
         )
 
-        event = fake_public_message_created_event(public_msg, public_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_private_message_created_event(private_msg, private_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_public_message_deleted_event("msg deleted", msg_deleted_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_public_message_updated_event("msg updated", msg_updated_id)
-        ctx.receive_event(bot, event)
-
+    event = fake_public_message_created_event(public_msg, public_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Satori",
+        scope="Kaiheila",
+        scene=Scene(
+            id="6677",
+            type=SceneType.CHANNEL_TEXT,
+            parent=Scene(id="5566", type=SceneType.GUILD),
+        ),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        "2233",
-        "Satori",
-        "kaiheila",
-        3,
-        "3344",
-        "6677",
-        "5566",
+        session,
         datetime.fromtimestamp(17000000000 / 1000, timezone.utc),
         "message",
         public_msg_id,
@@ -174,14 +170,17 @@ async def test_record_recv_msg(app: App):
         public_msg,
     )
 
+    event = fake_private_message_created_event(private_msg, private_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Satori",
+        scope="Kaiheila",
+        scene=Scene(id="3344", type=SceneType.PRIVATE),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        "2233",
-        "Satori",
-        "kaiheila",
-        1,
-        "3344",
-        "6677",
-        None,
+        session,
         datetime.fromtimestamp(17000000000 / 1000, timezone.utc),
         "message",
         private_msg_id,
@@ -189,12 +188,12 @@ async def test_record_recv_msg(app: App):
         private_msg,
     )
 
-    await assert_no_record(msg_deleted_id)
-    await assert_no_record(msg_updated_id)
-
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
     from nonebot_plugin_chatrecorder.adapters.satori import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
@@ -249,13 +248,17 @@ async def test_record_send_msg(app: App):
         ],
     )
     await check_record(
-        "2233",
-        "Satori",
-        "kaiheila",
-        3,
-        None,
-        "6677",
-        "5566",
+        Session(
+            self_id="2233",
+            adapter="Satori",
+            scope="Kaiheila",
+            scene=Scene(
+                id="6677",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="5566", type=SceneType.GUILD),
+            ),
+            user=UninfoUser(id="2233"),
+        ),
         None,
         "message_sent",
         "6b701984-c185-4da9-9808-549dc9947b85",

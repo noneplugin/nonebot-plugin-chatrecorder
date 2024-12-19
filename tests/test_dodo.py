@@ -63,6 +63,9 @@ def fake_personal_message_event(content: str, message_id: str) -> PersonalMessag
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
+    from nonebot_plugin_chatrecorder.adapters.dodo import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     channel_msg = "test channel message"
@@ -71,7 +74,7 @@ async def test_record_recv_msg(app: App):
     personal_msg = "test personal message"
     personal_msg_id = "123457"
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot,
@@ -80,20 +83,21 @@ async def test_record_recv_msg(app: App):
             bot_config=BotConfig(client_id="1234", token="xxxx"),
         )
 
-        event = fake_channel_message_event(channel_msg, channel_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_personal_message_event(personal_msg, personal_msg_id)
-        ctx.receive_event(bot, event)
-
+    event = fake_channel_message_event(channel_msg, channel_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="DoDo",
+        scope="DoDo",
+        scene=Scene(
+            id="5566",
+            type=SceneType.CHANNEL_TEXT,
+            parent=Scene(id="7788", type=SceneType.GUILD),
+        ),
+        user=User(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        "2233",
-        "DoDo",
-        "dodo",
-        3,
-        "3344",
-        "5566",
-        "7788",
+        session,
         datetime.fromtimestamp(12345678, timezone.utc),
         "message",
         channel_msg_id,
@@ -101,14 +105,21 @@ async def test_record_recv_msg(app: App):
         channel_msg,
     )
 
+    event = fake_personal_message_event(personal_msg, personal_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="DoDo",
+        scope="DoDo",
+        scene=Scene(
+            id="3344",
+            type=SceneType.PRIVATE,
+            parent=Scene(id="7788", type=SceneType.GUILD),
+        ),
+        user=User(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        "2233",
-        "DoDo",
-        "dodo",
-        1,
-        "3344",
-        None,
-        "7788",
+        session,
         datetime.fromtimestamp(12345678, timezone.utc),
         "message",
         personal_msg_id,
@@ -119,6 +130,8 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
     from nonebot_plugin_chatrecorder.adapters.dodo import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
@@ -144,13 +157,13 @@ async def test_record_send_msg(app: App):
         MessageReturn(message_id="123458"),
     )
     await check_record(
-        "2233",
-        "DoDo",
-        "dodo",
-        3,
-        None,
-        "5566",
-        None,
+        Session(
+            self_id="2233",
+            adapter="DoDo",
+            scope="DoDo",
+            scene=Scene(id="5566", type=SceneType.CHANNEL_TEXT),
+            user=User(id="2233"),
+        ),
         None,
         "message_sent",
         "123458",
@@ -171,13 +184,17 @@ async def test_record_send_msg(app: App):
         MessageReturn(message_id="123459"),
     )
     await check_record(
-        "2233",
-        "DoDo",
-        "dodo",
-        1,
-        "3344",
-        None,
-        "7788",
+        Session(
+            self_id="2233",
+            adapter="DoDo",
+            scope="DoDo",
+            scene=Scene(
+                id="3344",
+                type=SceneType.PRIVATE,
+                parent=Scene(id="7788", type=SceneType.GUILD),
+            ),
+            user=User(id="2233"),
+        ),
         None,
         "message_sent",
         "123459",

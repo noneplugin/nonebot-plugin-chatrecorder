@@ -1,17 +1,24 @@
+import uuid
 from dataclasses import asdict
 from datetime import datetime, timezone
-from itertools import count
 from typing import Any, Optional
 
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session_orm import SessionModel, get_session_persist_id
+from nonebot_plugin_uninfo import (
+    Scene,
+    SceneType,
+    Session,
+    SupportAdapter,
+    SupportScope,
+    Uninfo,
+    User,
+)
+from nonebot_plugin_uninfo.orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -25,36 +32,21 @@ from ..utils import record_type, remove_timezone
 try:
     from nonebot.adapters.console import Bot, Message, MessageEvent, MessageSegment
     from nonechat import ConsoleMessage, Emoji, Text
-    from sqlalchemy import select
 
-    adapter = SupportedAdapter.console
+    adapter = SupportAdapter.console
 
-    id = None
-
-    async def get_id() -> str:
-        global id
-        if not id:
-            statement = (
-                select(MessageRecord.message_id)
-                .where(SessionModel.bot_type == adapter)
-                .order_by(MessageRecord.message_id.desc())
-                .join(SessionModel, SessionModel.id == MessageRecord.session_persist_id)
-            )
-            async with get_session() as db_session:
-                message_id = await db_session.scalar(statement)
-            id = count(int(message_id) + 1) if message_id else count(0)
-        return str(next(id))
+    def get_id() -> str:
+        return uuid.uuid4().hex
 
     @event_postprocessor
-    async def record_recv_msg(bot: Bot, event: MessageEvent):
-        session = extract_session(bot, event)
+    async def record_recv_msg(event: MessageEvent, session: Uninfo):
         session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
             session_persist_id=session_persist_id,
             time=remove_timezone(event.time.astimezone(timezone.utc)),
             type=record_type(event),
-            message_id=await get_id(),
+            message_id=get_id(),
             message=serialize_message(adapter, event.get_message()),
             plain_text=event.get_plaintext(),
         )
@@ -78,13 +70,11 @@ try:
                 return
 
             session = Session(
-                bot_id=bot.self_id,
-                bot_type=bot.type,
-                platform=SupportedPlatform.console,
-                level=SessionLevel.LEVEL1,
-                id1=data.get("user_id"),
-                id2=None,
-                id3=None,
+                self_id=bot.self_id,
+                adapter=adapter,
+                scope=SupportScope.console,
+                scene=Scene(id=data["user_id"], type=SceneType.PRIVATE),
+                user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)
 
@@ -105,7 +95,7 @@ try:
                 session_persist_id=session_persist_id,
                 time=remove_timezone(datetime.now(timezone.utc)),
                 type="message_sent",
-                message_id=await get_id(),
+                message_id=get_id(),
                 message=serialize_message(adapter, message),
                 plain_text=message.extract_plain_text(),
             )

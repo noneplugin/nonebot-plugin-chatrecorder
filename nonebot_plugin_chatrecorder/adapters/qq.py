@@ -4,12 +4,19 @@ from typing import Any, Optional, Union
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session_orm import get_session_persist_id
+from nonebot_plugin_uninfo import (
+    Scene,
+    SceneType,
+    Session,
+    SupportAdapter,
+    SupportScope,
+    Uninfo,
+    User,
+)
+from nonebot_plugin_uninfo.orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -28,13 +35,12 @@ try:
         PostGroupMessagesReturn,
     )
 
-    adapter = SupportedAdapter.qq
+    adapter = SupportAdapter.qq
 
     @event_postprocessor
     async def record_recv_msg(
-        bot: Bot, event: Union[GuildMessageEvent, QQMessageEvent]
+        event: Union[GuildMessageEvent, QQMessageEvent], session: Uninfo
     ):
-        session = extract_session(bot, event)
         session_persist_id = await get_session_persist_id(session)
 
         if isinstance(event, QQMessageEvent):
@@ -83,43 +89,36 @@ try:
             ):
                 return
 
-            id1 = None
-            id2 = None
-            id3 = None
-            level = SessionLevel.LEVEL0
-            platform = SupportedPlatform.qqguild
+            parent = None
 
             if api == "post_messages":
                 assert isinstance(result, GuildMessage)
-                level = SessionLevel.LEVEL3
-                id3 = result.guild_id
-                id2 = result.channel_id
+                scene_type = SceneType.CHANNEL_TEXT
+                scene_id = result.channel_id
+                parent = Scene(id=result.guild_id, type=SceneType.GUILD)
 
             elif api == "post_dms_messages":
                 assert isinstance(result, GuildMessage)
-                level = SessionLevel.LEVEL1
-                id3 = data["guild_id"]
+                scene_type = SceneType.PRIVATE
+                scene_id = result.channel_id
+                parent = Scene(id=result.guild_id, type=SceneType.GUILD)
 
             elif api == "post_c2c_messages":
                 assert isinstance(result, PostC2CMessagesReturn)
-                level = SessionLevel.LEVEL1
-                id1 = data["openid"]
-                platform = SupportedPlatform.qq
+                scene_type = SceneType.PRIVATE
+                scene_id = data["openid"]
 
             elif api == "post_group_messages":
                 assert isinstance(result, PostGroupMessagesReturn)
-                level = SessionLevel.LEVEL2
-                id2 = data["group_openid"]
-                platform = SupportedPlatform.qq
+                scene_type = SceneType.GROUP
+                scene_id = data["group_openid"]
 
             session = Session(
-                bot_id=bot.self_id,
-                bot_type=bot.type,
-                platform=platform,
-                level=level,
-                id1=id1,
-                id2=id2,
-                id3=id3,
+                self_id=bot.self_id,
+                adapter=adapter,
+                scope=SupportScope.qq_api,
+                scene=Scene(id=scene_id, type=scene_type, parent=parent),
+                user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)
 

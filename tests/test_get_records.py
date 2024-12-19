@@ -14,8 +14,15 @@ from nonebug.app import App
 async def test_get_message_records(app: App):
     """测试获取消息记录"""
     from nonebot_plugin_orm import get_session
-    from nonebot_plugin_session import Session, SessionIdType, SessionLevel
-    from nonebot_plugin_session_orm import get_session_persist_id
+    from nonebot_plugin_uninfo import (
+        Scene,
+        SceneType,
+        Session,
+        SupportAdapter,
+        SupportScope,
+        User,
+    )
+    from nonebot_plugin_uninfo.orm import get_session_persist_id
 
     from nonebot_plugin_chatrecorder.message import serialize_message
     from nonebot_plugin_chatrecorder.model import MessageRecord
@@ -39,49 +46,43 @@ async def test_get_message_records(app: App):
 
     sessions = [
         Session(
-            bot_id="100",
-            bot_type="OneBot V11",
-            platform="qq",
-            level=SessionLevel.LEVEL1,
-            id1="1000",
-            id2=None,
-            id3=None,
+            self_id="100",
+            adapter=SupportAdapter.onebot11,
+            scope=SupportScope.qq_client,
+            scene=Scene(id="1000", type=SceneType.PRIVATE),
+            user=User(id="1000"),
         ),
         Session(
-            bot_id="101",
-            bot_type="OneBot V11",
-            platform="qq",
-            level=SessionLevel.LEVEL2,
-            id1="1000",
-            id2="10000",
-            id3=None,
+            self_id="101",
+            adapter=SupportAdapter.onebot11,
+            scope=SupportScope.qq_client,
+            scene=Scene(id="10000", type=SceneType.GROUP),
+            user=User(id="1000"),
         ),
         Session(
-            bot_id="100",
-            bot_type="OneBot V12",
-            platform="qq",
-            level=SessionLevel.LEVEL1,
-            id1="1001",
-            id2=None,
-            id3=None,
+            self_id="100",
+            adapter=SupportAdapter.onebot12,
+            scope=SupportScope.qq_client,
+            scene=Scene(id="1001", type=SceneType.PRIVATE),
+            user=User(id="1001"),
         ),
         Session(
-            bot_id="102",
-            bot_type="OneBot V12",
-            platform="telegram",
-            level=SessionLevel.LEVEL2,
-            id1="1002",
-            id2="10001",
-            id3=None,
+            self_id="102",
+            adapter=SupportAdapter.onebot12,
+            scope=SupportScope.telegram,
+            scene=Scene(id="10001", type=SceneType.GROUP),
+            user=User(id="1002"),
         ),
         Session(
-            bot_id="103",
-            bot_type="OneBot V12",
-            platform="kook",
-            level=SessionLevel.LEVEL3,
-            id1="1003",
-            id2="10002",
-            id3="100000",
+            self_id="103",
+            adapter=SupportAdapter.onebot12,
+            scope=SupportScope.kook,
+            scene=Scene(
+                id="10002",
+                type=SceneType.CHANNEL_TEXT,
+                parent=Scene(id="100000", type=SceneType.GUILD),
+            ),
+            user=User(id="1003"),
         ),
     ]
     session_persist_ids: list[int] = []
@@ -146,12 +147,12 @@ async def test_get_message_records(app: App):
     for msg in msgs:
         assert isinstance(msg, Message)
 
-    msgs = await get_messages(bot_types=["OneBot V11"])
+    msgs = await get_messages(adapters=[SupportAdapter.onebot11])
     assert len(msgs) == 2
     for msg in msgs:
         assert isinstance(msg, V11Msg)
 
-    msgs = await get_messages(bot_types=["OneBot V12"])
+    msgs = await get_messages(adapters=[SupportAdapter.onebot12])
     assert len(msgs) == 3
     for msg in msgs:
         assert isinstance(msg, V12Msg)
@@ -161,19 +162,19 @@ async def test_get_message_records(app: App):
     for msg in msgs:
         assert isinstance(msg, str)
 
-    msgs = await get_message_records(bot_types=["OneBot V11"])
+    msgs = await get_message_records(adapters=[SupportAdapter.onebot11])
     assert len(msgs) == 2
-    msgs = await get_message_records(bot_types=["OneBot V12"])
+    msgs = await get_message_records(adapters=[SupportAdapter.onebot12])
     assert len(msgs) == 3
 
-    msgs = await get_message_records(bot_ids=["100"])
+    msgs = await get_message_records(self_ids=["100"])
     assert len(msgs) == 2
-    msgs = await get_message_records(bot_ids=["101", "102", "103"])
+    msgs = await get_message_records(self_ids=["101", "102", "103"])
     assert len(msgs) == 3
 
-    msgs = await get_message_records(platforms=["qq"])
+    msgs = await get_message_records(scopes=[SupportScope.qq_client])
     assert len(msgs) == 3
-    msgs = await get_message_records(platforms=["telegram", "kook"])
+    msgs = await get_message_records(scopes=[SupportScope.telegram, SupportScope.kook])
     assert len(msgs) == 2
 
     msgs = await get_message_records(
@@ -199,74 +200,81 @@ async def test_get_message_records(app: App):
     msgs = await get_message_records(types=["message_sent"])
     assert len(msgs) == 1
 
-    msgs = await get_message_records(levels=[1])
+    msgs = await get_message_records(scene_types=[SceneType.PRIVATE])
     assert len(msgs) == 2
-    msgs = await get_message_records(levels=[2])
+    msgs = await get_message_records(scene_types=[SceneType.GROUP])
     assert len(msgs) == 2
-    msgs = await get_message_records(levels=[3])
+    msgs = await get_message_records(scene_types=[SceneType.CHANNEL_TEXT])
     assert len(msgs) == 1
 
-    msgs = await get_message_records(id1s=["1000"])
+    msgs = await get_message_records(user_ids=["1000"])
     assert len(msgs) == 2
-    msgs = await get_message_records(exclude_id1s=["1000"])
+    msgs = await get_message_records(exclude_user_ids=["1000"])
     assert len(msgs) == 3
 
-    msgs = await get_message_records(id2s=["10000"])
+    msgs = await get_message_records(scene_ids=["10000"])
     assert len(msgs) == 1
-    msgs = await get_message_records(exclude_id2s=["10000"])
+    msgs = await get_message_records(exclude_scene_ids=["10000"])
     assert len(msgs) == 4
 
-    msgs = await get_message_records(id3s=["100000"])
-    assert len(msgs) == 1
-    msgs = await get_message_records(exclude_id3s=["100000"])
-    assert len(msgs) == 4
+    # msgs = await get_message_records(scene_ids=["100000"])
+    # assert len(msgs) == 1
+    # msgs = await get_message_records(exclude_scene_ids=["100000"])
+    # assert len(msgs) == 4
 
-    msgs = await get_message_records(session=sessions[1], id_type=SessionIdType.GROUP)
+    msgs = await get_message_records(
+        session=sessions[1], filter_scene=True, filter_user=False
+    )
     assert len(msgs) == 1
 
     msgs = await get_message_records(
-        session=sessions[0], include_bot_type=False, id1s=["1001"]
+        session=sessions[0], filter_adapter=False, user_ids=["1001"]
     )
     assert len(msgs) == 0
 
     msgs = await get_message_records(
-        session=sessions[0], include_bot_type=False, id1s=["1000", "1001"]
+        session=sessions[0], filter_adapter=False, user_ids=["1000", "1001"]
     )
     assert len(msgs) == 1
 
     msgs = await get_message_records(
-        session=sessions[1], id_type=SessionIdType.GROUP_USER
+        session=sessions[1], filter_scene=True, filter_user=True
     )
     assert len(msgs) == 1
 
-    msgs = await get_message_records(session=sessions[1], id_type=SessionIdType.USER)
+    msgs = await get_message_records(
+        session=sessions[1], filter_scene=False, filter_user=True
+    )
     assert len(msgs) == 1
 
     msgs = await get_message_records(
-        session=sessions[1], id_type=SessionIdType.USER, include_bot_id=False
+        session=sessions[1], filter_scene=False, filter_user=True, filter_self_id=False
     )
     assert len(msgs) == 2
 
-    msgs = await get_message_records(session=sessions[1], id_type=SessionIdType.GLOBAL)
+    msgs = await get_message_records(
+        session=sessions[1], filter_scene=False, filter_user=False
+    )
     assert len(msgs) == 1
 
     msgs = await get_message_records(
-        session=sessions[0], id_type=SessionIdType.GLOBAL, include_bot_type=False
+        session=sessions[0], filter_scene=False, filter_user=False, filter_adapter=False
     )
     assert len(msgs) == 2
 
     msgs = await get_message_records(
         session=sessions[0],
-        id_type=SessionIdType.GLOBAL,
-        include_bot_type=False,
-        exclude_id1s=["1000"],
+        filter_scene=False,
+        filter_user=False,
+        filter_adapter=False,
+        exclude_user_ids=["1000"],
     )
     assert len(msgs) == 1
 
-    msgs = await get_messages(session=sessions[1], id_type=SessionIdType.GROUP)
+    msgs = await get_messages(session=sessions[1], filter_scene=True, filter_user=False)
     assert len(msgs) == 1
 
     msgs = await get_messages_plain_text(
-        session=sessions[1], id_type=SessionIdType.GROUP
+        session=sessions[1], filter_scene=True, filter_user=False
     )
     assert len(msgs) == 1

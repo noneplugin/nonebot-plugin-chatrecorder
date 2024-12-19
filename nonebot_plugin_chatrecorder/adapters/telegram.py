@@ -5,12 +5,19 @@ from nonebot.adapters import Bot as BaseBot
 from nonebot.compat import type_validate_python
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session_orm import get_session_persist_id
+from nonebot_plugin_uninfo import (
+    Scene,
+    SceneType,
+    Session,
+    SupportAdapter,
+    SupportScope,
+    Uninfo,
+    User,
+)
+from nonebot_plugin_uninfo.orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter, SupportedPlatform
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -26,11 +33,10 @@ try:
     from nonebot.adapters.telegram.event import MessageEvent
     from nonebot.adapters.telegram.model import Message as TGMessage
 
-    adapter = SupportedAdapter.telegram
+    adapter = SupportAdapter.telegram
 
     @event_postprocessor
-    async def record_recv_msg(bot: Bot, event: MessageEvent):
-        session = extract_session(bot, event)
+    async def record_recv_msg(event: MessageEvent, session: Uninfo):
         session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
@@ -97,28 +103,24 @@ try:
 
             message_thread_id = tg_message.message_thread_id
             chat_id = tg_message.chat.id
-            id1 = None
-            id2 = None
-            id3 = None
+            parent = None
             if message_thread_id:
-                id3 = str(chat_id)
-                id2 = str(message_thread_id)
-                level = SessionLevel.LEVEL3
+                scene_type = SceneType.CHANNEL_TEXT
+                scene_id = str(message_thread_id)
+                parent = Scene(id=str(chat_id), type=SceneType.GUILD)
             elif chat.type == "private":
-                id1 = str(chat_id)
-                level = SessionLevel.LEVEL1
+                scene_type = SceneType.PRIVATE
+                scene_id = str(chat_id)
             else:
-                id2 = str(chat_id)
-                level = SessionLevel.LEVEL2
+                scene_type = SceneType.GROUP
+                scene_id = str(chat_id)
 
             session = Session(
-                bot_id=bot.self_id,
-                bot_type=bot.type,
-                platform=SupportedPlatform.telegram,
-                level=level,
-                id1=id1,
-                id2=id2,
-                id3=id3,
+                self_id=bot.self_id,
+                adapter=adapter,
+                scope=SupportScope.telegram,
+                scene=Scene(id=scene_id, type=scene_type, parent=parent),
+                user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)
 

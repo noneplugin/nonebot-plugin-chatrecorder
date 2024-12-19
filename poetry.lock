@@ -1366,35 +1366,19 @@ psycopg = ["sqlalchemy[postgresql-psycopgbinary]"]
 sqlite = ["sqlalchemy[aiosqlite]"]
 
 [[package]]
-name = "nonebot-plugin-session"
-version = "0.3.2"
-description = "Nonebot2 会话信息提取与会话id定义"
+name = "nonebot-plugin-uninfo"
+version = "0.6.1"
+description = "Universal Information Model for Nonebot2"
 optional = false
-python-versions = "<4.0,>=3.9"
+python-versions = ">=3.9"
 files = [
-    {file = "nonebot_plugin_session-0.3.2-py3-none-any.whl", hash = "sha256:785e74ff656e46d84c4dbbac125f9a9adebcc4b9ff7db700527e6e47d47aabd6"},
-    {file = "nonebot_plugin_session-0.3.2.tar.gz", hash = "sha256:da0dabe9108151052a6e83d9923068d2ec43a93810ad37b264ed65aee2c69f93"},
+    {file = "nonebot_plugin_uninfo-0.6.1-py3-none-any.whl", hash = "sha256:c6fef664af82955a50e1fd91040c2f180eaa9ee0fd09aa6cb6b385e11aede590"},
+    {file = "nonebot_plugin_uninfo-0.6.1.tar.gz", hash = "sha256:f5eefa4992ab8a5a2fad9d848f1b2077303d825f61ee237f0131968506c32708"},
 ]
 
 [package.dependencies]
-nonebot2 = ">=2.3.0,<3.0.0"
-strenum = ">=0.4.15,<0.5.0"
-
-[[package]]
-name = "nonebot-plugin-session-orm"
-version = "0.2.0"
-description = "session 插件 orm 扩展"
-optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "nonebot_plugin_session_orm-0.2.0-py3-none-any.whl", hash = "sha256:e0a6009803feccf4e98db483e1f9072122ddbca40df0b2d1b45741c8e5332acb"},
-    {file = "nonebot_plugin_session_orm-0.2.0.tar.gz", hash = "sha256:420e210898a3f348cebbb4ea0816bab66f3299c7b0c01e929a01967d60cc438c"},
-]
-
-[package.dependencies]
-nonebot-plugin-orm = ">=0.7.0,<1.0.0"
-nonebot-plugin-session = ">=0.3.0,<0.4.0"
-nonebot2 = {version = ">=2.2.0,<3.0.0", extras = ["fastapi"]}
+importlib-metadata = ">=4.13.0"
+nonebot2 = ">=2.3.0"
 
 [[package]]
 name = "nonebot2"
@@ -2143,30 +2127,14 @@ typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7)", "pyyaml"]
 
 [[package]]
-name = "strenum"
-version = "0.4.15"
-description = "An Enum that inherits from str."
-optional = false
-python-versions = "*"
-files = [
-    {file = "StrEnum-0.4.15-py3-none-any.whl", hash = "sha256:a30cda4af7cc6b5bf52c8055bc4bf4b2b6b14a93b574626da33df53cf7740659"},
-    {file = "StrEnum-0.4.15.tar.gz", hash = "sha256:878fb5ab705442070e4dd1929bb5e2249511c0bcf2b0eeacf3bcd80875c82eff"},
-]
-
-[package.extras]
-docs = ["myst-parser[linkify]", "sphinx", "sphinx-rtd-theme"]
-release = ["twine"]
-test = ["pylint", "pytest", "pytest-black", "pytest-cov", "pytest-pylint"]
-
-[[package]]
 name = "textual"
-version = "0.87.1"
+version = "0.88.0"
 description = "Modern Text User Interface framework"
 optional = false
 python-versions = "<4.0.0,>=3.8.1"
 files = [
-    {file = "textual-0.87.1-py3-none-any.whl", hash = "sha256:026d1368cd10610a72a9d3de7a56692a17e7e8dffa0468147eb8e186ba0ff0c0"},
-    {file = "textual-0.87.1.tar.gz", hash = "sha256:daf4e248ba3d890831ff2617099535eb835863a2e3609c8ce00af0f6d55ed123"},
+    {file = "textual-0.88.0-py3-none-any.whl", hash = "sha256:87a1085a403e3a95aa4b954c530d46947d830e9ad4b8c15490104c0b4a452b6a"},
+    {file = "textual-0.88.0.tar.gz", hash = "sha256:bf9cc3ec9d34957c361eabf739e59272295323478cc822633fb0a7b7cc2a0ac3"},
 ]
 
 [package.dependencies]
@@ -2631,4 +2599,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "4b888819c48a220b6908a90b359f4ac463ce5ad34d01a0e96412026f8f656365"
+content-hash = "2997deba3ecbf419a35dd7f2ced1eb2c0ae0bdd34ec8329d2a2c1cdd83d3cafa"

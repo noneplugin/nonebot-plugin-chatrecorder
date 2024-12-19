@@ -1,7 +1,8 @@
 from nonebot import require
 from nonebot.plugin import PluginMetadata
 
-require("nonebot_plugin_session_orm")
+require("nonebot_plugin_orm")
+require("nonebot_plugin_uninfo")
 require("nonebot_plugin_localstore")
 
 from . import adapters as adapters

@@ -88,6 +88,10 @@ def fake_channel_message_event(content: str, msg_id: str) -> ChannelMessageEvent
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
+    from nonebot_plugin_chatrecorder.adapters.kaiheila import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     private_msg = "test private message"
@@ -96,26 +100,23 @@ async def test_record_recv_msg(app: App):
     channel_msg = "test channel message"
     channel_msg_id = "4456"
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(
             base=Bot, adapter=adapter, self_id="2233", name="Bot", token=""
         )
 
-        event = fake_private_message_event(private_msg, private_msg_id)
-        ctx.receive_event(bot, event)
-
-        event = fake_channel_message_event(channel_msg, channel_msg_id)
-        ctx.receive_event(bot, event)
-
+    event = fake_private_message_event(private_msg, private_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Kaiheila",
+        scope="Kaiheila",
+        scene=Scene(id="3344", type=SceneType.PRIVATE),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        1,
-        "3344",
-        None,
-        None,
+        session,
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
         private_msg_id,
@@ -123,14 +124,21 @@ async def test_record_recv_msg(app: App):
         private_msg,
     )
 
+    event = fake_channel_message_event(channel_msg, channel_msg_id)
+    session = Session(
+        self_id="2233",
+        adapter="Kaiheila",
+        scope="Kaiheila",
+        scene=Scene(
+            id="6677",
+            type=SceneType.CHANNEL_TEXT,
+            parent=Scene(id="5566", type=SceneType.GUILD),
+        ),
+        user=UninfoUser(id="3344"),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        3,
-        "3344",
-        "6677",
-        "5566",
+        session,
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message",
         channel_msg_id,
@@ -141,6 +149,9 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session
+    from nonebot_plugin_uninfo import User as UninfoUser
+
     from nonebot_plugin_chatrecorder.adapters.kaiheila import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
@@ -158,13 +169,13 @@ async def test_record_send_msg(app: App):
         MessageCreateReturn(msg_id="4457", msg_timestamp=1234000, nonce="xxx"),
     )
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        3,
-        None,
-        None,
-        "6677",
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(id="6677", type=SceneType.CHANNEL_TEXT),
+            user=UninfoUser(id="2233"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4457",
@@ -180,13 +191,13 @@ async def test_record_send_msg(app: App):
         MessageCreateReturn(msg_id="4458", msg_timestamp=1234000, nonce="xxx"),
     )
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        1,
-        "3344",
-        None,
-        None,
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(id="3344", type=SceneType.PRIVATE),
+            user=UninfoUser(id="2233"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4458",
@@ -202,13 +213,13 @@ async def test_record_send_msg(app: App):
         MessageCreateReturn(msg_id="4459", msg_timestamp=1234000, nonce="xxx"),
     )
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        3,
-        None,
-        None,
-        "6677",
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(id="6677", type=SceneType.CHANNEL_TEXT),
+            user=UninfoUser(id="2233"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4459",
@@ -251,13 +262,13 @@ async def test_record_send_msg(app: App):
         MessageCreateReturn(msg_id="4460", msg_timestamp=1234000, nonce="xxx"),
     )
     await check_record(
-        "2233",
-        "Kaiheila",
-        "kaiheila",
-        3,
-        None,
-        None,
-        "6677",
+        Session(
+            self_id="2233",
+            adapter="Kaiheila",
+            scope="Kaiheila",
+            scene=Scene(id="6677", type=SceneType.CHANNEL_TEXT),
+            user=UninfoUser(id="2233"),
+        ),
         datetime.fromtimestamp(1234000 / 1000, timezone.utc),
         "message_sent",
         "4460",

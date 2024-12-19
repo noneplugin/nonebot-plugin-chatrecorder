@@ -71,6 +71,9 @@ def fake_private_message_event(**field) -> PrivateMessageEvent:
 
 async def test_record_recv_msg(app: App):
     """测试记录收到的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
+    from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_recv_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
     time = 1000000
@@ -82,32 +85,27 @@ async def test_record_recv_msg(app: App):
     private_msg = Message("test private message")
     private_msg_id = 11451422222
 
-    async with app.test_matcher() as ctx:
+    async with app.test_api() as ctx:
         adapter = get_driver()._adapters[Adapter.get_name()]
         bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="11")
 
-        event = fake_group_message_event(
-            time=time,
-            user_id=user_id,
-            group_id=group_id,
-            message_id=group_msg_id,
-            message=group_msg,
-        )
-        ctx.receive_event(bot, event)
-
-        event = fake_private_message_event(
-            time=time, user_id=user_id, message_id=private_msg_id, message=private_msg
-        )
-        ctx.receive_event(bot, event)
-
+    event = fake_group_message_event(
+        time=time,
+        user_id=user_id,
+        group_id=group_id,
+        message_id=group_msg_id,
+        message=group_msg,
+    )
+    session = Session(
+        self_id="11",
+        adapter="OneBot V11",
+        scope="QQClient",
+        scene=Scene(id=str(group_id), type=SceneType.GROUP),
+        user=User(id=str(user_id)),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        "11",
-        "OneBot V11",
-        "qq",
-        2,
-        str(user_id),
-        str(group_id),
-        None,
+        session,
         datetime.fromtimestamp(time, timezone.utc),
         "message",
         str(group_msg_id),
@@ -115,14 +113,19 @@ async def test_record_recv_msg(app: App):
         group_msg.extract_plain_text(),
     )
 
+    event = fake_private_message_event(
+        time=time, user_id=user_id, message_id=private_msg_id, message=private_msg
+    )
+    session = Session(
+        self_id="11",
+        adapter="OneBot V11",
+        scope="QQClient",
+        scene=Scene(id=str(user_id), type=SceneType.PRIVATE),
+        user=User(id=str(user_id)),
+    )
+    await record_recv_msg(event, session)
     await check_record(
-        "11",
-        "OneBot V11",
-        "qq",
-        1,
-        str(user_id),
-        None,
-        None,
+        session,
         datetime.fromtimestamp(time, timezone.utc),
         "message",
         str(private_msg_id),
@@ -133,6 +136,8 @@ async def test_record_recv_msg(app: App):
 
 async def test_record_send_msg(app: App):
     """测试记录发送的消息"""
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
     from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_send_msg
     from nonebot_plugin_chatrecorder.message import serialize_message
 
@@ -153,13 +158,13 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
-        "11",
-        "OneBot V11",
-        "qq",
-        2,
-        None,
-        str(group_id),
-        None,
+        Session(
+            self_id="11",
+            adapter="OneBot V11",
+            scope="QQClient",
+            scene=Scene(id=str(group_id), type=SceneType.GROUP),
+            user=User(id="11"),
+        ),
         None,
         "message_sent",
         str(message_id),
@@ -177,13 +182,13 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
-        "11",
-        "OneBot V11",
-        "qq",
-        2,
-        None,
-        str(group_id),
-        None,
+        Session(
+            self_id="11",
+            adapter="OneBot V11",
+            scope="QQClient",
+            scene=Scene(id=str(group_id), type=SceneType.GROUP),
+            user=User(id="11"),
+        ),
         None,
         "message_sent",
         str(message_id),
@@ -201,13 +206,13 @@ async def test_record_send_msg(app: App):
         {"message_id": message_id},
     )
     await check_record(
-        "11",
-        "OneBot V11",
-        "qq",
-        1,
-        str(user_id),
-        None,
-        None,
+        Session(
+            self_id="11",
+            adapter="OneBot V11",
+            scope="QQClient",
+            scene=Scene(id=str(user_id), type=SceneType.PRIVATE),
+            user=User(id="11"),
+        ),
         None,
         "message_sent",
         str(message_id),

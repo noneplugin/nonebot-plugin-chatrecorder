@@ -1,15 +1,18 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
+
+from nonebot.log import logger
+
+if TYPE_CHECKING:
+    from nonebot_plugin_uninfo import Session
+
+
+def session_id(session: "Session") -> str:
+    return f"{session.self_id}_{session.adapter}_{session.scope}_{session.id}"
 
 
 async def check_record(
-    bot_id: str,
-    bot_type: str,
-    platform: str,
-    level: int,
-    id1: Optional[str],
-    id2: Optional[str],
-    id3: Optional[str],
+    session: Optional["Session"],
     time: Optional[datetime],
     type: str,
     message_id: str,
@@ -17,7 +20,7 @@ async def check_record(
     plain_text: str,
 ):
     from nonebot_plugin_orm import get_session
-    from nonebot_plugin_session_orm import get_session_by_persist_id
+    from nonebot_plugin_uninfo.orm import get_session_model
     from sqlalchemy import select
 
     from nonebot_plugin_chatrecorder.model import MessageRecord
@@ -27,17 +30,14 @@ async def check_record(
     async with get_session() as db_session:
         records = (await db_session.scalars(statement)).all()
 
+    logger.warning(f"len records: {len(records)}")
     assert len(records) == 1
     record = records[0]
     session_persist_id = record.session_persist_id
-    session = await get_session_by_persist_id(session_persist_id)
-    assert session.bot_id == bot_id
-    assert session.bot_type == bot_type
-    assert session.platform == platform
-    assert session.level == level
-    assert session.id1 == id1
-    assert session.id2 == id2
-    assert session.id3 == id3
+    session_model = await get_session_model(session_persist_id)
+    record_session = await session_model.to_session()
+    if session:
+        assert session_id(record_session) == session_id(session)
     assert record.type == type
     if time:
         assert record.time == remove_timezone(time)

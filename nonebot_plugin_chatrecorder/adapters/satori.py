@@ -4,12 +4,19 @@ from typing import Any, Optional, cast
 from nonebot.adapters import Bot as BaseBot
 from nonebot.message import event_postprocessor
 from nonebot_plugin_orm import get_session
-from nonebot_plugin_session import Session, SessionLevel, extract_session
-from nonebot_plugin_session_orm import get_session_persist_id
+from nonebot_plugin_uninfo import (
+    Scene,
+    SceneType,
+    Session,
+    SupportAdapter,
+    SupportScope,
+    Uninfo,
+    User,
+)
+from nonebot_plugin_uninfo.orm import get_session_persist_id
 from typing_extensions import override
 
 from ..config import plugin_config
-from ..consts import SupportedAdapter
 from ..message import (
     MessageDeserializer,
     MessageSerializer,
@@ -18,18 +25,18 @@ from ..message import (
     serialize_message,
 )
 from ..model import MessageRecord
-from ..utils import format_platform, record_type, remove_timezone
+from ..utils import record_type, remove_timezone
 
 try:
     from nonebot.adapters.satori import Bot, Message
     from nonebot.adapters.satori.event import MessageCreatedEvent
     from nonebot.adapters.satori.models import MessageObject
+    from nonebot_plugin_uninfo.adapters.satori.main import TYPE_MAPPING
 
-    adapter = SupportedAdapter.satori
+    adapter = SupportAdapter.satori
 
     @event_postprocessor
-    async def record_recv_msg(bot: Bot, event: MessageCreatedEvent):
-        session = extract_session(bot, event)
+    async def record_recv_msg(event: MessageCreatedEvent, session: Uninfo):
         session_persist_id = await get_session_persist_id(session)
 
         record = MessageRecord(
@@ -64,27 +71,46 @@ try:
                 if not isinstance(res, MessageObject):
                     return
             result_messages = cast(list[MessageObject], result)
-
             result_message = result_messages[0]
-            level = SessionLevel.LEVEL0
-            if result_message.guild:
-                level = SessionLevel.LEVEL3
-            elif result_message.member:
-                level = SessionLevel.LEVEL2
-            elif result_message.user:
-                level = SessionLevel.LEVEL1
-            id1 = data["channel_id"] if level == SessionLevel.LEVEL1 else None
-            id2 = result_message.channel.id if result_message.channel else None
-            id3 = result_message.guild.id if result_message.guild else None
+
+            parent = None
+
+            if result_message.guild and result_message.channel:
+                scene_type = TYPE_MAPPING[result_message.channel.type]
+                scene_id = result_message.channel.id
+                parent = Scene(id=result_message.guild.id, type=SceneType.GUILD)
+                if (
+                    "guild.plain" in bot._self_info.features
+                    or result_message.guild.id == result_message.channel.id
+                ):
+                    scene_type = SceneType.GROUP
+                    parent.type = SceneType.GROUP
+
+            elif result_message.guild:
+                scene_type = (
+                    SceneType.GROUP
+                    if "guild.plain" in bot._self_info.features
+                    else SceneType.GUILD
+                )
+                scene_id = result_message.guild.id
+
+            elif result_message.channel:
+                scene_type = (
+                    SceneType.GROUP
+                    if "guild.plain" in bot._self_info.features
+                    else SceneType.GUILD
+                )
+                scene_id = result_message.channel.id
+
+            else:
+                return
 
             session = Session(
-                bot_id=bot.self_id,
-                bot_type=bot.type,
-                platform=format_platform(bot.platform),
-                level=level,
-                id1=id1,
-                id2=id2,
-                id3=id3,
+                self_id=bot.self_id,
+                adapter=adapter,
+                scope=SupportScope.ensure_satori(bot.platform),
+                scene=Scene(id=scene_id, type=scene_type, parent=parent),
+                user=User(id=bot.self_id),
             )
             session_persist_id = await get_session_persist_id(session)
 

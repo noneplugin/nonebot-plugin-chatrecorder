@@ -11,9 +11,8 @@ repository = "https://github.com/noneplugin/nonebot-plugin-chatrecorder"
 [tool.poetry.dependencies]
 python = "^3.9"
 nonebot2 = "^2.3.0"
-nonebot-plugin-session = "^0.3.0"
 nonebot-plugin-orm = ">=0.7.0,<1.0.0"
-nonebot-plugin-session-orm = "^0.2.0"
+nonebot-plugin-uninfo = ">=0.6.1,<1.0.0"
 nonebot-plugin-localstore = ">=0.6.0,<1.0.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -45,6 +44,7 @@ nonebot-adapter-qq = "^1.5.0"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 
 [tool.nonebot]
 plugins = ["nonebot_plugin_chatrecorder"]
