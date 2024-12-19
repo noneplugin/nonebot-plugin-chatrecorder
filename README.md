@@ -10,8 +10,8 @@ _✨ [Nonebot2](https://github.com/nonebot/nonebot2) 聊天记录插件 ✨_
 
 <p align="center">
   <img src="https://img.shields.io/github/license/noneplugin/nonebot-plugin-chatrecorder" alt="license">
-  <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="Python">
-  <img src="https://img.shields.io/badge/nonebot-2.2.0+-red.svg" alt="NoneBot">
+  <img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python">
+  <img src="https://img.shields.io/badge/nonebot-2.3.0+-red.svg" alt="NoneBot">
   <a href="https://pypi.org/project/nonebot-plugin-chatrecorder">
     <img src="https://badgen.net/pypi/v/nonebot-plugin-chatrecorder" alt="pypi">
   </a>
@@ -60,9 +60,9 @@ require("nonebot_plugin_chatrecorder")
 
 > [!NOTE]
 >
-> 插件依赖 [nonebot-plugin-session](https://github.com/noneplugin/nonebot-plugin-session) 插件来获取会话相关信息
+> 插件依赖 [nonebot-plugin-uninfo](https://github.com/RF-Tar-Railt/nonebot-plugin-uninfo) 插件来获取会话相关信息
 >
-> 会话相关字段如 `id1`、`id2`、`id3` 可以查看 `nonebot-plugin-session` 插件中的说明
+> 会话相关字段如 `scene_id`、`scene_type`、`scope` 可以查看 `nonebot-plugin-uninfo` 插件中的说明
 
 - 获取当前群内成员 "12345" 和 "54321" 1天之内的消息记录
 
@@ -73,8 +73,8 @@ from nonebot_plugin_chatrecorder import get_message_records
 @matcher.handle()
 async def _(event: GroupMessageEvent):
     records = await get_message_records(
-        id1s=["12345", "54321"],
-        id2s=[str(event.group_id)],
+        user_ids=["12345", "54321"],
+        scene_ids=[str(event.group_id)],
         time_start=datetime.utcnow() - timedelta(days=1),
     )
 ```
@@ -86,12 +86,11 @@ async def _(event: GroupMessageEvent):
 - 获取当前会话成员 1 天之内的消息记录
 
 ```python
-from nonebot_plugin_session import extract_session, SessionIdType
+from nonebot_plugin_uninfo import Uninfo
 from nonebot_plugin_chatrecorder import get_message_records
 
 @matcher.handle()
-async def _(bot: Bot, event: Event):
-    session = extract_session(bot, event)
+async def _(session: Uninfo):
     records = await get_message_records(
         session=session,
         time_start=datetime.utcnow() - timedelta(days=1),
@@ -100,22 +99,22 @@ async def _(bot: Bot, event: Event):
 
 > [!NOTE]
 >
-> 可以传入 [nonebot-plugin-session](https://github.com/noneplugin/nonebot-plugin-session) 插件获取的 `Session` 对象来筛选消息记录
+> 可以传入 [nonebot-plugin-uninfo](https://github.com/RF-Tar-Railt/nonebot-plugin-uninfo) 插件获取的 `Session` 对象来筛选消息记录
 >
-> 传入 `Session` 时可以通过 `id_type` 来控制要筛选的会话级别
+> 传入 `Session` 时可以通过 `filter_scene`、`filter_user` 等选项来控制要筛选的会话级别
 
 - 获取当前 群聊/私聊 除机器人发出的消息外，其他消息的纯本文形式
 
 ```python
-from nonebot_plugin_session import extract_session, SessionIdType
+from nonebot_plugin_uninfo import Uninfo
 from nonebot_plugin_chatrecorder import get_messages_plain_text
 
 @matcher.handle()
-async def _(bot: Bot, event: Event):
-    session = extract_session(bot, event)
+async def _(session: Uninfo):
     msgs = await get_messages_plain_text(
         session=session,
-        id_type=SessionIdType.GROUP,
+        filter_scene=True,
+        filter_user=False,
         types=["message"],
     )
 ```
@@ -152,6 +151,14 @@ async def _(bot: Bot, event: Event):
 
 若要从 `0.2.x` 版本直接升级到 `0.5.x`，需要先升级到 `0.4.x` 版本，运行 `nb datastore upgrade` 完成迁移后，再继续升级
 
+#### `0.6.x` -> `0.7.x`
+
+`0.7.x` 版本会话信息获取插件从 [nonebot-plugin-session](https://github.com/noneplugin/nonebot-plugin-session) 替换为 [nonebot-plugin-uninfo](https://github.com/RF-Tar-Railt/nonebot-plugin-uninfo)
+
+需安装 [nonebot-session-to-uninfo](https://github.com/noneplugin/nonebot-session-to-uninfo)（迁移完成后可删除），并运行 `nb datastore upgrade` 进行聊天记录迁移
+
+若聊天记录很多，迁移可能会花费较长时间，在迁移过程中不要关闭程序
+
 ### 其他说明
 
 > [!NOTE]
@@ -170,7 +177,6 @@ async def _(bot: Bot, event: Event):
 - [x] Kaiheila
 - [x] Telegram
 - [x] Feishu
-- [x] RedProtocol
 - [x] Discord
 - [x] DoDo
 - [x] Satori
