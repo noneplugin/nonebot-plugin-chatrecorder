@@ -155,7 +155,7 @@ async def _(session: Uninfo):
 
 `0.7.x` 版本会话信息获取插件从 [nonebot-plugin-session](https://github.com/noneplugin/nonebot-plugin-session) 替换为 [nonebot-plugin-uninfo](https://github.com/RF-Tar-Railt/nonebot-plugin-uninfo)
 
-需安装 [nonebot-session-to-uninfo](https://github.com/noneplugin/nonebot-session-to-uninfo)（迁移完成后可删除），并运行 `nb datastore upgrade` 进行聊天记录迁移
+需安装 [nonebot-session-to-uninfo](https://github.com/noneplugin/nonebot-session-to-uninfo)（迁移完成后可删除），并运行 `nb orm upgrade` 进行聊天记录迁移
 
 若聊天记录很多，迁移可能会花费较长时间，在迁移过程中不要关闭程序
 
