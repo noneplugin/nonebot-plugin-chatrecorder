@@ -42,7 +42,6 @@ def filter_statement(
 
     参数:
       * ``session: Optional[Session]``: 会话模型，传入时会根据 `session` 中的字段筛选
-      * ``id_type: SessionIdType``: 会话 id 类型，仅在传入 `session` 时有效
       * ``filter_self_id: bool``: 是否筛选 bot id，仅在传入 `session` 时有效
       * ``filter_adapter: bool``: 是否筛选适配器类型，仅在传入 `session` 时有效
       * ``filter_scope: bool``: 是否筛选平台类型，仅在传入 `session` 时有效
