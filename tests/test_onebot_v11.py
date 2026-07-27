@@ -219,3 +219,43 @@ async def test_record_send_msg(app: App):
         serialize_message(bot, message),
         message.extract_plain_text(),
     )
+
+
+async def test_record_send_forward_msg(app: App):
+    """测试记录合并转发消息"""
+    from nonebot.adapters.onebot.v11 import MessageSegment
+    from nonebot_plugin_uninfo import Scene, SceneType, Session, User
+
+    from nonebot_plugin_chatrecorder.adapters.onebot_v11 import record_send_msg
+    from nonebot_plugin_chatrecorder.message import serialize_message
+
+    async with app.test_api() as ctx:
+        adapter = get_driver()._adapters[Adapter.get_name()]
+        bot = ctx.create_bot(base=Bot, adapter=adapter, self_id="11")
+
+    group_id = 654321
+    message_id = 11451466666
+    message = Message(
+        MessageSegment.node_custom(10, "test", Message("test forward message"))
+    )
+    await record_send_msg(
+        bot,
+        None,
+        "send_group_msg",
+        {"group_id": group_id, "message": message},
+        {"message_id": message_id},
+    )
+    await check_record(
+        Session(
+            self_id="11",
+            adapter="OneBot V11",
+            scope="QQClient",
+            scene=Scene(id=str(group_id), type=SceneType.GROUP),
+            user=User(id="11"),
+        ),
+        None,
+        "message_sent",
+        str(message_id),
+        serialize_message(bot, message),
+        message.extract_plain_text(),
+    )
