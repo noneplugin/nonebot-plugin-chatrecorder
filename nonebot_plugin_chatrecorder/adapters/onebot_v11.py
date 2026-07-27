@@ -140,8 +140,7 @@ try:
         def serialize(cls, msg: Message) -> JsonMsg:
             cache_b64_msg(msg)
             return [
-                {"type": seg.type, "data": cls._serialize_data(seg.data)}
-                for seg in msg
+                {"type": seg.type, "data": cls._serialize_data(seg.data)} for seg in msg
             ]
 
         @classmethod
