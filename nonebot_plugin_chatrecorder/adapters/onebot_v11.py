@@ -139,7 +139,19 @@ try:
         @override
         def serialize(cls, msg: Message) -> JsonMsg:
             cache_b64_msg(msg)
-            return super().serialize(msg)
+            return [
+                {"type": seg.type, "data": cls._serialize_data(seg.data)}
+                for seg in msg
+            ]
+
+        @classmethod
+        def _serialize_data(cls, data: dict) -> dict:
+            # 合并转发消息的 node 段中嵌套着 Message 对象，
+            # 直接存储会导致 json 序列化失败
+            return {
+                k: cls.serialize(v) if isinstance(v, Message) else v
+                for k, v in data.items()
+            }
 
     class Deserializer(MessageDeserializer[Message]):
         @classmethod
