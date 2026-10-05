@@ -53,6 +53,7 @@ pip install nonebot_plugin_chatrecorder
 
 ```python
 from nonebot import require
+
 require("nonebot_plugin_chatrecorder")
 ```
 
@@ -69,6 +70,7 @@ require("nonebot_plugin_chatrecorder")
 ```python
 from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from nonebot_plugin_chatrecorder import get_message_records
+
 
 @matcher.handle()
 async def _(event: GroupMessageEvent):
@@ -89,6 +91,7 @@ async def _(event: GroupMessageEvent):
 from nonebot_plugin_uninfo import Uninfo
 from nonebot_plugin_chatrecorder import get_message_records
 
+
 @matcher.handle()
 async def _(session: Uninfo):
     records = await get_message_records(
@@ -108,6 +111,7 @@ async def _(session: Uninfo):
 ```python
 from nonebot_plugin_uninfo import Uninfo
 from nonebot_plugin_chatrecorder import get_messages_plain_text
+
 
 @matcher.handle()
 async def _(session: Uninfo):
